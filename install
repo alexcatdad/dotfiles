@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Modern dotfiles installer using dotbot
+# This is the new recommended way to install your dotfiles
+
+set -e
+
+CONFIG="install.conf.yaml"
+DOTBOT_DIR="dotbot"
+DOTBOT_BIN="bin/dotbot"
+BASEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Download dotbot if not present
+if [ ! -d "${BASEDIR}/${DOTBOT_DIR}" ]; then
+    echo "📦 Downloading dotbot..."
+    git submodule add https://github.com/anishathalye/dotbot "${BASEDIR}/${DOTBOT_DIR}"
+    git submodule update --init --recursive
+fi
+
+# Run dotbot
+cd "${BASEDIR}"
+"${BASEDIR}/${DOTBOT_DIR}/${DOTBOT_BIN}" -d "${BASEDIR}" -c "${CONFIG}" "${@}"

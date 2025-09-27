@@ -1,0 +1,53 @@
+# Global gitignore for all projects
+# This prevents accidental commits of sensitive data
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.private
+*.secret
+*.key
+*.pem
+.credentials
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+*.tgz
+*.tar.gz
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package manager lockfiles (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+# bun.lockb

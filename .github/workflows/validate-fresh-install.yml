@@ -1,0 +1,219 @@
+name: Validate Fresh Installation
+
+on:
+  schedule:
+    # Test fresh installation weekly
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of installation test'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - minimal
+        - safe-mode
+
+jobs:
+  test-fresh-ubuntu:
+    name: Fresh Ubuntu Installation
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:22.04
+
+    steps:
+    - name: Set up basic environment
+      run: |
+        apt-get update
+        apt-get install -y curl wget git sudo
+
+        # Create a test user (simulate real user environment)
+        useradd -m -s /bin/bash testuser
+        echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+    - name: Checkout repository as test user
+      run: |
+        sudo -u testuser git clone https://github.com/${{ github.repository }} /home/testuser/dotfiles
+        chown -R testuser:testuser /home/testuser/dotfiles
+
+    - name: Test bootstrap installation
+      if: github.event.inputs.test_type == 'full' || github.event.inputs.test_type == ''
+      run: |
+        cd /home/testuser/dotfiles
+        sudo -u testuser bash bootstrap.sh --non-interactive
+
+    - name: Test safe installation
+      if: github.event.inputs.test_type == 'safe-mode'
+      run: |
+        cd /home/testuser/dotfiles
+        # Simulate user input for safe installation
+        echo -e "y\ny\ny\ny\nn" | sudo -u testuser ./install-safe.sh
+
+    - name: Validate installation
+      run: |
+        sudo -u testuser bash -c '
+        cd /home/testuser
+
+        echo "🧪 Testing shell configuration..."
+        if [ -f .zshrc ]; then
+          zsh -n .zshrc && echo "✅ Zsh config valid"
+        fi
+
+        echo "🧪 Testing aliases..."
+        if [ -f .aliases ]; then
+          source .aliases
+          if typeset -f create-ts-project >/dev/null; then
+            echo "✅ TypeScript functions available"
+          fi
+        fi
+
+        echo "🧪 Testing package management..."
+        if [ -f dotfiles/scripts/install-packages.sh ]; then
+          ./dotfiles/scripts/install-packages.sh --help >/dev/null && echo "✅ Package installer works"
+        fi
+
+        echo "🧪 Testing development tools..."
+        if command -v node >/dev/null; then
+          echo "✅ Node.js installed: $(node --version)"
+        fi
+
+        if command -v git >/dev/null; then
+          echo "✅ Git available: $(git --version)"
+        fi
+        '
+
+    - name: Test project creation
+      run: |
+        sudo -u testuser bash -c '
+        cd /home/testuser
+        source .zshrc 2>/dev/null || true
+
+        # Test TypeScript project creation
+        if typeset -f create-ts-project >/dev/null 2>&1; then
+          create-ts-project test-project
+          if [ -d test-project ]; then
+            echo "✅ TypeScript project creation works"
+            ls -la test-project/
+          fi
+        fi
+        '
+
+  test-fresh-macos:
+    name: Fresh macOS Installation
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Test bootstrap installation
+      if: github.event.inputs.test_type == 'full' || github.event.inputs.test_type == ''
+      run: |
+        # Test bootstrap in dry-run mode to avoid actual installation
+        bash bootstrap.sh --dry-run
+
+    - name: Test dotbot installation
+      run: |
+        git submodule update --init --recursive
+        ./install
+
+    - name: Validate macOS specific features
+      run: |
+        echo "🧪 Testing macOS-specific configurations..."
+
+        if [ -f ~/.zshrc.local ]; then
+          echo "✅ macOS-specific shell config linked"
+        fi
+
+        # Test Homebrew integration
+        if command -v brew >/dev/null; then
+          echo "✅ Homebrew available"
+          brew --version
+        fi
+
+        # Test macOS aliases
+        source ~/.zshrc
+        if alias | grep -q "showfiles"; then
+          echo "✅ macOS-specific aliases loaded"
+        fi
+
+    - name: Test package installation
+      run: |
+        # Test package installation with dry-run where possible
+        ./scripts/install-packages.sh development --dry-run
+
+  test-edge-cases:
+    name: Test Edge Cases
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Test with existing configurations
+      run: |
+        # Create fake existing configurations
+        echo "# Existing zshrc" > ~/.zshrc
+        echo "# Existing gitconfig" > ~/.gitconfig
+
+        # Test safe installation
+        echo -e "y\ny\ny\ny\nn" | ./install-safe.sh
+
+        # Verify backups were created
+        if ls ~/.*.backup.* 1> /dev/null 2>&1; then
+          echo "✅ Backups created for existing configs"
+        fi
+
+    - name: Test partial installation
+      run: |
+        # Test installing only specific components
+        ./scripts/install-packages.sh modern_cli
+
+    - name: Test with missing dependencies
+      run: |
+        # Remove a dependency and test graceful failure
+        sudo apt remove -y curl
+
+        # Should handle missing dependencies gracefully
+        if ./test/test-dotfiles.sh 2>&1 | grep -q "curl not found"; then
+          echo "✅ Gracefully handles missing dependencies"
+        fi
+
+    - name: Test rollback capability
+      run: |
+        # Test that we can restore from backups
+        if ls ~/.*.backup.* 1> /dev/null 2>&1; then
+          for backup in ~/.*.backup.*; do
+            original=${backup%%.backup.*}
+            cp "$backup" "$original"
+            echo "✅ Restored $original from backup"
+          done
+        fi
+
+  benchmark-performance:
+    name: Benchmark Installation Performance
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Benchmark installation time
+      run: |
+        echo "⏱️ Benchmarking installation performance..."
+
+        # Time the dotbot installation
+        time_output=$(time -p ./install 2>&1)
+        echo "Dotbot installation time: $time_output"
+
+        # Time shell startup
+        if [ -f ~/.zshrc ]; then
+          startup_time=$(time zsh -i -c exit 2>&1 | grep real || echo "Could not measure")
+          echo "Shell startup time: $startup_time"
+        fi
+
+        # Time package script execution
+        package_time=$(time -p ./scripts/install-packages.sh --help 2>&1)
+        echo "Package script time: $package_time"

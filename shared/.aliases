@@ -1,0 +1,176 @@
+# Smart Aliases and Functions for TypeScript Development
+
+# Project creation shortcuts
+function create-ts-project() {
+    local project_name="$1"
+    if [ -z "$project_name" ]; then
+        echo "Usage: create-ts-project <project-name>"
+        return 1
+    fi
+
+    mkdir "$project_name"
+    cd "$project_name"
+
+    # Initialize with bun (faster) or npm as fallback
+    if command -v bun &> /dev/null; then
+        bun init -y
+        bun add -d typescript @types/node ts-node nodemon
+    else
+        npm init -y
+        npm install -D typescript @types/node ts-node nodemon
+    fi
+
+    # Create basic structure
+    mkdir -p src tests
+    echo 'console.log("Hello TypeScript!");' > src/index.ts
+
+    # Create tsconfig.json
+    npx tsc --init
+
+    # Create basic package.json scripts
+    npm pkg set scripts.dev="ts-node src/index.ts"
+    npm pkg set scripts.build="tsc"
+    npm pkg set scripts.start="node dist/index.js"
+    npm pkg set scripts.test="echo \"No tests yet\""
+
+    echo "✅ TypeScript project '$project_name' created!"
+    echo "Run: cd $project_name && npm run dev"
+}
+
+# Docker development shortcuts
+function docker-dev() {
+    if [ ! -f "docker-compose.yml" ]; then
+        echo "No docker-compose.yml found in current directory"
+        return 1
+    fi
+    docker-compose up --build
+}
+
+function docker-logs() {
+    if [ -z "$1" ]; then
+        docker-compose logs -f
+    else
+        docker-compose logs -f "$1"
+    fi
+}
+
+# Environment management
+function load-env() {
+    if [ -f .env ]; then
+        export $(cat .env | xargs)
+        echo "✅ Environment variables loaded from .env"
+    else
+        echo "❌ No .env file found"
+    fi
+}
+
+# Git workflow shortcuts
+function git-feature() {
+    local branch_name="$1"
+    if [ -z "$branch_name" ]; then
+        echo "Usage: git-feature <branch-name>"
+        return 1
+    fi
+    git checkout -b "feature/$branch_name"
+}
+
+function git-hotfix() {
+    local branch_name="$1"
+    if [ -z "$branch_name" ]; then
+        echo "Usage: git-hotfix <branch-name>"
+        return 1
+    fi
+    git checkout -b "hotfix/$branch_name"
+}
+
+function git-clean-branches() {
+    git branch --merged | grep -v "\*\|main\|master" | xargs -n 1 git branch -d
+}
+
+# Node.js version management
+function use-node() {
+    if [ -f .nvmrc ]; then
+        nvm use
+    else
+        nvm use lts/*
+    fi
+}
+
+# Package management shortcuts
+function npm-fresh() {
+    rm -rf node_modules package-lock.json
+    npm install
+}
+
+function bun-fresh() {
+    rm -rf node_modules bun.lockb
+    bun install
+}
+
+# Development server shortcuts
+function dev() {
+    if [ -f "package.json" ]; then
+        if grep -q '"dev"' package.json; then
+            if command -v bun &> /dev/null && [ -f "bun.lockb" ]; then
+                bun run dev
+            else
+                npm run dev
+            fi
+        elif grep -q '"start"' package.json; then
+            if command -v bun &> /dev/null && [ -f "bun.lockb" ]; then
+                bun start
+            else
+                npm start
+            fi
+        else
+            echo "No dev or start script found in package.json"
+        fi
+    else
+        echo "No package.json found in current directory"
+    fi
+}
+
+# Testing shortcuts
+function test-watch() {
+    if command -v bun &> /dev/null && [ -f "bun.lockb" ]; then
+        bun test --watch
+    else
+        npm test -- --watch
+    fi
+}
+
+# Utility functions
+function port-in-use() {
+    local port="$1"
+    if [ -z "$port" ]; then
+        echo "Usage: port-in-use <port>"
+        return 1
+    fi
+    lsof -ti:"$port"
+}
+
+function json-pretty() {
+    if [ -f "$1" ]; then
+        cat "$1" | jq .
+    else
+        echo "$1" | jq .
+    fi
+}
+
+# Claude Code integration
+alias claude='claude-code'
+alias cc='claude-code'
+
+# Quick project navigation
+function p() {
+    cd ~/Projects/"$1"
+}
+
+# Completion for p function (if Projects directory exists)
+if [ -d ~/Projects ]; then
+    _p() {
+        local cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=( $(compgen -W "$(ls ~/Projects)" -- $cur) )
+    }
+    complete -F _p p
+fi

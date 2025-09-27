@@ -1,0 +1,71 @@
+[user]
+    # Update these with your actual details
+    name = Alex Alexandrescu
+    email = your-email@example.com
+
+[core]
+    editor = micro
+    autocrlf = input
+    pager = less -F -X
+
+[init]
+    defaultBranch = main
+
+[push]
+    default = simple
+    autoSetupRemote = true
+
+[pull]
+    rebase = false
+
+[alias]
+    st = status
+    co = checkout
+    br = branch
+    ci = commit
+    ca = commit -a
+    ps = push
+    pl = pull
+    df = diff
+    dc = diff --cached
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    last = log -1 HEAD
+    unstage = reset HEAD --
+    visual = !gitk
+
+[color]
+    ui = auto
+
+[color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+
+[color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old = red bold
+    new = green bold
+
+[color "status"]
+    added = yellow
+    changed = green
+    untracked = cyan
+
+[diff]
+    tool = vscode
+
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+
+[merge]
+    tool = vscode
+
+[mergetool "vscode"]
+    cmd = code --wait $MERGED
+
+[filter "lfs"]
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true

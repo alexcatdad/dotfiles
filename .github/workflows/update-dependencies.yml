@@ -1,0 +1,106 @@
+name: Update Dependencies
+
+on:
+  schedule:
+    # Run monthly on the 1st at 9 AM UTC
+    - cron: '0 9 1 * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  update-tools:
+    name: Update Tool Versions
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Check for Oh My Zsh updates
+      run: |
+        # Check latest Oh My Zsh commit
+        LATEST_OMZ=$(curl -s https://api.github.com/repos/ohmyzsh/ohmyzsh/commits/master | jq -r '.sha[0:7]')
+        CURRENT_OMZ=$(grep -o 'ohmyzsh/ohmyzsh/archive/[a-f0-9]\{7\}' bootstrap.sh | cut -d'/' -f3 || echo "")
+
+        if [ "$LATEST_OMZ" != "$CURRENT_OMZ" ] && [ -n "$LATEST_OMZ" ]; then
+          echo "OMZ_UPDATE=true" >> $GITHUB_ENV
+          echo "LATEST_OMZ=$LATEST_OMZ" >> $GITHUB_ENV
+          echo "Oh My Zsh update available: $CURRENT_OMZ -> $LATEST_OMZ"
+        fi
+
+    - name: Check for NVM updates
+      run: |
+        # Check latest NVM version
+        LATEST_NVM=$(curl -s https://api.github.com/repos/nvm-sh/nvm/releases/latest | jq -r '.tag_name')
+        CURRENT_NVM=$(grep -o 'nvm-sh/nvm/[v0-9.]*' bootstrap.sh install-*.sh | head -1 | cut -d'/' -f3 || echo "")
+
+        if [ "$LATEST_NVM" != "$CURRENT_NVM" ] && [ -n "$LATEST_NVM" ]; then
+          echo "NVM_UPDATE=true" >> $GITHUB_ENV
+          echo "LATEST_NVM=$LATEST_NVM" >> $GITHUB_ENV
+          echo "NVM update available: $CURRENT_NVM -> $LATEST_NVM"
+        fi
+
+    - name: Check for Bun updates
+      run: |
+        # Bun auto-updates, but we can check if install script needs updating
+        LATEST_BUN_INSTALL=$(curl -s https://bun.sh/install | sha256sum | cut -d' ' -f1)
+        echo "Latest Bun install script hash: $LATEST_BUN_INSTALL"
+
+    - name: Update package versions in YAML
+      run: |
+        # Update package versions where applicable
+        # This is a placeholder - you could implement version checking for specific packages
+        echo "Checking package versions in packages.yaml..."
+
+        # Example: Check if hyperfine has a new version
+        LATEST_HYPERFINE=$(curl -s https://api.github.com/repos/sharkdp/hyperfine/releases/latest | jq -r '.tag_name')
+        echo "Latest hyperfine version: $LATEST_HYPERFINE"
+
+    - name: Update Oh My Zsh references
+      if: env.OMZ_UPDATE == 'true'
+      run: |
+        # Update Oh My Zsh version in scripts
+        sed -i "s/ohmyzsh\/ohmyzsh\/archive\/[a-f0-9]\{7\}/ohmyzsh\/ohmyzsh\/archive\/${{ env.LATEST_OMZ }}/g" bootstrap.sh
+        sed -i "s/ohmyzsh\/ohmyzsh\/archive\/[a-f0-9]\{7\}/ohmyzsh\/ohmyzsh\/archive\/${{ env.LATEST_OMZ }}/g" install-*.sh
+
+    - name: Update NVM references
+      if: env.NVM_UPDATE == 'true'
+      run: |
+        # Update NVM version in scripts
+        sed -i "s/nvm-sh\/nvm\/v[0-9.]*/nvm-sh\/nvm\/${{ env.LATEST_NVM }}/g" bootstrap.sh
+        sed -i "s/nvm-sh\/nvm\/v[0-9.]*/nvm-sh\/nvm\/${{ env.LATEST_NVM }}/g" install-*.sh
+
+    - name: Create Pull Request
+      if: env.OMZ_UPDATE == 'true' || env.NVM_UPDATE == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: |
+          chore: update dependencies
+
+          🤖 Automated dependency updates:
+          ${{ env.OMZ_UPDATE == 'true' && format('- Oh My Zsh: {0}', env.LATEST_OMZ) || '' }}
+          ${{ env.NVM_UPDATE == 'true' && format('- NVM: {0}', env.LATEST_NVM) || '' }}
+        title: '🤖 Automated Dependency Updates'
+        body: |
+          ## 📦 Dependency Updates
+
+          This PR contains automated updates to external dependencies:
+
+          ${{ env.OMZ_UPDATE == 'true' && format('### Oh My Zsh\n- Updated to: `{0}`\n', env.LATEST_OMZ) || '' }}
+          ${{ env.NVM_UPDATE == 'true' && format('### NVM\n- Updated to: `{0}`\n', env.LATEST_NVM) || '' }}
+
+          ## ✅ Automated Checks
+          - [ ] Installation scripts updated
+          - [ ] Tests should pass automatically
+          - [ ] Manual review recommended for major version changes
+
+          🤖 This PR was created automatically by GitHub Actions.
+        branch: automated-dependency-updates
+        delete-branch: true

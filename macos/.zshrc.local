@@ -1,0 +1,39 @@
+# macOS-specific Zsh configuration
+
+# Homebrew
+export HOMEBREW_NO_ANALYTICS=1
+export HOMEBREW_BUNDLE_NO_LOCK=1
+
+# macOS-specific paths
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+
+# macOS aliases
+alias brewup='brew update && brew upgrade'
+alias brewclean='brew cleanup && brew doctor'
+alias finder='open -a Finder'
+alias preview='open -a Preview'
+
+# Quick access to common directories
+alias dt='cd ~/Desktop'
+alias dl='cd ~/Downloads'
+alias docs='cd ~/Documents'
+
+# Show/hide hidden files in Finder
+alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
+alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
+
+# Copy current directory to clipboard
+alias pwd2clip='pwd | pbcopy'
+
+# IP addresses
+alias ip='dig +short myip.opendns.com @resolver1.opendns.com'
+alias localip='ipconfig getifaddr en0'
+
+# Flush DNS cache
+alias flushdns='sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder'
+
+# Empty Trash
+alias emptytrash='sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl'
+
+# Lock screen
+alias lock='/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend'

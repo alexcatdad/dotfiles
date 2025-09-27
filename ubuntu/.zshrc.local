@@ -1,0 +1,37 @@
+# Ubuntu-specific Zsh configuration
+
+# Ubuntu-specific paths
+export PATH="$HOME/.local/bin:$PATH"
+
+# APT aliases
+alias aptup='sudo apt update && sudo apt upgrade'
+alias aptinstall='sudo apt install'
+alias aptremove='sudo apt remove'
+alias aptsearch='apt search'
+alias aptclean='sudo apt autoremove && sudo apt autoclean'
+
+# System information
+alias sysinfo='sudo dmidecode -t system'
+alias meminfo='free -m -l -t'
+alias cpuinfo='lscpu'
+
+# Network
+alias ports='netstat -tulanp'
+alias listening='netstat -tulanp | grep LISTEN'
+
+# Process management
+alias psgrep='ps aux | grep -v grep | grep -i -e VSZ -e'
+alias pscpu='ps auxf | sort -nr -k 3'
+alias psmem='ps auxf | sort -nr -k 4'
+
+# File operations
+alias ll='ls -alF --color=auto'
+alias la='ls -A --color=auto'
+alias l='ls -CF --color=auto'
+
+# Disk usage
+alias diskusage='df -h'
+alias foldersize='du -h --max-depth=1'
+
+# Quick system updates
+alias update='sudo apt update && sudo apt upgrade'

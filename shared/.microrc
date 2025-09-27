@@ -1,0 +1,24 @@
+# Micro editor configuration
+# Modern terminal editor that's easy to use
+
+{
+    "colorscheme": "monokai",
+    "tabsize": 2,
+    "indentchar": " ",
+    "softwrap": true,
+    "diffgutter": true,
+    "scrollmargin": 3,
+    "scrollspeed": 2,
+    "splitright": true,
+    "splitbottom": true,
+    "savecursor": true,
+    "saveundo": true,
+    "rmtrailingws": true,
+    "tabstospaces": true,
+    "autoindent": true,
+    "cursorline": true,
+    "statusline": true,
+    "filetype": true,
+    "syntax": true,
+    "mkparents": true
+}

@@ -1,0 +1,50 @@
+# Brewfile for TypeScript Development Setup
+
+# Core development tools
+brew "git"
+brew "curl"
+brew "wget"
+brew "tree"
+brew "htop"
+brew "jq"
+
+# Node.js ecosystem
+brew "node"
+brew "nvm"
+brew "bun"
+
+# Development tools
+brew "docker"
+brew "docker-compose"
+brew "gh"  # GitHub CLI
+brew "scaleway-cli"
+
+# Shell and terminal enhancements
+brew "zsh"
+brew "zsh-autosuggestions"
+brew "zsh-syntax-highlighting"
+brew "oh-my-zsh"
+
+# Text editors and IDEs (backup to Cursor)
+brew "vim"
+brew "neovim"
+
+# Utilities
+brew "ripgrep"
+brew "fd"
+brew "bat"
+brew "exa"
+brew "fzf"
+
+# Casks (GUI applications)
+cask "cursor"
+cask "docker"
+cask "iterm2"
+cask "visual-studio-code"  # Backup editor
+
+# Optional: Additional development tools
+# cask "postman"
+# cask "insomnia"
+# cask "sequel-pro"
+# cask "firefox"
+# cask "google-chrome"

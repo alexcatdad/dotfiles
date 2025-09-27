@@ -1,0 +1,311 @@
+# Development Automations and Smart Shortcuts
+# Advanced functions for TypeScript developers
+
+# Smart project initialization with modern tools
+function init-project() {
+    local project_type="${1:-typescript}"
+    local project_name="$2"
+
+    if [ -z "$project_name" ]; then
+        echo "Usage: init-project [type] <name>"
+        echo "Types: typescript, react, express, node, nextjs"
+        return 1
+    fi
+
+    mkdir "$project_name"
+    cd "$project_name"
+
+    case "$project_type" in
+        "typescript"|"ts")
+            create-ts-project-enhanced "$project_name"
+            ;;
+        "react")
+            if command -v bun &> /dev/null; then
+                bun create react-app . --template typescript
+            else
+                npx create-react-app . --template typescript
+            fi
+            ;;
+        "nextjs"|"next")
+            npx create-next-app@latest . --typescript --tailwind --eslint
+            ;;
+        "express")
+            create-express-ts-project "$project_name"
+            ;;
+        *)
+            echo "Unknown project type: $project_type"
+            return 1
+            ;;
+    esac
+
+    # Initialize git if not already done
+    if [ ! -d ".git" ]; then
+        git init
+        git add .
+        git commit -m "Initial commit"
+    fi
+
+    echo "✅ $project_type project '$project_name' created!"
+}
+
+# Enhanced TypeScript project with modern tooling
+function create-ts-project-enhanced() {
+    local name="$1"
+
+    # Package manager detection
+    local pm="npm"
+    if command -v bun &> /dev/null; then
+        pm="bun"
+    elif command -v pnpm &> /dev/null; then
+        pm="pnpm"
+    fi
+
+    echo "🚀 Creating TypeScript project with $pm..."
+
+    # Initialize package.json
+    $pm init -y
+
+    # Install dependencies
+    if [ "$pm" = "bun" ]; then
+        bun add -d typescript @types/node ts-node nodemon prettier eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
+    else
+        $pm install -D typescript @types/node ts-node nodemon prettier eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
+    fi
+
+    # Create project structure
+    mkdir -p src tests docs
+
+    # Create main file
+    cat > src/index.ts << 'EOF'
+console.log('Hello, TypeScript! 🚀');
+
+export function greet(name: string): string {
+    return `Hello, ${name}!`;
+}
+EOF
+
+    # Create test file
+    cat > tests/index.test.ts << 'EOF'
+import { greet } from '../src/index';
+
+describe('greet function', () => {
+    test('should return greeting', () => {
+        expect(greet('World')).toBe('Hello, World!');
+    });
+});
+EOF
+
+    # Enhanced tsconfig.json
+    cat > tsconfig.json << 'EOF'
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests"]
+}
+EOF
+
+    # Package.json scripts
+    npm pkg set scripts.dev="ts-node src/index.ts"
+    npm pkg set scripts.build="tsc"
+    npm pkg set scripts.start="node dist/index.js"
+    npm pkg set scripts.test="jest"
+    npm pkg set scripts.lint="eslint src/**/*.ts"
+    npm pkg set scripts.format="prettier --write src/**/*.ts"
+    npm pkg set scripts.clean="rm -rf dist"
+
+    # Create .env template
+    cat > .env.example << 'EOF'
+# Environment variables template
+NODE_ENV=development
+PORT=3000
+EOF
+
+    echo "📁 Project structure created with modern TypeScript setup"
+}
+
+# Express TypeScript project
+function create-express-ts-project() {
+    local name="$1"
+
+    # Basic setup
+    npm init -y
+    npm install express cors helmet morgan
+    npm install -D typescript @types/node @types/express @types/cors @types/helmet @types/morgan ts-node nodemon
+
+    mkdir -p src/{routes,middleware,types}
+
+    # Express app
+    cat > src/app.ts << 'EOF'
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(helmet());
+app.use(cors());
+app.use(morgan('combined'));
+app.use(express.json());
+
+app.get('/', (req, res) => {
+    res.json({ message: 'TypeScript Express API 🚀' });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+EOF
+
+    npm pkg set scripts.dev="nodemon --exec ts-node src/app.ts"
+    npm pkg set scripts.build="tsc"
+    npm pkg set scripts.start="node dist/app.js"
+
+    echo "🌐 Express TypeScript API created"
+}
+
+# Smart package installer with version management
+function smart-install() {
+    local package="$1"
+    local dev_flag="$2"
+
+    if [ -z "$package" ]; then
+        echo "Usage: smart-install <package> [--dev]"
+        return 1
+    fi
+
+    # Detect package manager
+    if [ -f "bun.lockb" ] && command -v bun &> /dev/null; then
+        if [ "$dev_flag" = "--dev" ]; then
+            bun add -d "$package"
+        else
+            bun add "$package"
+        fi
+    elif [ -f "pnpm-lock.yaml" ] && command -v pnpm &> /dev/null; then
+        if [ "$dev_flag" = "--dev" ]; then
+            pnpm add -D "$package"
+        else
+            pnpm add "$package"
+        fi
+    else
+        if [ "$dev_flag" = "--dev" ]; then
+            npm install -D "$package"
+        else
+            npm install "$package"
+        fi
+    fi
+}
+
+# Project health check
+function project-health() {
+    echo "🔍 Checking project health..."
+
+    # Check package.json
+    if [ ! -f "package.json" ]; then
+        echo "❌ No package.json found"
+        return 1
+    fi
+
+    # Check for outdated dependencies
+    echo "📦 Checking dependencies..."
+    if command -v npm &> /dev/null; then
+        npm outdated
+    fi
+
+    # Check for security vulnerabilities
+    echo "🔒 Security audit..."
+    npm audit --audit-level moderate
+
+    # Check TypeScript compilation
+    if [ -f "tsconfig.json" ]; then
+        echo "🔧 TypeScript check..."
+        npx tsc --noEmit
+    fi
+
+    # Check for common issues
+    echo "🧹 Checking for common issues..."
+    if [ -d "node_modules" ] && [ ! -f ".gitignore" ]; then
+        echo "⚠️  No .gitignore found - node_modules might be committed"
+    fi
+
+    if [ ! -f "README.md" ]; then
+        echo "📝 No README.md found"
+    fi
+
+    echo "✅ Health check complete"
+}
+
+# Quick commit with conventional commit format
+function quick-commit() {
+    local type="$1"
+    local message="$2"
+    local scope="$3"
+
+    if [ -z "$type" ] || [ -z "$message" ]; then
+        echo "Usage: quick-commit <type> <message> [scope]"
+        echo "Types: feat, fix, docs, style, refactor, test, chore"
+        return 1
+    fi
+
+    local commit_msg
+    if [ -n "$scope" ]; then
+        commit_msg="$type($scope): $message"
+    else
+        commit_msg="$type: $message"
+    fi
+
+    git add .
+    git commit -m "$commit_msg"
+    echo "✅ Committed: $commit_msg"
+}
+
+# Environment switcher for different Node versions
+function switch-node() {
+    if [ -f ".nvmrc" ]; then
+        echo "📍 Using Node version from .nvmrc"
+        nvm use
+    else
+        echo "🔄 Switching to Node LTS"
+        nvm use --lts
+    fi
+
+    echo "📦 Current versions:"
+    node --version
+    npm --version
+    if command -v bun &> /dev/null; then
+        bun --version
+    fi
+}
+
+# Benchmark command execution
+function bench-cmd() {
+    local cmd="$1"
+    if [ -z "$cmd" ]; then
+        echo "Usage: bench-cmd <command>"
+        return 1
+    fi
+
+    if command -v hyperfine &> /dev/null; then
+        hyperfine --warmup 3 "$cmd"
+    else
+        echo "Hyperfine not installed. Using basic time..."
+        time eval "$cmd"
+    fi
+}

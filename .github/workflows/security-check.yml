@@ -1,0 +1,179 @@
+name: Security Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly security scans
+    - cron: '0 2 * * 1'
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Check for secrets in files
+      run: |
+        echo "🔍 Scanning for potential secrets..."
+
+        # Check for common secret patterns
+        if grep -r -i -E "(password|secret|key|token|api[-_]?key)" --include="*.sh" --include="*.yml" --include="*.yaml" --include="*.json" .; then
+          echo "⚠️  Potential secrets found in files!"
+          echo "Please review the above matches to ensure no actual secrets are committed."
+        else
+          echo "✅ No obvious secret patterns found"
+        fi
+
+    - name: Check for hardcoded IPs and domains
+      run: |
+        echo "🌐 Checking for hardcoded IPs and suspicious domains..."
+
+        # Check for private IP ranges (might indicate internal infrastructure)
+        if grep -r -E "192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\." --include="*.sh" --include="*.yml" .; then
+          echo "⚠️  Private IP addresses found - review if these should be configurable"
+        fi
+
+        # Check for suspicious domains
+        if grep -r -E "\.(tk|ml|cf|ga)/" --include="*.sh" --include="*.yml" .; then
+          echo "⚠️  Suspicious domains found - please review"
+        fi
+
+    - name: Validate shell scripts
+      run: |
+        echo "🐚 Validating shell scripts..."
+
+        # Find all shell scripts and validate syntax
+        find . -name "*.sh" -type f | while read -r script; do
+          echo "Checking: $script"
+          if ! bash -n "$script"; then
+            echo "❌ Syntax error in $script"
+            exit 1
+          fi
+        done
+
+        echo "✅ All shell scripts have valid syntax"
+
+    - name: Check for dangerous commands
+      run: |
+        echo "⚠️  Checking for potentially dangerous commands..."
+
+        # Check for risky commands
+        DANGEROUS_COMMANDS=(
+          "rm -rf /"
+          "sudo rm"
+          "chmod 777"
+          "curl.*|.*sh"
+          "wget.*|.*sh"
+          "> /etc/"
+        )
+
+        for cmd in "${DANGEROUS_COMMANDS[@]}"; do
+          if grep -r -E "$cmd" --include="*.sh" .; then
+            echo "⚠️  Found potentially dangerous command: $cmd"
+            echo "Please review for safety"
+          fi
+        done
+
+    - name: Check download sources
+      run: |
+        echo "📥 Validating download sources..."
+
+        # Extract all URLs from scripts
+        grep -r -o -E 'https?://[^[:space:]]+' --include="*.sh" . | while read -r url; do
+          domain=$(echo "$url" | cut -d'/' -f3)
+
+          # Check against known safe domains
+          case "$domain" in
+            "github.com"|"raw.githubusercontent.com"|"api.github.com")
+              echo "✅ Safe domain: $domain"
+              ;;
+            "brew.sh"|"get.docker.com"|"bun.sh")
+              echo "✅ Known tool domain: $domain"
+              ;;
+            *)
+              echo "⚠️  Review domain: $domain"
+              ;;
+          esac
+        done
+
+    - name: Check file permissions
+      run: |
+        echo "🔐 Checking file permissions..."
+
+        # Ensure scripts are executable but not overly permissive
+        find . -name "*.sh" -type f | while read -r script; do
+          perms=$(stat -c %a "$script")
+          if [ "$perms" != "755" ] && [ "$perms" != "644" ]; then
+            echo "⚠️  Unusual permissions on $script: $perms"
+          fi
+        done
+
+    - name: Validate YAML files
+      run: |
+        echo "📄 Validating YAML files..."
+
+        # Check YAML syntax
+        find . -name "*.yml" -o -name "*.yaml" | while read -r yaml_file; do
+          echo "Checking: $yaml_file"
+          if command -v python3 >/dev/null; then
+            python3 -c "import yaml; yaml.safe_load(open('$yaml_file'))" || {
+              echo "❌ Invalid YAML in $yaml_file"
+              exit 1
+            }
+          fi
+        done
+
+    - name: Check for common dotfiles security issues
+      run: |
+        echo "🔍 Checking dotfiles-specific security issues..."
+
+        # Check if any configs expose sensitive information
+        if grep -r -i -E "(home|user).*=.*/" --include=".*rc" --include=".*profile" .; then
+          echo "⚠️  Potential path exposure in config files"
+        fi
+
+        # Check for overly permissive SSH configs
+        if find . -name "*ssh*" -type f | xargs grep -l "StrictHostKeyChecking.*no" 2>/dev/null; then
+          echo "⚠️  SSH strict host key checking disabled"
+        fi
+
+        # Check for git configs that might leak info
+        if grep -r "user\.email.*@" --include=".gitconfig" .; then
+          echo "ℹ️  Personal email found in git config (this might be intentional)"
+        fi
+
+  shellcheck:
+    name: ShellCheck Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Run ShellCheck
+      uses: ludeeus/action-shellcheck@master
+      with:
+        ignore_paths: node_modules
+        ignore_names: install  # dotbot install script
+        additional_files: 'bootstrap.sh install-safe.sh'
+
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Lint Markdown files
+      uses: articulate/actions-markdownlint@v1
+      with:
+        config: .markdownlint.json
+        files: '*.md'
+        ignore: 'node_modules'

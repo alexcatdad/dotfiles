@@ -1,0 +1,177 @@
+# Cross-platform package definitions
+# Declare packages once, install everywhere
+
+development:
+  description: "Core development tools"
+  packages:
+    - name: git
+      macos: git
+      ubuntu: git
+
+    - name: curl
+      macos: curl
+      ubuntu: curl
+
+    - name: wget
+      macos: wget
+      ubuntu: wget
+
+    - name: jq
+      macos: jq
+      ubuntu: jq
+
+    - name: tree
+      macos: tree
+      ubuntu: tree
+
+    - name: htop
+      macos: htop
+      ubuntu: htop
+
+typescript:
+  description: "TypeScript development tools"
+  packages:
+    - name: node
+      macos: node
+      ubuntu: nodejs
+      npm: true
+
+    - name: typescript
+      global_npm: typescript
+
+    - name: ts-node
+      global_npm: ts-node
+
+    - name: nodemon
+      global_npm: nodemon
+
+modern_cli:
+  description: "Modern CLI replacements and enhancements"
+  packages:
+    - name: ripgrep
+      macos: ripgrep
+      ubuntu: ripgrep
+      description: "Ultra-fast text search"
+
+    - name: fd
+      macos: fd
+      ubuntu: fd-find
+      description: "Modern find replacement"
+
+    - name: bat
+      macos: bat
+      ubuntu: bat
+      description: "cat with syntax highlighting"
+
+    - name: exa
+      macos: exa
+      ubuntu: exa
+      description: "Modern ls replacement"
+
+    - name: fzf
+      macos: fzf
+      ubuntu: fzf
+      description: "Fuzzy finder for files/commands"
+
+    - name: zoxide
+      macos: zoxide
+      ubuntu: zoxide
+      description: "Smart directory navigator"
+
+    - name: starship
+      macos: starship
+      ubuntu: starship
+      description: "Cross-shell prompt"
+
+    - name: direnv
+      macos: direnv
+      ubuntu: direnv
+      description: "Environment switcher"
+
+    - name: tldr
+      macos: tldr
+      ubuntu: tldr
+      description: "Simplified man pages"
+
+docker:
+  description: "Container development"
+  packages:
+    - name: docker
+      macos: docker
+      ubuntu: docker.io
+
+    - name: docker-compose
+      macos: docker-compose
+      ubuntu: docker-compose
+
+productivity:
+  description: "Productivity tools"
+  packages:
+    - name: tmux
+      macos: tmux
+      ubuntu: tmux
+
+    - name: nano
+      macos: nano
+      ubuntu: nano
+      description: "Simple terminal text editor"
+
+    - name: micro
+      macos: micro
+      ubuntu: micro
+      description: "Modern terminal editor (vim alternative)"
+
+developer_tools:
+  description: "Advanced developer utilities"
+  packages:
+    - name: git-extras
+      macos: git-extras
+      ubuntu: git-extras
+      description: "Advanced Git utilities"
+
+    - name: gh
+      macos: gh
+      ubuntu: gh
+      description: "GitHub CLI"
+
+    - name: just
+      macos: just
+      ubuntu: just
+      description: "Command runner"
+
+    - name: navi
+      macos: navi
+      ubuntu: navi
+      description: "Interactive cheatsheets"
+
+    - name: hyperfine
+      macos: hyperfine
+      ubuntu: hyperfine
+      description: "Command-line benchmarking"
+
+optional:
+  description: "Optional tools (install with --optional flag)"
+  packages:
+    - name: lazygit
+      macos: lazygit
+      ubuntu: lazygit
+      optional: true
+      description: "Git TUI"
+
+    - name: httpie
+      macos: httpie
+      ubuntu: httpie
+      optional: true
+      description: "HTTP client"
+
+    - name: glances
+      macos: glances
+      ubuntu: glances
+      optional: true
+      description: "System monitor"
+
+    - name: bandwhich
+      macos: bandwhich
+      ubuntu: bandwhich
+      optional: true
+      description: "Network monitor"

@@ -1,0 +1,52 @@
+# Dotbot Configuration
+# This replaces manual symlinking with a declarative approach
+
+- defaults:
+    link:
+      relink: true
+      create: true
+
+- clean: ['~']
+
+- link:
+    # Shell configurations
+    ~/.zshrc: shared/.zshrc
+    ~/.aliases: shared/.aliases
+    ~/.modern-aliases: shared/.modern-aliases
+    ~/.dev-automations: shared/.dev-automations
+    ~/.env-detection: shared/.env-detection
+
+    # Git configurations
+    ~/.gitconfig: shared/.gitconfig
+    ~/.gitignore_global: shared/.gitignore_global
+
+    # Development tools
+    ~/.npmrc: shared/.npmrc
+    ~/.nvmrc: shared/.nvmrc
+    ~/.tmux.conf: shared/.tmux.conf
+    ~/.config/micro/settings.json: shared/.microrc
+
+    # Platform-specific (conditional)
+    ~/.zshrc.local:
+      if: '[ "$(uname)" = "Darwin" ]'
+      path: macos/.zshrc.local
+    ~/.zshrc.local:
+      if: '[ "$(uname)" = "Linux" ]'
+      path: ubuntu/.zshrc.local
+
+- create:
+    - ~/.config/micro
+
+- shell:
+    # Set up global gitignore
+    - [git config --global core.excludesfile ~/.gitignore_global, Setting up global gitignore]
+
+    # Platform-specific setup
+    - command: brew bundle --file=macos/Brewfile
+      description: Installing macOS packages
+      if: '[ "$(uname)" = "Darwin" ] && command -v brew >/dev/null'
+
+    # Install Oh My Zsh if not present
+    - command: sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+      description: Installing Oh My Zsh
+      if: '[ ! -d "$HOME/.oh-my-zsh" ]'
