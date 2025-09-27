@@ -67,14 +67,14 @@ if ! command -v docker &> /dev/null; then
     echo "Installing Docker..."
     curl -fsSL https://get.docker.com -o get-docker.sh
     sudo sh get-docker.sh
-    sudo usermod -aG docker $USER
+    sudo usermod -aG docker "$USER"
     rm get-docker.sh
 fi
 
 # Change default shell to zsh
 if [ "$SHELL" != "/usr/bin/zsh" ] && [ "$SHELL" != "/bin/zsh" ]; then
     echo "Changing default shell to zsh..."
-    chsh -s $(which zsh)
+    chsh -s "$(which zsh)"
 fi
 
 # Backup existing configurations

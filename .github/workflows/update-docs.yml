@@ -1,13 +1,6 @@
 name: Update Documentation
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'packages.yaml'
-      - 'shared/**'
-      - 'macos/**'
-      - 'ubuntu/**'
   workflow_dispatch:
 
 jobs:

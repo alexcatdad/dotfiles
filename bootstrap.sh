@@ -161,7 +161,7 @@ echo "🎯 Final setup..."
 # Set Zsh as default shell
 if [[ "$SHELL" != *"zsh"* ]]; then
     echo "Setting Zsh as default shell..."
-    chsh -s $(which zsh)
+    chsh -s "$(which zsh)"
     echo "⚠️  You'll need to restart your terminal for this to take effect"
 fi
 
@@ -169,8 +169,8 @@ fi
 if [[ -z "$(git config --global user.name)" ]]; then
     echo ""
     echo "📝 Git configuration:"
-    read -p "Enter your name: " git_name
-    read -p "Enter your email: " git_email
+    read -r -p "Enter your name: " git_name
+    read -r -p "Enter your email: " git_email
 
     git config --global user.name "$git_name"
     git config --global user.email "$git_email"

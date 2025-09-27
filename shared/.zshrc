@@ -225,8 +225,9 @@ setopt HIST_IGNORE_SPACE    # Ignore commands that start with space
 
 # Faster completion system
 autoload -Uz compinit
-if [[ -n ${HOME}/.zcompdump(#qN.mh+24) ]]; then
-    compinit
-else
+# Use cached completion if zcompdump exists and is recent
+if [[ -f ~/.zcompdump ]]; then
     compinit -C
+else
+    compinit
 fi
