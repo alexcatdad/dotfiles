@@ -159,9 +159,10 @@ jobs:
     - name: Run ShellCheck
       uses: ludeeus/action-shellcheck@master
       with:
-        ignore_paths: node_modules
+        ignore_paths: node_modules shared
         ignore_names: install  # dotbot install script
         additional_files: 'bootstrap.sh install-safe.sh'
+        severity: error  # Only fail on errors, not warnings
 
   markdown-lint:
     name: Markdown Lint

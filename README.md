@@ -50,6 +50,38 @@ Just install the modern CLI tools without configs:
 ./scripts/install-packages.sh modern_cli developer_tools
 ```
 
+### 🐳 Docker Testing (Recommended for Testing)
+Test the installation safely in a containerized environment:
+```bash
+# Test fresh installation (bootstrap)
+./test-docker.sh fresh
+
+# Test safe installation (existing system simulation)
+./test-docker.sh safe
+
+# Interactive development container
+./test-docker.sh dev
+
+# Test macOS-like installation
+./test-docker.sh macos
+
+# Get shell access to running container
+./test-docker.sh shell dev
+
+# Clean up all test containers
+./test-docker.sh clean
+```
+
+**Docker commands available:**
+- `fresh` - Test bootstrap.sh installation from scratch
+- `safe` - Test install-safe.sh with simulated existing configs
+- `dev` - Start interactive container for manual testing
+- `macos` - Test macOS-like environment simulation
+- `build` - Build the Docker image only
+- `shell [container]` - Get shell access to running container
+- `logs` - Show recent container logs
+- `clean` - Remove all test containers and images
+
 ## 🛠️ What's Included
 
 This setup is tailored for TypeScript developers using:

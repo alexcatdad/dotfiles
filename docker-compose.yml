@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # Test fresh installation (bootstrap)
+  dotfiles-fresh:
+    build: .
+    container_name: dotfiles-test-fresh
+    volumes:
+      - .:/home/testuser/dotfiles
+    environment:
+      - TESTING=true
+    command: >
+      sh -c "
+        echo '🚀 Testing fresh installation (bootstrap)...' &&
+        cd /home/testuser/dotfiles &&
+        echo 'y' | ./bootstrap.sh &&
+        echo '✅ Bootstrap completed' &&
+        /bin/zsh
+      "
+    stdin_open: true
+    tty: true
+
+  # Test safe installation (existing system simulation)
+  dotfiles-safe:
+    build: .
+    container_name: dotfiles-test-safe
+    volumes:
+      - .:/home/testuser/dotfiles
+    environment:
+      - TESTING=true
+    command: >
+      sh -c "
+        echo '🛡️ Testing safe installation...' &&
+        cd /home/testuser/dotfiles &&
+        # Create some existing configs to simulate existing system
+        echo 'existing zshrc' > ~/.zshrc &&
+        echo 'existing gitconfig' > ~/.gitconfig &&
+        # Run safe install with automated responses
+        echo -e 'y\ny\ny\ny\ny' | ./install-safe.sh &&
+        echo '✅ Safe installation completed' &&
+        /bin/zsh
+      "
+    stdin_open: true
+    tty: true
+
+  # Test environment for manual testing
+  dotfiles-dev:
+    build: .
+    container_name: dotfiles-dev
+    volumes:
+      - .:/home/testuser/dotfiles
+    environment:
+      - TESTING=true
+    working_dir: /home/testuser/dotfiles
+    stdin_open: true
+    tty: true
+
+  # Test with macOS simulation (using Ubuntu but with macOS-like setup)
+  dotfiles-macos-sim:
+    build: .
+    container_name: dotfiles-macos-sim
+    volumes:
+      - .:/home/testuser/dotfiles
+    environment:
+      - TESTING=true
+      - OSTYPE=darwin
+    command: >
+      sh -c "
+        echo '🍎 Testing macOS-like installation...' &&
+        cd /home/testuser/dotfiles &&
+        # Simulate Homebrew being available
+        mkdir -p /home/linuxbrew/.linuxbrew/bin &&
+        echo '#!/bin/bash' > /home/linuxbrew/.linuxbrew/bin/brew &&
+        echo 'echo \"Homebrew simulation\"' >> /home/linuxbrew/.linuxbrew/bin/brew &&
+        chmod +x /home/linuxbrew/.linuxbrew/bin/brew &&
+        export PATH=\"/home/linuxbrew/.linuxbrew/bin:\$PATH\" &&
+        echo 'y' | ./install-safe.sh &&
+        /bin/zsh
+      "
+    stdin_open: true
+    tty: true
