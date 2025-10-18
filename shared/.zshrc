@@ -32,7 +32,6 @@ plugins=(
 
     # Productivity
     extract
-    z
     web-search
     copypath
     copyfile

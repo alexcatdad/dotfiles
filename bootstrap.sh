@@ -53,16 +53,29 @@ if [[ "$MACHINE" == "Mac" ]]; then
         brew install git
     fi
 
-    # Install macOS packages via Brewfile
-    echo "Installing macOS packages via Brewfile..."
-    brew bundle --file="$DOTFILES_DIR/macos/Brewfile" || echo "⚠️  Brewfile installation failed. You can run 'brew bundle' manually later."
+    # Install PyYAML for package installer
+    if ! python3 -c "import yaml" 2>/dev/null; then
+        echo "Installing PyYAML..."
+        pip3 install --break-system-packages PyYAML || echo "⚠️  PyYAML installation failed. You may need to install it manually."
+    fi
+    
+    # Install packages using new YAML installer
+    echo "Installing packages using YAML installer..."
+    "$DOTFILES_DIR/scripts/install-packages-yaml.sh" development typescript modern_cli developer_tools docker productivity gui_applications || echo "⚠️  Some packages may have failed to install. You can run the installer manually later."
 
 elif [[ "$MACHINE" == "Linux" ]]; then
     # Update package lists
     sudo apt update
 
     # Install essential packages
-    sudo apt install -y curl wget git build-essential software-properties-common
+    sudo apt install -y curl wget git build-essential software-properties-common python3-pip
+    
+    # Install PyYAML for package installer
+    pip3 install PyYAML
+    
+    # Install packages using new YAML installer
+    echo "Installing packages using YAML installer..."
+    "$DOTFILES_DIR/scripts/install-packages-yaml.sh" development typescript modern_cli developer_tools docker productivity || echo "⚠️  Some packages may have failed to install. You can run the installer manually later."
 fi
 
 # Step 2: Clone or update dotfiles

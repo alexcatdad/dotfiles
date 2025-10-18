@@ -168,9 +168,18 @@ function p() {
 
 # Completion for p function (if Projects directory exists)
 if [ -d ~/Projects ]; then
-    _p() {
-        local cur=${COMP_WORDS[COMP_CWORD]}
-        COMPREPLY=( $(compgen -W "$(ls ~/Projects)" -- $cur) )
-    }
-    complete -F _p p
+    # Bash completion
+    if [ -n "${BASH_VERSION:-}" ]; then
+        _p() {
+            local cur=${COMP_WORDS[COMP_CWORD]}
+            COMPREPLY=( $(compgen -W "$(ls ~/Projects)" -- $cur) )
+        }
+        complete -F _p p
+    # Zsh completion
+    elif [ -n "${ZSH_VERSION:-}" ] && command -v compdef >/dev/null 2>&1; then
+        _p() {
+            compadd $(ls ~/Projects)
+        }
+        compdef _p p
+    fi
 fi

@@ -236,7 +236,7 @@ test_configuration_validation() {
     local scripts_to_check=(
         "$DOTFILES_DIR/bootstrap.sh"
         "$DOTFILES_DIR/install-safe.sh"
-        "$DOTFILES_DIR/scripts/install-packages.sh"
+        "$DOTFILES_DIR/scripts/install-packages-yaml.sh"
         "$DOTFILES_DIR/scripts/install-packages-yaml.sh"
         "$DOTFILES_DIR/scripts/sync-settings.sh"
         "$DOTFILES_DIR/scripts/backup-configs.sh"
@@ -263,14 +263,14 @@ test_ide_configurations() {
     if [ -f ~/.vscode/settings.json ]; then
         run_test "VSCode settings file is readable" "test -r ~/.vscode/settings.json"
         if command -v jq &>/dev/null; then
-            run_test "VSCode settings contain TypeScript config" "jq '.\"typescript.updateImportsOnFileMove.enabled\"' ~/.vscode/settings.json | grep -q 'always'"
+            run_test "VSCode settings contain TypeScript config" 'node -e "console.log(JSON.parse(require(\"fs\").readFileSync(process.env.HOME+\"/.vscode/settings.json\", \"utf8\").replace(/\\/\\/.*$/gm, \"\").replace(/\\/\\*[\\s\\S]*?\\*\\//g, \"\"))[\"typescript.updateImportsOnFileMove.enabled\"])" | grep -q always'
         fi
     fi
     
     if [ -f ~/.cursor/settings.json ]; then
         run_test "Cursor settings file is readable" "test -r ~/.cursor/settings.json"
         if command -v jq &>/dev/null; then
-            run_test "Cursor AI is enabled" "jq '.\"cursor.ai.enabled\"' ~/.cursor/settings.json | grep -q 'true'"
+            run_test "Cursor AI is enabled" 'node -e "console.log(JSON.parse(require(\"fs\").readFileSync(process.env.HOME+\"/.cursor/settings.json\", \"utf8\").replace(/\\/\\/.*$/gm, \"\").replace(/\\/\\*[\\s\\S]*?\\*\\//g, \"\"))[\"cursor.ai.enabled\"])" | grep -q true'
         fi
     fi
 }
@@ -322,8 +322,8 @@ test_symlink_integrity() {
         expanded_target=$(eval echo "$target_path")
         
         if [ -L "$expanded_target" ]; then
-            run_test "$(basename "$target_path") symlink target exists" "test -f \"$(readlink \"$expanded_target\")\""
-            run_test "$(basename "$target_path") symlink is not broken" "test -e \"$expanded_target\""
+            run_test "$(basename "$target_path") symlink target exists" "[ -f \"\$(readlink \"$expanded_target\")\" ]"
+            run_test "$(basename "$target_path") symlink is not broken" "[ -e \"$expanded_target\" ]"
         fi
     done
 }

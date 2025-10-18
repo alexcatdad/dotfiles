@@ -47,7 +47,7 @@ cd ~/dotfiles
 ### 📦 Package-Only Installation
 Just install the modern CLI tools without configs:
 ```bash
-./scripts/install-packages.sh modern_cli developer_tools
+./scripts/install-packages-yaml.sh modern_cli developer_tools
 ```
 
 ### 🐳 Docker Testing (Recommended for Testing)
@@ -431,12 +431,12 @@ Your dotfiles include these package categories:
 ### 🛠️ **Selective Installation**
 ```bash
 # Install specific categories
-./scripts/install-packages.sh modern_cli
-./scripts/install-packages.sh typescript developer_tools
-./scripts/install-packages.sh --optional    # Include optional tools
+./scripts/install-packages-yaml.sh modern_cli
+./scripts/install-packages-yaml.sh typescript developer_tools
+./scripts/install-packages-yaml.sh --optional    # Include optional tools
 
 # Install everything
-./scripts/install-packages.sh
+./scripts/install-packages-yaml.sh
 ```
 
 ## 🧪 Testing & Validation
@@ -503,7 +503,7 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting
 which bat exa fd rg fzf zoxide
 
 # Install missing tools
-./scripts/install-packages.sh modern_cli
+./scripts/install-packages-yaml.sh modern_cli
 ```
 
 #### **Git Configuration Issues**

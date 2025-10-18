@@ -16,8 +16,8 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 ./install
 
 # Install specific package categories
-./scripts/install-packages.sh modern_cli typescript
-./scripts/install-packages.sh --optional  # Include optional tools
+./scripts/install-packages-yaml.sh modern_cli typescript
+./scripts/install-packages-yaml.sh --optional  # Include optional tools
 ```
 
 ### Testing and Validation
@@ -31,18 +31,20 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 ./test-docker.sh clean    # Clean up containers
 
 # Test individual components
-just test                 # Uses justfile
+just test                 # Uses justfile (if just is installed)
 ```
 
 ### Package Management
 ```bash
-# Install by category
+# Install by category (using justfile if available)
 just install-packages modern_cli developer_tools
 just install-optional-packages
 
+# Or use script directly
+./scripts/install-packages-yaml.sh modern_cli developer_tools
+
 # Update everything
 ./scripts/sync-settings.sh  # Updates packages, Node.js, dotfiles
-just update
 ```
 
 ### Maintenance
@@ -62,7 +64,7 @@ This dotfiles repository supports multiple installation approaches:
 - **`bootstrap.sh`** - Complete environment setup from scratch
 - **`install-safe.sh`** - Interactive installation preserving existing configurations
 - **`install` (dotbot)** - Declarative configuration using `install.conf.yaml`
-- **Platform-specific installers** - `install-macos.sh` and `install-ubuntu.sh`
+- **YAML Package Installer** - `scripts/install-packages-yaml.sh` for cross-platform package installation
 
 ### Configuration Layer Structure
 ```
@@ -82,7 +84,7 @@ The `packages.yaml` file defines cross-platform package installations using cate
 - `developer_tools` - Advanced utilities (git-extras, gh, hyperfine, just, navi)
 - `docker`, `productivity`, `optional` - Specialized tool sets
 
-The `scripts/install-packages.sh` script processes this YAML to install packages using the appropriate package manager (brew/apt).
+The `scripts/install-packages-yaml.sh` script processes this YAML to install packages using the appropriate package manager (brew/apt).
 
 ## Shell Configuration Loading Order
 

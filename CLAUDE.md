@@ -14,7 +14,7 @@ The repository supports multiple installation approaches for different use cases
 - **`bootstrap.sh`** - Complete environment setup for new machines
 - **`install` (dotbot)** - Modern declarative configuration using `install.conf.yaml`
 - **`install-safe.sh`** - Interactive installation that preserves existing configurations
-- **`install-macos.sh` / `install-ubuntu.sh`** - Legacy platform-specific installers
+- **Legacy platform-specific installers** - Removed in favor of YAML-based system
 
 ### Configuration Layer Structure
 ```
@@ -34,21 +34,21 @@ The `packages.yaml` file defines cross-platform package installations using cate
 - `developer_tools` - Advanced utilities (git-extras, gh, hyperfine)
 - `docker` / `productivity` / `optional` - Specialized tool sets
 
-The `scripts/install-packages.sh` script processes this YAML to install packages using the appropriate package manager (brew/apt) and handles global npm packages.
+The `scripts/install-packages-yaml.sh` script processes this YAML to install packages using the appropriate package manager (brew/apt) and handles global npm packages.
 
 ## Essential Development Commands
 
 ### Testing and Validation
 ```bash
 ./test/test-dotfiles.sh              # Run comprehensive test suite
-./scripts/install-packages.sh --help # Show package installation options
+./scripts/install-packages-yaml.sh --help # Show package installation options
 ```
 
 ### Package Management
 ```bash
-./scripts/install-packages.sh modern_cli              # Install specific category
-./scripts/install-packages.sh --optional              # Include optional tools
-./scripts/install-packages.sh typescript docker      # Multiple categories
+./scripts/install-packages-yaml.sh modern_cli              # Install specific category
+./scripts/install-packages-yaml.sh --optional              # Include optional tools
+./scripts/install-packages-yaml.sh typescript docker      # Multiple categories
 ```
 
 ### Maintenance

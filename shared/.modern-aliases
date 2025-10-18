@@ -95,21 +95,12 @@ if [[ "$_HAS_RG" == "1" ]]; then
     rgpy() { rg "$1" --type py "${2:-.}"; }  # Python
 fi
 
-# Zoxide integration (smart cd replacement) with lazy loading
+# Zoxide integration (smart cd replacement)
 if [[ "$_HAS_ZOXIDE" == "1" ]]; then
-    # Only initialize zoxide when first used for better shell startup
-    _zoxide_init() {
-        if [[ -z "${_ZOXIDE_INITIALIZED:-}" ]]; then
-            eval "$(zoxide init zsh)"
-            export _ZOXIDE_INITIALIZED=1
-        fi
-    }
+    # Initialize zoxide properly
+    eval "$(zoxide init zsh)"
     
-    z() { _zoxide_init && z "$@"; }
-    zi() { _zoxide_init && zi "$@"; }
-    
-    # Traditional aliases for those who prefer them
-    alias cd='z'
+    # Additional aliases for convenience  
     alias cdi='zi'  # interactive selection
     alias zz='z -'  # go back
     alias za='zoxide add'  # manually add directory

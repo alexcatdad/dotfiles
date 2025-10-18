@@ -94,9 +94,9 @@ install_packages_selective() {
     if [ ${#categories[@]} -gt 0 ]; then
         echo "📦 Installing selected packages..."
         if [[ "$install_optional" =~ ^[Yy]$ ]]; then
-            "$DOTFILES_DIR/scripts/install-packages.sh" --optional "${categories[@]}"
+            "$DOTFILES_DIR/scripts/install-packages-yaml.sh" --optional "${categories[@]}"
         else
-            "$DOTFILES_DIR/scripts/install-packages.sh" "${categories[@]}"
+            "$DOTFILES_DIR/scripts/install-packages-yaml.sh" "${categories[@]}"
         fi
     fi
 }

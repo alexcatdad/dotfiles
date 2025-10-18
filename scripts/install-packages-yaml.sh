@@ -47,7 +47,8 @@ parse_yaml() {
     local query="$2"
     
     if command -v yq &>/dev/null; then
-        yq eval "$query" "$yaml_file" 2>/dev/null || echo "null"
+        # Use Python yq (jq-style) or Go yq in a compatible way
+        yq "$query" "$yaml_file" 2>/dev/null || echo "null"
     elif command -v python3 &>/dev/null; then
         python3 -c "
 import yaml, sys
@@ -126,6 +127,13 @@ install_system_package() {
     local package="$2"
     local version_constraint="$3"
     local required="$4"
+    local dry_run="${5:-false}"
+    
+    if [[ "$dry_run" == "true" ]]; then
+        log_info "[DRY RUN] Would install system package: $name ($package)"
+        INSTALLED_ITEMS+=("$name (would install)")
+        return 0
+    fi
     
     log_info "Installing system package: $name ($package)"
     
@@ -170,6 +178,13 @@ install_npm_package() {
     local name="$1"
     local package="$2"
     local version_constraint="$3"
+    local dry_run="${4:-false}"
+    
+    if [[ "$dry_run" == "true" ]]; then
+        log_info "[DRY RUN] Would install npm package: $name ($package)"
+        INSTALLED_ITEMS+=("$name (npm - would install)")
+        return 0
+    fi
     
     log_info "Installing npm package: $name ($package)"
     
@@ -234,20 +249,21 @@ process_package() {
     local category="$1"
     local pkg_name="$2"
     local install_optional="$3"
+    local dry_run="${4:-false}"
     
     TOTAL_PACKAGES=$((TOTAL_PACKAGES + 1))
     
     log_debug "Processing package: $pkg_name from category: $category"
     
     # Get package details from YAML
-    local macos_pkg=$(parse_yaml "$PACKAGES_YAML" "$category.packages[] | select(.name == \"$pkg_name\") | .macos")
-    local ubuntu_pkg=$(parse_yaml "$PACKAGES_YAML" "$category.packages[] | select(.name == \"$pkg_name\") | .ubuntu")
-    local global_npm=$(parse_yaml "$PACKAGES_YAML" "$category.packages[] | select(.name == \"$pkg_name\") | .global_npm")
-    local version_constraint=$(parse_yaml "$PACKAGES_YAML" "$category.packages[] | select(.name == \"$pkg_name\") | .version_constraint")
-    local required=$(parse_yaml "$PACKAGES_YAML" "$category.packages[] | select(.name == \"$pkg_name\") | .required")
-    local optional=$(parse_yaml "$PACKAGES_YAML" "$category.packages[] | select(.name == \"$pkg_name\") | .optional")
-    local platform_specific=$(parse_yaml "$PACKAGES_YAML" "$category.packages[] | select(.name == \"$pkg_name\") | .platform_specific")
-    local post_install=$(parse_yaml "$PACKAGES_YAML" "$category.packages[] | select(.name == \"$pkg_name\") | .post_install")
+    local macos_pkg=$(parse_yaml "$PACKAGES_YAML" ".${category}.packages[] | select(.name == \"$pkg_name\") | .macos")
+    local ubuntu_pkg=$(parse_yaml "$PACKAGES_YAML" ".${category}.packages[] | select(.name == \"$pkg_name\") | .ubuntu")
+    local global_npm=$(parse_yaml "$PACKAGES_YAML" ".${category}.packages[] | select(.name == \"$pkg_name\") | .global_npm")
+    local version_constraint=$(parse_yaml "$PACKAGES_YAML" ".${category}.packages[] | select(.name == \"$pkg_name\") | .version_constraint")
+    local required=$(parse_yaml "$PACKAGES_YAML" ".${category}.packages[] | select(.name == \"$pkg_name\") | .required")
+    local optional=$(parse_yaml "$PACKAGES_YAML" ".${category}.packages[] | select(.name == \"$pkg_name\") | .optional")
+    local platform_specific=$(parse_yaml "$PACKAGES_YAML" ".${category}.packages[] | select(.name == \"$pkg_name\") | .platform_specific")
+    local post_install=$(parse_yaml "$PACKAGES_YAML" ".${category}.packages[] | select(.name == \"$pkg_name\") | .post_install")
     
     # Check if package should be skipped
     if [[ "$optional" == "true" && "$install_optional" != "true" ]]; then
@@ -275,18 +291,18 @@ process_package() {
     
     # Install system package
     if [[ "$OS" == "macos" && "$macos_pkg" != "null" && "$macos_pkg" != "" ]]; then
-        if ! install_system_package "$pkg_name" "$macos_pkg" "$version_constraint" "$required"; then
+        if ! install_system_package "$pkg_name" "$macos_pkg" "$version_constraint" "$required" "$dry_run"; then
             success=false
         fi
     elif [[ "$OS" == "ubuntu" && "$ubuntu_pkg" != "null" && "$ubuntu_pkg" != "" ]]; then
-        if ! install_system_package "$pkg_name" "$ubuntu_pkg" "$version_constraint" "$required"; then
+        if ! install_system_package "$pkg_name" "$ubuntu_pkg" "$version_constraint" "$required" "$dry_run"; then
             success=false
         fi
     fi
     
     # Install global npm package
     if [[ "$global_npm" != "null" && "$global_npm" != "" ]]; then
-        if ! install_npm_package "$pkg_name" "$global_npm" "$version_constraint"; then
+        if ! install_npm_package "$pkg_name" "$global_npm" "$version_constraint" "$dry_run"; then
             success=false
         fi
     fi
@@ -305,7 +321,7 @@ get_category_packages() {
     local category="$1"
     
     if command -v yq &>/dev/null; then
-        yq eval "$category.packages[].name" "$PACKAGES_YAML" 2>/dev/null || echo ""
+        yq ".${category}.packages[].name" "$PACKAGES_YAML" 2>/dev/null || echo ""
     else
         # Fallback parsing with python
         python3 -c "
@@ -327,18 +343,23 @@ except:
 process_category() {
     local category="$1"
     local install_optional="$2"
+    local dry_run="${3:-false}"
     
-    log_info "Processing category: $category"
+    if [[ "$dry_run" == "true" ]]; then
+        log_info "[DRY RUN] Processing category: $category"
+    else
+        log_info "Processing category: $category"
+    fi
     
     # Check if category exists
-    local category_desc=$(parse_yaml "$PACKAGES_YAML" "$category.description")
+    local category_desc=$(parse_yaml "$PACKAGES_YAML" ".${category}.description")
     if [[ "$category_desc" == "null" ]]; then
         log_error "Category '$category' not found in packages.yaml"
         return 1
     fi
     
     # Check category conditions
-    local condition=$(parse_yaml "$PACKAGES_YAML" "$category.condition")
+    local condition=$(parse_yaml "$PACKAGES_YAML" ".${category}.condition")
     if [[ "$condition" == "desktop_environment" && "$DESKTOP_ENV" != "true" ]]; then
         log_warn "Skipping category '$category' - requires desktop environment"
         return 0
@@ -356,7 +377,7 @@ process_category() {
     # Process each package
     while IFS= read -r pkg_name; do
         if [[ -n "$pkg_name" ]]; then
-            process_package "$category" "$pkg_name" "$install_optional"
+            process_package "$category" "$pkg_name" "$install_optional" "$dry_run"
         fi
     done <<< "$packages"
 }
@@ -481,11 +502,7 @@ main() {
     
     # Process each category
     for category in "${CATEGORIES[@]}"; do
-        if [[ "$DRY_RUN" == "true" ]]; then
-            log_info "[DRY RUN] Would process category: $category"
-        else
-            process_category "$category" "$INSTALL_OPTIONAL"
-        fi
+        process_category "$category" "$INSTALL_OPTIONAL" "$DRY_RUN"
     done
     
     # Print summary

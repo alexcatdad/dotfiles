@@ -42,7 +42,7 @@ This dotfiles repository offers several installation methods to suit different s
 
 *   **Package-Only Installation:**
     ```bash
-    ./scripts/install-packages.sh modern_cli developer_tools
+    ./scripts/install-packages-yaml.sh modern_cli developer_tools
     ```
     This script allows installing specific categories of CLI tools and development packages without modifying dotfiles.
 
