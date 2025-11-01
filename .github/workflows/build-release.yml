@@ -29,7 +29,7 @@ jobs:
             output: dist/ubuntu/dotfiles
             archive_name: dotfiles-linux-x64
             platform: linux
-          - os: ubuntu-latest-8-cores
+          - os: ubuntu-latest
             output: dist/ubuntu-arm/dotfiles
             archive_name: dotfiles-linux-arm64
             platform: linux
