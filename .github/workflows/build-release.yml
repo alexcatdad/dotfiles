@@ -7,10 +7,6 @@ on:
     - "v*"
   workflow_dispatch:
 
-permissions:
-  contents: write  # Required to create releases and upload assets
-  actions: read    # Required to read workflow data
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -79,6 +75,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+      actions: read
 
     steps:
       - uses: actions/checkout@v5
