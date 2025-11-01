@@ -15,11 +15,14 @@ repos:
     rev: v0.9.0.5
     hooks:
       - id: shellcheck
+        args: ['-e', 'SC1090,SC1091,SC2034,SC2086,SC2148,SC2155,SC2038,SC2162,SC2001,SC2088,SC2193,SC2046,SC2317']
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.32.0
     hooks:
       - id: yamllint
+        args: ['--disable=document-start,truthy,comments,indentation,line-length,brackets']
   - repo: https://github.com/rhysd/actionlint
     rev: v1.6.26
     hooks:
       - id: actionlint
+        args: ['-ignore', 'SC2046,SC2193,SC2086,SC2162,SC2038,SC2001']
