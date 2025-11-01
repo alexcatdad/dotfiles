@@ -55,3 +55,4 @@ export const syncCommand = new Command("sync")
     logger.info("Run 'source ~/.zshrc' to apply any shell changes");
   });
 
+

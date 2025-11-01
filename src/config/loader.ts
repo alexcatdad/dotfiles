@@ -11,13 +11,13 @@ function computeProjectRoot(): string {
   try {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    
+
     // Check if running as compiled executable
     if (import.meta.url.startsWith('file:///') || import.meta.url.includes('$bunfs')) {
       // Running as compiled executable, use process.cwd()
       return process.cwd();
     }
-    
+
     // Running from source, go up from src/config to project root
     return join(__dirname, "../../");
   } catch (error) {
@@ -61,4 +61,5 @@ export function getConfigPath(): string {
 export function getProjectRoot(): string {
   return PROJECT_ROOT;
 }
+
 

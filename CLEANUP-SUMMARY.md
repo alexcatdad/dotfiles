@@ -2,7 +2,7 @@
 
 ## 🧹 Files Removed
 - `install-macos.sh` - Deprecated macOS installer (replaced by bootstrap.sh)
-- `install-ubuntu.sh` - Deprecated Ubuntu installer (replaced by bootstrap.sh)  
+- `install-ubuntu.sh` - Deprecated Ubuntu installer (replaced by bootstrap.sh)
 - `scripts/packages.sh` - Old package definitions (replaced by packages.yaml)
 - `scripts/install-packages.sh` - Old package installer (replaced by install-packages-yaml.sh)
 
@@ -54,7 +54,7 @@ This handles everything automatically!
 
 ```bash
 just install-packages modern_cli typescript  # Install specific categories
-just install-optional-packages               # Install optional tools  
+just install-optional-packages               # Install optional tools
 just test                                    # Run test suite
 just update                                  # Update everything
 just backup                                  # Create backup

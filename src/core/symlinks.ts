@@ -56,7 +56,7 @@ export async function createSymlink(source: string, target: string, force: boole
             logger.warn(`Skipping to avoid overwriting application configuration`);
             return false;
           }
-          
+
           logger.warn(`Target exists as regular file, backing up: ${targetPath}`);
           const backupPath = `${targetPath}.backup.${Date.now()}`;
           await writeFile(backupPath, readFileSync(targetPath));
@@ -89,19 +89,19 @@ async function isApplicationGeneratedFile(filePath: string, stats: any): Promise
   // Check recent modification time - if very recent, likely application-generated
   const oneHourAgo = Date.now() - 60 * 60 * 1000;
   const fileModTime = stats.mtimeMs;
-  
+
   if (fileModTime > oneHourAgo) {
     logger.debug(`File ${filePath} was recently modified (${Math.round((Date.now() - fileModTime) / 1000)}s ago)`);
     // Could be application-generated, be cautious
     return true;
   }
-  
+
   // Check if file is in a .config directory
   if (filePath.includes('/.config/')) {
     logger.debug(`File ${filePath} is in .config directory`);
     return true;
   }
-  
+
   return false;
 }
 
@@ -162,4 +162,5 @@ export async function installSymlinks(config: SymlinkConfig): Promise<void> {
 
   logger.info(`Symlinks: ${successCount} created, ${failCount} failed`);
 }
+
 

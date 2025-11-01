@@ -132,7 +132,7 @@ If you're coming from Bash:
    # Save your current bash config
    cp ~/.bashrc ~/.bashrc.backup
    cp ~/.bash_profile ~/.bash_profile.backup
-   
+
    # Extract aliases and functions
    grep "^alias " ~/.bashrc > ~/bash_aliases.txt
    grep "^function\|^[a-zA-Z_][a-zA-Z0-9_]*\s*()" ~/.bashrc > ~/bash_functions.txt

@@ -62,3 +62,4 @@ chmod +x dotfiles
 ./dotfiles --help
 ./dotfiles bootstrap
 ```
+

@@ -121,3 +121,4 @@ Make sure you downloaded the correct version for your platform:
 ### Download Failed
 Try downloading directly from:
 <https://github.com/alexalexandrescu/dotfiles/releases/latest>
+

@@ -47,3 +47,4 @@ export interface Config {
   categories: Record<string, Category>;
 }
 
+

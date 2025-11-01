@@ -268,3 +268,4 @@ bun run dev                 # Run from source for debugging
 # Validate config.json
 node -e "const z = require('zod'); const s = require('./src/config/schema.ts'); console.log('Valid!')"
 ```
+

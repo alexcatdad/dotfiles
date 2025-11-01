@@ -70,3 +70,4 @@ This dotfiles repository offers several installation methods to suit different s
 * **Git Workflow:** Encourages **Conventional Commits** and provides helper functions for branch management and repository analysis.
 * **Code Style:** While not explicitly defined in a linter config, the project implies a focus on clean, maintainable code through the use of tools like `prettier` (installed globally) and `eslint`.
 * **Backup Strategy:** Includes scripts for manual and automated backups of configurations.
+

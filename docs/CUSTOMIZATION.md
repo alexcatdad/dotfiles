@@ -16,7 +16,7 @@ The dotfiles support multiple levels of customization through local override fil
 ```
 Priority (highest to lowest):
 1. ~/.local-overrides        # Your personal overrides
-2. ~/.zshrc.local           # Platform-specific overrides  
+2. ~/.zshrc.local           # Platform-specific overrides
 3. ~/dotfiles/shared/       # Default configurations
 ```
 
@@ -102,7 +102,7 @@ personal_tools:
       ubuntu: my-cli-tool
       description: "My custom CLI tool"
       required: false
-    
+
     - name: personal-script
       global_npm: my-personal-package
       version_constraint: ">=2.0.0"
@@ -176,13 +176,13 @@ cat << 'EOF' > ~/.vscode-local/settings.json
   "editor.fontFamily": "SF Mono, Monaco, monospace",
   "workbench.colorTheme": "Ayu Dark",
   "editor.rulers": [100, 120],
-  
+
   "extensions.ignoreRecommendations": true,
-  
+
   // Your personal preferences
   "editor.minimap.enabled": false,
   "breadcrumbs.enabled": false,
-  
+
   // Language-specific overrides
   "[python]": {
     "editor.tabSize": 4
@@ -216,7 +216,7 @@ cat << 'EOF' > ~/.cursor-local/settings.json
   "cursor.ai.model": "gpt-4",
   "cursor.ai.suggestions.enabled": false,
   "cursor.privacy.enableTelemetry": false,
-  
+
   // Your AI preferences
   "cursor.chat.defaultModel": "claude-3.5-sonnet",
   "cursor.ai.contextLength": "medium"
@@ -262,7 +262,7 @@ cat << 'EOF' >> ~/.gitconfig.local
     unstage = reset HEAD --
     last = log -1 HEAD
     visual = !gitk
-    
+
     # Advanced aliases
     lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
     conflicts = diff --name-only --diff-filter=U
@@ -294,7 +294,7 @@ EOF
 cat << 'EOF' > ~/.gitconfig.work
 [user]
     email = your.work@company.com
-    
+
 [core]
     sshCommand = "ssh -i ~/.ssh/id_work_rsa"
 EOF
@@ -319,22 +319,22 @@ create-ts-project() {
 
     # Call the original function
     command create-ts-project "$project_name"
-    
+
     # Add your customizations
     cd "$project_name"
-    
+
     # Install additional packages you always use
     npm install -D @types/lodash lodash
     npm install -D husky lint-staged
-    
+
     # Set up pre-commit hooks
     npx husky install
     npx husky add .husky/pre-commit "lint-staged"
-    
+
     # Your custom package.json scripts
     npm pkg set scripts.prepare="husky install"
     npm pkg set scripts.check="tsc --noEmit"
-    
+
     echo "✨ Added personal customizations!"
 }
 ```
@@ -349,16 +349,16 @@ Extend the init-project function with your own templates:
 create-my-fullstack-project() {
     local name="$1"
     local pm=$(detect_package_manager)
-    
+
     # Create a custom fullstack setup
     create-nextjs-project "$name"
-    
+
     # Add backend setup
     mkdir -p api
     cd api
     create-fastify-ts-project "api"
     cd ..
-    
+
     # Set up monorepo structure
     cat > package.json << 'EOF'
 {
@@ -372,7 +372,7 @@ create-my-fullstack-project() {
   }
 }
 EOF
-    
+
     $pm install -D concurrently
     echo "🎉 Custom fullstack project created!"
 }
@@ -413,17 +413,17 @@ Detect and configure based on environment:
 # Detect work environment
 if [[ "$PWD" == */Work/* ]] || [[ "$PWD" == */company-projects/* ]]; then
     export WORK_ENV=true
-    
+
     # Work-specific aliases
     alias deploy-staging='kubectl apply -f staging/'
     alias logs='kubectl logs -f'
     alias vpn='sudo openconnect corporate-vpn.company.com'
-    
+
     # Work-specific functions
     function work-project() {
         cd "$HOME/Work/$1"
     }
-    
+
     # Work-specific prompt additions
     PS1="[WORK] $PS1"
 fi
@@ -433,7 +433,7 @@ if [[ "$WORK_ENV" != "true" ]]; then
     # Personal aliases
     alias blog='cd ~/Projects/personal/blog'
     alias dotfiles='cd ~/dotfiles'
-    
+
     # Personal functions
     function personal-backup() {
         rsync -av ~/Projects/personal/ ~/Backup/personal/
@@ -488,7 +488,7 @@ export CLICOLOR=1
 if [[ -z "$ZSH_THEME" ]]; then
     # Simple custom prompt
     PROMPT='%F{blue}%n%f@%F{green}%m%f:%F{yellow}%~%f$ '
-    
+
     # Add git info
     autoload -Uz vcs_info
     precmd() { vcs_info }
@@ -558,11 +558,11 @@ if command -v aws &>/dev/null; then
         export AWS_PROFILE="$1"
         echo "Switched to AWS profile: $1"
     }
-    
+
     function aws-whoami() {
         aws sts get-caller-identity
     }
-    
+
     # Common aliases
     alias s3ls='aws s3 ls'
     alias ec2ls='aws ec2 describe-instances --query "Reservations[].Instances[].{ID:InstanceId,State:State.Name,Type:InstanceType,Name:Tags[?Key==\`Name\`]|[0].Value}"'
@@ -574,11 +574,11 @@ if command -v kubectl &>/dev/null; then
     alias kgp='kubectl get pods'
     alias kgs='kubectl get services'
     alias kgd='kubectl get deployments'
-    
+
     function kctx() {
         kubectl config use-context "$1"
     }
-    
+
     function kns() {
         kubectl config set-context --current --namespace="$1"
     }
@@ -626,7 +626,7 @@ check_dotfiles_version() {
     else
         current_version="unknown"
     fi
-    
+
     # Handle version-specific customizations
     case "$current_version" in
         "2.0"*)

@@ -58,3 +58,4 @@ export type PackageDefinition = z.infer<typeof packageDefinitionSchema>;
 export type Category = z.infer<typeof categorySchema>;
 export type SymlinkConfig = z.infer<typeof symlinkConfigSchema>;
 
+
