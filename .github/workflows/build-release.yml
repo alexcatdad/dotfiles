@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-15
+          - os: macos-latest
             output: dist/mac/dotfiles
             archive_name: dotfiles-macos-x64
             platform: macos
