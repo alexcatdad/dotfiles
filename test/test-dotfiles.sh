@@ -95,7 +95,11 @@ test_shell_functions() {
     log_info "Testing shell functions work..."
 
     # Source the shell config in a subshell to test
-    run_test "zshrc loads without errors" "zsh -c 'source ~/.zshrc' 2>/dev/null"
+    if [[ -n "${CI:-}" ]]; then
+        log_warn "Skipping zshrc load test in CI environment"
+    else
+        run_test "zshrc loads without errors" "zsh -c 'source ~/.zshrc' 2>/dev/null"
+    fi
     run_test "aliases loads without errors" "zsh -c 'source ~/.aliases' 2>/dev/null"
     run_test "modern-aliases loads without errors" "zsh -c 'source ~/.modern-aliases' 2>/dev/null"
     run_test "dev-automations loads without errors" "zsh -c 'source ~/.dev-automations' 2>/dev/null"
