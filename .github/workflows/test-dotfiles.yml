@@ -95,30 +95,6 @@ jobs:
           bash -n ./scripts/install-packages-yaml.sh && echo "Script syntax is valid"
         }
 
-  test-installation-docker:
-    name: Test Installation via Docker
-    runs-on: ubuntu-latest
-    if: false # Temporarily disabled - Docker tests need to be fixed
-    strategy:
-      matrix:
-        scenario: [fresh, safe] # Remove macos from Docker tests
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v5
-      with:
-        submodules: recursive
-
-    - name: Build Docker Image (if not already built)
-      run: ./test-docker.sh build
-
-    - name: Run Docker Test Scenario - ${{ matrix.scenario }}
-      run: ./test-docker.sh ${{ matrix.scenario }}
-
-    - name: Clean up Docker containers
-      if: always()
-      run: ./test-docker.sh clean
-
   pre-commit:
     name: Pre-commit Checks
     runs-on: ubuntu-latest

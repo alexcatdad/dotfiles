@@ -1,35 +1,18 @@
 name: Validate Fresh Installation
 
+# NOTE: This workflow was disabled because Docker tests need migration to new Bun-based CLI
+# The old bash-based install scripts (bootstrap.sh, install-safe.sh) are deprecated
+# in favor of the new Bun CLI (./dist/dotfiles)
+
 on:
   schedule:
     # Test fresh installation weekly
     - cron: '0 6 * * 1'
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
-  validate-installation-via-docker:
-    name: Validate Installation via Docker
-    runs-on: ubuntu-latest # Use Ubuntu as the Docker host
-    if: false # Disabled: Docker tests need migration to new Bun-based CLI
-    strategy:
-      matrix:
-        scenario: [fresh, safe, macos] # Corresponds to test-docker.sh scenarios
-
+  placeholder:
+    name: Docker tests disabled - pending Bun CLI migration
+    runs-on: ubuntu-latest
+    if: false
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v5
-      with:
-        submodules: recursive
-
-    - name: Build Docker Image (if not already built)
-      run: ./test-docker.sh build
-
-    - name: Run Docker Test Scenario - ${{ matrix.scenario }}
-      run: ./test-docker.sh ${{ matrix.scenario }}
-
-    - name: Clean up Docker containers
-      if: always()
-      run: ./test-docker.sh clean
+      - run: echo "Docker tests removed - old bash scripts no longer in use"
