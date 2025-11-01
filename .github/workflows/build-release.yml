@@ -224,5 +224,3 @@ jobs:
             release-assets/*
           draft: false
           prerelease: ${{ github.ref != 'refs/heads/main' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
