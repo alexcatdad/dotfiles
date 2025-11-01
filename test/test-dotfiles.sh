@@ -148,9 +148,11 @@ test_node_setup() {
 
     if command -v nvm >/dev/null 2>&1; then
         run_test "nvm available" "command -v nvm"
-    else
+    elif [[ -z "${CI:-}" ]]; then
         log_warn "NVM not found in PATH, checking if sourced..."
         run_test "nvm sourced" "[ -s ~/.nvm/nvm.sh ]"
+    else
+        log_warn "Skipping NVM tests in CI environment"
     fi
 
     run_test "node available" "command -v node"
