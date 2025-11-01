@@ -20,7 +20,7 @@ repos:
     rev: v1.32.0
     hooks:
       - id: yamllint
-        args: ['--no-warnings']
+        args: ['-c', '.yamllint.yml']
   - repo: https://github.com/rhysd/actionlint
     rev: v1.6.26
     hooks:

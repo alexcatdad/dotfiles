@@ -1,0 +1,8 @@
+extends: default
+
+rules:
+  line-length: disable
+  indentation: disable
+  brackets: disable
+  comments: disable
+
