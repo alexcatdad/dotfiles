@@ -25,4 +25,4 @@ repos:
     rev: v1.6.26
     hooks:
       - id: actionlint
-        args: ['-ignore', 'SC2046', '-ignore', 'SC2193', '-ignore', 'SC2086', '-ignore', 'SC2162', '-ignore', 'SC2038', '-ignore', 'SC2001', '-no-color', '-quiet']
+        args: ['-ignore', 'SC2046', '-ignore', 'SC2193', '-ignore', 'SC2086', '-ignore', 'SC2162', '-ignore', 'SC2038', '-ignore', 'SC2001', '-no-color']
