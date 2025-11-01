@@ -126,4 +126,3 @@ After bootstrap:
 4. Sync updates: `./dotfiles sync`
 
 Enjoy your new development environment! 🚀
-

@@ -74,4 +74,3 @@ rm install.conf.yaml
 git add .
 git commit -m "refactor: complete migration from bash to TypeScript/Bun"
 ```
-
