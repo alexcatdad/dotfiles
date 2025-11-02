@@ -7,28 +7,24 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 ### Installation Methods
 ```bash
 # Complete bootstrap for new machines
-./bootstrap.sh
+./dist/dotfiles bootstrap
 
 # Safe installation for existing systems (preserves configs)
-./install-safe.sh
+./dist/dotfiles install --safe
 
-# Modern dotbot installation
-./install
+# TypeScript CLI installation
+./dist/dotfiles install          # Full installation
+./dist/dotfiles install --safe   # Safe installation (preserves existing configs)
 
 # Install specific package categories
-./scripts/install-packages-yaml.sh modern_cli typescript
-./scripts/install-packages-yaml.sh --optional  # Include optional tools
+./dist/dotfiles packages modern_cli typescript
+./dist/dotfiles packages --optional modern_cli  # Include optional tools
 ```
 
 ### Testing and Validation
 ```bash
 # Run comprehensive test suite
-./test/test-dotfiles.sh
-
-# Docker-based testing (recommended for validation)
-./test-docker.sh fresh    # Test bootstrap installation
-./test-docker.sh safe     # Test safe installation
-./test-docker.sh clean    # Clean up containers
+./dist/dotfiles test
 
 # Test individual components
 just test                 # Uses justfile (if just is installed)
@@ -40,31 +36,31 @@ just test                 # Uses justfile (if just is installed)
 just install-packages modern_cli developer_tools
 just install-optional-packages
 
-# Or use script directly
-./scripts/install-packages-yaml.sh modern_cli developer_tools
+# Or use TypeScript CLI directly
+./dist/dotfiles packages modern_cli developer_tools
 
 # Update everything
-./scripts/sync-settings.sh  # Updates packages, Node.js, dotfiles
+./dist/dotfiles sync  # Updates packages, Node.js, dotfiles
 ```
 
 ### Maintenance
 ```bash
 # Create backup before changes
-./scripts/backup-configs.sh
+./dist/dotfiles backup
 just backup
 
 # Sync and update all tools
-./scripts/sync-settings.sh
+./dist/dotfiles sync
 ```
 
 ## Architecture Overview
 
 ### Multi-Tier Installation System
 This dotfiles repository supports multiple installation approaches:
-- **`bootstrap.sh`** - Complete environment setup from scratch
-- **`install-safe.sh`** - Interactive installation preserving existing configurations
-- **`install` (dotbot)** - Declarative configuration using `install.conf.yaml`
-- **YAML Package Installer** - `scripts/install-packages-yaml.sh` for cross-platform package installation
+- **TypeScript CLI Bootstrap** - Complete environment setup with `./dist/dotfiles bootstrap`
+- **TypeScript CLI Install** - Interactive installation with `./dist/dotfiles install --safe`
+- **TypeScript CLI Packages** - Package installation with `./dist/dotfiles packages`
+- **TypeScript CLI Sync** - Update all tools with `./dist/dotfiles sync`
 
 ### Configuration Layer Structure
 ```
@@ -115,7 +111,7 @@ The `scripts/install-packages-yaml.sh` script processes this YAML to install pac
 
 ## Testing Framework
 
-The comprehensive test suite (`test/test-dotfiles.sh`) validates:
+The comprehensive test suite (`./dist/dotfiles test`) validates:
 - Core file existence and symlink verification
 - Tool availability (git, zsh, node, npm, bun)
 - Shell function testing
@@ -128,9 +124,9 @@ Tests provide colored output with detailed failure reporting and counters.
 ## Cross-Platform Support
 
 The codebase handles platform differences through:
-- Conditional logic in dotbot configuration (OS detection)
+- Platform detection in TypeScript CLI (`src/core/platform.ts`)
 - Platform-specific directories (`macos/` vs `ubuntu/`)
-- Package name mapping in `packages.yaml`
+- Package name mapping in `packages.yaml` (read by TypeScript CLI)
 - Environment detection functions in `shared/.env-detection`
 - OS-specific aliases in `.zshrc.local` files
 
@@ -154,8 +150,8 @@ Specifically optimized for TypeScript developers with:
 
 ## Important Files
 
-### `install.conf.yaml` (Dotbot Configuration)
-Declarative configuration defining symlinks, directory creation, and setup commands.
+### `config.json` (TypeScript CLI Configuration)
+Declarative configuration defining symlinks, directory creation, and setup commands. Loaded by the TypeScript CLI.
 
 ### `packages.yaml` (Package Definitions)
 Structured cross-platform package definitions with metadata and optional flags.

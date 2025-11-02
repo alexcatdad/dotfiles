@@ -119,18 +119,15 @@ Single `config.json` file containing:
 
 ## Migration Notes
 
-### What to Delete
-- `bootstrap.sh`
-- `install-safe.sh`
-- `install` (dotbot script)
-- `scripts/*.sh` (all 3 shell scripts)
-- `test/test-dotfiles.sh`
-- `test-docker.sh`
-- `packages.yaml`
-- `install.conf.yaml`
+### What Was Removed (Legacy)
+- ~~`install`~~ - Legacy dotbot bash script (removed)
+- ~~`install.conf.yaml`~~ - Legacy dotbot config (removed, replaced by config.json)
+- ~~`dotbot/` submodule~~ - Legacy Python-based symlink tool (removed)
+- ~~`.gitmodules`~~ - Contained only dotbot entry (removed)
+- ~~All `.sh` files~~ - All bash scripts removed (migrated to TypeScript CLI)
 
 ### What to Keep
-- `dotbot/` submodule (for now)
+- `packages.yaml` - Package definitions
 - `shared/` directory with all config files
 - `macos/` and `ubuntu/` platform-specific configs
 - Existing shell configs in `shared/`

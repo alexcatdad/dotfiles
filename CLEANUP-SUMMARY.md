@@ -18,13 +18,13 @@
 ## 📂 Current Clean Structure
 
 ### Installation Scripts (Priority Order)
-1. **`./bootstrap.sh`** - Complete setup for new machines ⭐ **RECOMMENDED**
-2. **`./install-safe.sh`** - Interactive installation for existing systems
-3. **`./install`** - Dotbot-only installation (configuration files only)
+1. **`./dist/dotfiles bootstrap`** - Complete setup for new machines ⭐ **RECOMMENDED**
+2. **`./dist/dotfiles install --safe`** - Interactive installation for existing systems
+3. **`./dist/dotfiles install`** - TypeScript CLI installation (configuration files only)
 
 ### Package Management
-- **`./scripts/install-packages-yaml.sh`** - Modern YAML-based package installer
-- **`packages.yaml`** - Cross-platform package definitions with metadata
+- **`./dist/dotfiles packages`** - Modern TypeScript-based package installer
+- **`packages.yaml`** - Cross-platform package definitions with metadata (read by CLI)
 - **`justfile`** - Command runner with convenient shortcuts
 
 ### Configuration
@@ -33,19 +33,22 @@
 - **`ubuntu/`** - Ubuntu-specific configurations
 
 ### Testing & Validation
-- **`./test/test-dotfiles.sh`** - Comprehensive test suite (83 tests)
-- **`./test-docker.sh`** - Docker-based testing
+- **`./dist/dotfiles test`** - Comprehensive test suite
 - **`.github/workflows/`** - CI/CD automation (5 workflows)
 
 ### Maintenance
-- **`./scripts/sync-settings.sh`** - Update all tools and dotfiles
-- **`./scripts/backup-configs.sh`** - Create configuration backups
+- **`./dist/dotfiles sync`** - Update all tools and dotfiles
+- **`./dist/dotfiles backup`** - Create configuration backups
 
 ## 🚀 For New Users
 
 **Just run:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/alexalexandrescu/dotfiles/main/bootstrap.sh | bash
+# Download binary from releases or:
+git clone https://github.com/alexalexandrescu/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+bun install && bun run build:local
+./dist/dotfiles bootstrap
 ```
 
 This handles everything automatically!

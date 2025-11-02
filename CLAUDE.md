@@ -227,10 +227,10 @@ const selected = await select("Choose:", choices)
 ## Migration Notes
 
 ### Old System (Removed)
-- bash scripts: `*.sh` files
-- YAML configs: `packages.yaml`, `install.conf.yaml`
-- Python dependencies for YAML parsing
-- Dotbot submodule for symlinking
+- bash scripts: `*.sh` files (legacy install script removed)
+- YAML configs: `packages.yaml` (kept), `install.conf.yaml` (removed - replaced by config.json)
+- Python dependencies for YAML parsing (no longer needed for dotfile management)
+- Dotbot submodule for symlinking (removed - replaced by TypeScript CLI)
 
 ### New System
 - Single TypeScript codebase
@@ -247,6 +247,7 @@ const selected = await select("Choose:", choices)
 | `./install-safe.sh` | `./dist/dotfiles install --safe` |
 | `./scripts/install-packages-yaml.sh packages` | `./dist/dotfiles packages packages` |
 | `./scripts/sync-settings.sh` | `./dist/dotfiles sync` |
+| `./scripts/backup-configs.sh` | `./dist/dotfiles backup` |
 | `./test/test-dotfiles.sh` | `./dist/dotfiles test` |
 
 ## Troubleshooting

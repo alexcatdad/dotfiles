@@ -50,18 +50,21 @@ ls -la ~/.testrc
 
 ## After Verification
 
-### Delete Old Files
+### Delete Old Files (All Completed)
 ```bash
-rm bootstrap.sh
-rm install-safe.sh
-rm install
-rm scripts/install-packages-yaml.sh
-rm scripts/sync-settings.sh
-rm scripts/backup-configs.sh
-rm test/test-dotfiles.sh
-rm test-docker.sh
-rm packages.yaml
-rm install.conf.yaml
+# Already removed:
+# - bootstrap.sh
+# - install-safe.sh
+# - install
+# - scripts/install-packages-yaml.sh
+# - scripts/sync-settings.sh
+# - scripts/backup-configs.sh
+# - test/test-dotfiles.sh
+# - test-docker.sh (Docker testing removed - using pipeline tests now)
+# - install.conf.yaml
+# - dotbot/ (submodule)
+# - docker-compose.yml
+# - Dockerfile
 ```
 
 ### Update Documentation
