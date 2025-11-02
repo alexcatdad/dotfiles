@@ -236,8 +236,11 @@ export async function installOhMyZsh(): Promise<InstallResult> {
     // Check if Oh My Zsh is already installed
     if (!existsSync(ohMyZshDir)) {
       logger.info("Installing Oh My Zsh...");
-      execSync('sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended', {
+      // KEEP_ZSHRC=yes prevents the installer from modifying .zshrc
+      // We'll manage .zshrc ourselves via the sourceable file approach
+      execSync('KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended', {
         stdio: "inherit",
+        env: { ...process.env, KEEP_ZSHRC: "yes" },
       });
       logger.success("Oh My Zsh installed");
     } else {
