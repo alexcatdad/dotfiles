@@ -14,7 +14,35 @@ function computeProjectRoot(): string {
 
     // Check if running as compiled executable
     if (import.meta.url.startsWith('file:///') || import.meta.url.includes('$bunfs')) {
-      // Running as compiled executable, use process.cwd()
+      // Running as compiled executable
+      // Try to find config.json relative to the executable
+      const execPath = process.execPath;
+      const execDir = dirname(execPath);
+      
+      // Check if config.json exists in the same directory as the executable
+      const execConfigPath = join(execDir, "config.json");
+      if (existsSync(execConfigPath)) {
+        // We're in a dist directory - check if we're in dist/* subdirectory
+        // and if so, go up to the actual project root
+        if (execDir.includes('/dist/') || execDir.endsWith('/dist')) {
+          // Try to find the project root (where shared/ directory exists)
+          let currentDir = execDir;
+          for (let i = 0; i < 5; i++) { // Limit to 5 levels up
+            const sharedPath = join(currentDir, "shared");
+            const configPath = join(currentDir, "config.json");
+            if (existsSync(sharedPath) && existsSync(configPath)) {
+              return currentDir;
+            }
+            const parent = dirname(currentDir);
+            if (parent === currentDir) break; // Reached filesystem root
+            currentDir = parent;
+          }
+        }
+        // If we can't find project root, return exec dir (config.json is there)
+        return execDir;
+      }
+      
+      // Fallback to process.cwd() if not found relative to executable
       return process.cwd();
     }
 

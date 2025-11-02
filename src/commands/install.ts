@@ -4,16 +4,51 @@ import { logger } from "../utils/logger.js";
 import { loadConfig } from "../config/loader.js";
 import { installSymlinks } from "../core/symlinks.js";
 import { checkbox, confirm, input } from "../utils/prompt.js";
-import { getPlatformInfo, getHomeDir } from "../core/platform.js";
+import { getPlatformInfo, getHomeDir, expandPath } from "../core/platform.js";
 import { execSync } from "child_process";
 import { join } from "path";
+import { createBackup } from "./backup.js";
 
 export const installCommand = new Command("install")
   .description("Install dotfiles (safe mode for existing systems)")
   .option("--safe", "Interactive installation that preserves existing configs")
+  .option("--dry-run", "Show what would be installed without making changes")
   .action(async (options) => {
     const config = loadConfig();
     const platform = getPlatformInfo();
+
+    if (options.dryRun) {
+      logger.info("🔍 DRY RUN MODE - No changes will be made");
+      
+      // Check for existing files
+      const existingConfigs: string[] = [];
+      for (const target of Object.keys(config.symlinks.links)) {
+        const targetPath = expandPath(target);
+        if (existsSync(targetPath)) {
+          existingConfigs.push(targetPath);
+        }
+      }
+      
+      if (existingConfigs.length > 0) {
+        logger.info("\n[DRY RUN] Would backup existing files:");
+        for (const filePath of existingConfigs) {
+          const fileName = filePath.split("/").pop() || "unknown";
+          logger.info(`  - ${fileName}`);
+        }
+      }
+      
+      logger.info("\n[DRY RUN] Would create symlinks:");
+      for (const [target, source] of Object.entries(config.symlinks.links)) {
+        logger.info(`  ${target} -> ${source}`);
+      }
+      logger.info("\n[DRY RUN] Would run shell commands:");
+      for (const cmd of config.symlinks.shell_commands) {
+        logger.info(`  - ${cmd.description}: ${cmd.command}`);
+      }
+      logger.info("\n[DRY RUN] Installation preview complete!");
+      logger.info("Run without --dry-run to actually perform these actions.");
+      return;
+    }
 
     if (options.safe) {
       logger.info("Safe installation mode - preserving existing configurations");
@@ -29,7 +64,9 @@ export const installCommand = new Command("install")
 
       if (existingConfigs.length > 0) {
         logger.warn(`Found ${existingConfigs.length} existing configurations`);
-        logger.info("These will be backed up before installation");
+        logger.info("Backing up existing files before installation...");
+        const filesToBackup = existingConfigs.map(target => expandPath(target));
+        await createBackup(filesToBackup);
       }
 
       // Interactive selection
@@ -103,6 +140,21 @@ export const installCommand = new Command("install")
       logger.success("Safe installation complete!");
     } else {
       // Full installation
+      // Check for existing files and backup them
+      const existingConfigs: string[] = [];
+      for (const target of Object.keys(config.symlinks.links)) {
+        const targetPath = expandPath(target);
+        if (existsSync(targetPath)) {
+          existingConfigs.push(targetPath);
+        }
+      }
+
+      if (existingConfigs.length > 0) {
+        logger.warn(`Found ${existingConfigs.length} existing configurations`);
+        logger.info("Backing up existing files before installation...");
+        await createBackup(existingConfigs);
+      }
+
       logger.info("Installing all dotfiles...");
       await installSymlinks(config.symlinks);
 

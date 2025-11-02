@@ -10,6 +10,7 @@ const packageDefinitionSchema = z.object({
   required: z.boolean().optional(),
   optional: z.boolean().optional(),
   platform_specific: z.boolean().optional(),
+  cask: z.boolean().optional(), // Homebrew cask (GUI applications)
   post_install: z.array(z.string()).optional(),
   fallback: z
     .object({

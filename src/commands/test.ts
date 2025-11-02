@@ -14,7 +14,28 @@ interface TestResult {
 
 export const testCommand = new Command("test")
   .description("Run comprehensive test suite")
-  .action(async () => {
+  .option("--dry-run", "Show what tests would be run without executing them")
+  .action(async (options) => {
+    if (options.dryRun) {
+      logger.info("🔍 DRY RUN MODE - Tests will be listed but not executed");
+      logger.info("Dotfiles Test Suite");
+      logger.info("===================");
+      
+      const config = loadConfig();
+      logger.info("\n[DRY RUN] Would test:");
+      logger.info("  - Core dotfiles exist:");
+      for (const [target] of Object.entries(config.symlinks.links)) {
+        logger.info(`    - ${target}`);
+      }
+      logger.info("  - Symlinks are correct");
+      logger.info("  - Required tools available: git, zsh, curl");
+      logger.info("  - Platform-specific tools (brew/apt)");
+      logger.info("  - Node.js setup (node, npm)");
+      logger.info("\n[DRY RUN] Test preview complete!");
+      logger.info("Run without --dry-run to actually execute the tests.");
+      return;
+    }
+
     logger.info("Dotfiles Test Suite");
     logger.info("===================");
 

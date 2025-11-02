@@ -239,10 +239,16 @@ if [ -d "$HOME/.docker/completions" ]; then
 fi
 # End of Docker CLI completions
 
-# Scaleway CLI autocomplete initialization.
-eval "$(scw autocomplete script shell=zsh)"
+# Scaleway CLI autocomplete initialization (if installed)
+if command -v scw &> /dev/null; then
+    eval "$(scw autocomplete script shell=zsh)"
+fi
 
 # Bun completions (if installed)
 if [ -s "$HOME/.bun/_bun" ]; then
     source "$HOME/.bun/_bun"
 fi
+
+# Powerlevel10k configuration
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

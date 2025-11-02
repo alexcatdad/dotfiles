@@ -134,6 +134,106 @@ export async function executeShellCommand(cmd: string, description: string): Pro
   }
 }
 
+/**
+ * Create a sourceable file that imports from dotfiles
+ * This allows other applications to append to the file without breaking it
+ */
+export async function createSourceableFile(source: string, target: string, force: boolean): Promise<boolean> {
+  const sourcePath = join(getProjectRoot(), source);
+  const targetPath = expandPath(target);
+
+  // Ensure source exists
+  if (!existsSync(sourcePath)) {
+    logger.warn(`Source file does not exist: ${sourcePath}`);
+    return false;
+  }
+
+  try {
+    const sourceAbsolute = join(getProjectRoot(), source);
+    
+    // Check if target already exists
+    if (existsSync(targetPath)) {
+      const stats = await lstat(targetPath);
+      
+      if (stats.isSymbolicLink()) {
+        // Convert existing symlink to sourceable file
+        const currentTarget = await readlink(targetPath);
+        if (currentTarget === sourceAbsolute || currentTarget.includes(getProjectRoot())) {
+          logger.info(`Converting symlink to sourceable file: ${targetPath}`);
+          await unlink(targetPath);
+        } else if (!force) {
+          logger.warn(`Target exists as symlink pointing elsewhere: ${targetPath}`);
+          return false;
+        } else {
+          await unlink(targetPath);
+        }
+      } else if (stats.isFile()) {
+        // Check if it already has our source line
+        const content = readFileSync(targetPath, "utf-8");
+        const sourceLine = `source "${sourceAbsolute}"`;
+        
+        if (content.includes(sourceLine) || content.includes(`source ${sourceAbsolute}`)) {
+          logger.info(`File already sources dotfiles: ${targetPath}`);
+          return true;
+        }
+        
+        if (force) {
+          // Backup existing file
+          const backupPath = `${targetPath}.backup.${Date.now()}`;
+          await writeFile(backupPath, content);
+          logger.info(`Backed up existing file to: ${backupPath}`);
+        } else {
+          // Check if file has any content - if empty or only our source line, we can append
+          const trimmed = content.trim();
+          if (trimmed.length > 0 && !trimmed.includes("source") && !trimmed.includes("dotfiles")) {
+            logger.warn(`Target exists and has content. Use --force to overwrite or manually add: source "${sourceAbsolute}"`);
+            return false;
+          }
+        }
+      }
+    }
+
+    // Create parent directories
+    const targetDir = dirname(targetPath);
+    if (!existsSync(targetDir)) {
+      await mkdir(targetDir, { recursive: true });
+    }
+
+    // Preserve existing content if file exists (and wasn't a symlink we removed)
+    let existingContent = "";
+    if (existsSync(targetPath)) {
+      const currentStats = await lstat(targetPath);
+      if (currentStats.isFile()) {
+        const content = readFileSync(targetPath, "utf-8");
+        // Only preserve if it doesn't already source our file
+        if (!content.includes(sourceAbsolute)) {
+          existingContent = content.trim();
+          if (existingContent && !existingContent.endsWith("\n")) {
+            existingContent += "\n";
+          }
+        }
+      }
+    }
+    
+    // Create sourceable file content
+    // Check file extension to use appropriate sourcing command
+    const isZshrc = target.includes(".zshrc");
+    const sourceCommand = isZshrc ? `source "${sourceAbsolute}"` : `source "${sourceAbsolute}"`;
+    
+    // Write the sourceable file
+    const fileContent = existingContent 
+      ? `${existingContent}\n# Dotfiles configuration\n${sourceCommand}\n`
+      : `# Dotfiles configuration\n${sourceCommand}\n`;
+    
+    await writeFile(targetPath, fileContent);
+    logger.success(`Created sourceable file: ${targetPath} -> sources ${sourceAbsolute}`);
+    return true;
+  } catch (error) {
+    logger.error(`Failed to create sourceable file ${targetPath}: ${error}`);
+    return false;
+  }
+}
+
 export async function installSymlinks(config: SymlinkConfig): Promise<void> {
   logger.info("Installing symlinks...");
 
@@ -142,16 +242,32 @@ export async function installSymlinks(config: SymlinkConfig): Promise<void> {
     await createDirectory(dir);
   }
 
-  // Create symlinks
+  // Files that should be sourceable instead of symlinked
+  // This allows apps to append to them without breaking
+  const sourceableFiles = [".zshrc", ".bashrc", ".profile"];
+
+  // Create symlinks and sourceable files
   let successCount = 0;
   let failCount = 0;
 
   for (const [target, source] of Object.entries(config.links)) {
-    const success = await createSymlink(source, target, config.defaults.force);
-    if (success) {
-      successCount++;
+    // Check if this file should be sourceable
+    const shouldSource = sourceableFiles.some(file => target.includes(file));
+    
+    if (shouldSource) {
+      const success = await createSourceableFile(source, target, config.defaults.force);
+      if (success) {
+        successCount++;
+      } else {
+        failCount++;
+      }
     } else {
-      failCount++;
+      const success = await createSymlink(source, target, config.defaults.force);
+      if (success) {
+        successCount++;
+      } else {
+        failCount++;
+      }
     }
   }
 

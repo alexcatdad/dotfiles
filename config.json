@@ -13,6 +13,7 @@
     "clean": ["~"],
     "links": {
       "~/.zshrc": "shared/.zshrc",
+      "~/.p10k.zsh": "shared/.p10k.zsh",
       "~/.aliases": "shared/.aliases",
       "~/.modern-aliases": "shared/.modern-aliases",
       "~/.dev-automations": "shared/.dev-automations",
@@ -45,6 +46,13 @@
       "description": "Core development tools",
       "priority": 1,
       "packages": [
+        {
+          "name": "oh-my-zsh",
+          "macos": null,
+          "ubuntu": null,
+          "description": "Oh My Zsh framework for zsh configuration",
+          "required": true
+        },
         {
           "name": "git",
           "macos": "git",
@@ -90,6 +98,13 @@
       "description": "TypeScript development tools",
       "priority": 2,
       "packages": [
+        {
+          "name": "nvm",
+          "macos": null,
+          "ubuntu": null,
+          "description": "Node Version Manager - enables multiple Node.js versions",
+          "required": false
+        },
         {
           "name": "node",
           "macos": "node@lts",
@@ -216,13 +231,17 @@
       "packages": [
         {
           "name": "docker",
-          "macos": "docker",
-          "ubuntu": "docker.io"
+          "macos": null,
+          "ubuntu": "docker.io",
+          "description": "Docker CLI (included in Docker Desktop on macOS)",
+          "platform_specific": true
         },
         {
           "name": "docker-compose",
-          "macos": "docker-compose",
-          "ubuntu": "docker-compose"
+          "macos": null,
+          "ubuntu": "docker-compose",
+          "description": "Docker Compose (included in Docker Desktop on macOS)",
+          "platform_specific": true
         }
       ]
     },
@@ -294,6 +313,7 @@
           "ubuntu": null,
           "description": "AI-powered code editor",
           "platform_specific": true,
+          "cask": true,
           "required": false
         },
         {
@@ -301,14 +321,16 @@
           "macos": "visual-studio-code",
           "ubuntu": "code",
           "description": "Microsoft code editor",
+          "cask": true,
           "required": false
         },
         {
           "name": "docker-desktop",
           "macos": "docker",
           "ubuntu": null,
-          "description": "Docker Desktop GUI",
+          "description": "Docker Desktop GUI (includes docker CLI and docker-compose)",
           "platform_specific": true,
+          "cask": true,
           "required": false
         },
         {
@@ -317,6 +339,7 @@
           "ubuntu": null,
           "description": "Enhanced terminal for macOS",
           "platform_specific": true,
+          "cask": true,
           "required": false
         }
       ]

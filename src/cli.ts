@@ -15,10 +15,24 @@ program
   .command("check-deps")
   .description("Check and verify all dependencies")
   .option("--auto-install", "Automatically install missing dependencies")
+  .option("--dry-run", "Show what dependencies would be checked without checking")
   .action(async (options) => {
     try {
-      await checkAllDependencies(options.autoInstall);
-      process.exit(0);
+      if (options.dryRun) {
+        logger.info("🔍 DRY RUN MODE - Dependencies will be listed but not checked");
+        logger.info("[DRY RUN] Would check dependencies:");
+        logger.info("  - Git");
+        logger.info("  - Zsh");
+        logger.info("  - Curl");
+        logger.info("  - Homebrew (macOS) or APT (Ubuntu)");
+        logger.info("  - Node.js / NVM");
+        logger.info("\n[DRY RUN] Dependency check preview complete!");
+        logger.info("Run without --dry-run to actually check dependencies.");
+        process.exit(0);
+      } else {
+        await checkAllDependencies(options.autoInstall);
+        process.exit(0);
+      }
     } catch (error) {
       logger.error(`Dependency check failed: ${error}`);
       process.exit(1);
