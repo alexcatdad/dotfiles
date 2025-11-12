@@ -10,7 +10,8 @@
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
       "Bash(docker-compose:*)",
-      "Bash(./test-docker.sh:*)"
+      "Bash(./test-docker.sh:*)",
+      "Bash(bun run typecheck:*)"
     ],
     "deny": [],
     "ask": []

@@ -54,22 +54,6 @@ export const bootstrapCommand = new Command("bootstrap")
           }
         }
       }
-
-      logger.info("\n[DRY RUN] Would install TypeScript packages:");
-      const tsCategory = config.categories.typescript;
-      if (tsCategory) {
-        for (const pkg of tsCategory.packages) {
-          if (pkg.required) {
-            const platformPkg = platform.os === "macos" ? pkg.macos : pkg.ubuntu;
-            if (platformPkg && platformPkg !== "null") {
-              logger.info(`  - ${pkg.name} (${platformPkg})`);
-            }
-            if (pkg.global_npm) {
-              logger.info(`  - npm: ${pkg.global_npm}${pkg.version_constraint ? `@${pkg.version_constraint}` : ""}`);
-            }
-          }
-        }
-      }
     } else {
       // Check and install dependencies
       logger.info("Checking dependencies...");
