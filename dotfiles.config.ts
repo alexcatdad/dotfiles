@@ -20,8 +20,8 @@ export default defineConfig({
     "git/gitconfig": ".gitconfig",
     "git/ignore": ".config/git/ignore",
 
-    // SSH configuration
-    "ssh/config": ".ssh/config",
+    // NOTE: SSH config NOT managed - too machine-specific (OrbStack, etc.)
+    // Users should manually configure ~/.ssh/config
 
     // Claude Code
     "claude/settings.json": ".claude/settings.json",
