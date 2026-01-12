@@ -1,0 +1,22 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# ZSHENV.LOCAL - Machine-Specific Environment Variables
+# This file is NOT tracked by git. Edit freely for machine-specific settings.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Custom Editor (override default)
+# ─────────────────────────────────────────────────────────────────────────────
+# export EDITOR="nvim"
+# export VISUAL="$EDITOR"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Machine-Specific Environment
+# ─────────────────────────────────────────────────────────────────────────────
+# export GOPATH="$HOME/go"
+# export JAVA_HOME="/usr/lib/jvm/java-17-openjdk"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Work/Project Specific
+# ─────────────────────────────────────────────────────────────────────────────
+# export PROJECT_ROOT="$HOME/work/myproject"
+# export DATABASE_URL="postgres://..."

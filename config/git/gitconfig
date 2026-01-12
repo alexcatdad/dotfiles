@@ -1,0 +1,82 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# GITCONFIG - Git Configuration
+# Managed by dotfiles: https://github.com/alexalexandrescu/dotfiles
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Machine-specific config (user info, credentials) - gitignored
+[include]
+    path = ~/.gitconfig.local
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Core Settings
+# ─────────────────────────────────────────────────────────────────────────────
+[core]
+    editor = code --wait
+    pager = less -FRX
+    autocrlf = input
+
+[init]
+    defaultBranch = main
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Aliases
+# ─────────────────────────────────────────────────────────────────────────────
+[alias]
+    st = status
+    co = checkout
+    br = branch
+    ci = commit
+    lg = log --oneline --graph --decorate -10
+    lga = log --oneline --graph --decorate --all
+    last = log -1 HEAD --stat
+    unstage = reset HEAD --
+    amend = commit --amend --no-edit
+    # Show all branches with last commit
+    branches = for-each-ref --sort=-committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pull/Push Behavior
+# ─────────────────────────────────────────────────────────────────────────────
+[pull]
+    rebase = true
+
+[push]
+    default = current
+    autoSetupRemote = true
+
+[fetch]
+    prune = true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Diff & Merge
+# ─────────────────────────────────────────────────────────────────────────────
+[diff]
+    colorMoved = default
+
+[merge]
+    conflictstyle = diff3
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Colors
+# ─────────────────────────────────────────────────────────────────────────────
+[color]
+    ui = auto
+
+[color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+
+[color "status"]
+    added = green
+    changed = yellow
+    untracked = red
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Git LFS
+# ─────────────────────────────────────────────────────────────────────────────
+[filter "lfs"]
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f

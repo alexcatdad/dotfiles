@@ -1,0 +1,21 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# ZSHENV - Zsh Environment Variables
+# Sourced for all shell types (interactive, non-interactive, login, etc.)
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Editor
+export EDITOR="code --wait"
+export VISUAL="$EDITOR"
+
+# Language/Locale
+export LANG="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"
+
+# Less configuration
+export LESS="-R"
+export LESSHISTFILE=-
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Machine-Specific Environment (gitignored)
+# ─────────────────────────────────────────────────────────────────────────────
+[[ -f ~/.zshenv.local ]] && source ~/.zshenv.local

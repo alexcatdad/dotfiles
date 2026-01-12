@@ -1,0 +1,31 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# ZSHRC.LOCAL - Machine-Specific Zsh Configuration
+# This file is NOT tracked by git. Edit freely for machine-specific settings.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Machine-Specific Paths
+# ─────────────────────────────────────────────────────────────────────────────
+# export PATH="$HOME/custom/bin:$PATH"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Machine-Specific Aliases
+# ─────────────────────────────────────────────────────────────────────────────
+# alias work="cd ~/work"
+# alias projects="cd ~/Projects"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Machine-Specific Tools
+# ─────────────────────────────────────────────────────────────────────────────
+# Example: LM Studio CLI
+# export PATH="$PATH:$HOME/.lmstudio/bin"
+
+# Example: Docker completions (added by Docker Desktop)
+# fpath=($HOME/.docker/completions $fpath)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Secrets & API Keys (NEVER commit these!)
+# ─────────────────────────────────────────────────────────────────────────────
+# export GITHUB_TOKEN="..."
+# export OPENAI_API_KEY="..."
+# export ANTHROPIC_API_KEY="..."
