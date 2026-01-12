@@ -15,13 +15,45 @@
 # alias projects="cd ~/Projects"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Machine-Specific Tools
+# Python Version Management (Pyenv)
+# Uncomment if you need Python version management on this machine
 # ─────────────────────────────────────────────────────────────────────────────
-# Example: LM Studio CLI
+# if command -v pyenv &> /dev/null; then
+#   export PYENV_ROOT="$HOME/.pyenv"
+#   export PATH="$PYENV_ROOT/bin:$PATH"
+#   eval "$(pyenv init --path)"
+#   eval "$(pyenv init -)"
+# fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Docker & Kubernetes (via Zinit OMZ plugins)
+# Uncomment the plugins you need on this machine
+# ─────────────────────────────────────────────────────────────────────────────
+# Docker completions and aliases
+# zinit snippet OMZP::docker
+# zinit snippet OMZP::docker-compose
+
+# Kubernetes completions and aliases (k=kubectl, kgp=kubectl get pods, etc.)
+# zinit snippet OMZP::kubectl
+# zinit snippet OMZP::helm
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Cloud Provider CLIs
+# ─────────────────────────────────────────────────────────────────────────────
+# AWS completions
+# zinit snippet OMZP::aws
+
+# Google Cloud completions
+# zinit snippet OMZP::gcloud
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Other Machine-Specific Tools
+# ─────────────────────────────────────────────────────────────────────────────
+# LM Studio CLI
 # export PATH="$PATH:$HOME/.lmstudio/bin"
 
-# Example: Docker completions (added by Docker Desktop)
-# fpath=($HOME/.docker/completions $fpath)
+# Ollama
+# alias chat="ollama run llama3"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Secrets & API Keys (NEVER commit these!)

@@ -21,6 +21,27 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.bun/bin:$PATH"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Zinit Plugin Manager
+# ─────────────────────────────────────────────────────────────────────────────
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+
+# Auto-install zinit if not present
+if [[ ! -d "$ZINIT_HOME" ]]; then
+  mkdir -p "$(dirname $ZINIT_HOME)"
+  git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+
+source "${ZINIT_HOME}/zinit.zsh"
+
+# Essential plugins with turbo mode (async loading for fast startup)
+zinit wait lucid for \
+  atinit"zicompinit; zicdreplay" \
+  zdharma-continuum/fast-syntax-highlighting \
+  zsh-users/zsh-autosuggestions \
+  zsh-users/zsh-completions \
+  djui/alias-tips
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Tool Initialization
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -35,23 +56,24 @@ if command -v zoxide &> /dev/null; then
 fi
 
 # FZF fuzzy finder
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+if [[ -f ~/.fzf.zsh ]]; then
+  source ~/.fzf.zsh
+elif command -v fzf &> /dev/null; then
+  eval "$(fzf --zsh 2>/dev/null)" || true
+fi
 
-# NVM (Node Version Manager)
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+# fnm (Fast Node Manager - replaces nvm)
+if command -v fnm &> /dev/null; then
+  eval "$(fnm env --use-on-cd)"
+fi
+
+# direnv (per-directory environment variables)
+if command -v direnv &> /dev/null; then
+  eval "$(direnv hook zsh)"
+fi
 
 # Bun completions
-[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
-
-# Pyenv
-if command -v pyenv &> /dev/null; then
-  export PYENV_ROOT="$HOME/.pyenv"
-  export PATH="$PYENV_ROOT/bin:$PATH"
-  eval "$(pyenv init --path)"
-  eval "$(pyenv init -)"
-fi
+[[ -s "$HOME/.bun/_bun" ]] && source "$HOME/.bun/_bun"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Aliases - Modern CLI Replacements
@@ -60,15 +82,20 @@ fi
 # eza (modern ls)
 if command -v eza &> /dev/null; then
   alias ls="eza --icons --group-directories-first"
-  alias ll="eza -la --icons --group-directories-first"
+  alias ll="eza -lag --icons --group-directories-first --git"
   alias lt="eza -T --icons --level=2"
   alias la="eza -a --icons --group-directories-first"
+  alias tree="eza -T --icons"
 fi
 
-# bat (modern cat)
-if command -v bat &> /dev/null; then
-  alias cat="bat --style=plain"
-  alias catp="bat"
+# ripgrep (modern grep)
+if command -v rg &> /dev/null; then
+  alias grep="rg --smart-case"
+fi
+
+# fd (modern find)
+if command -v fd &> /dev/null; then
+  alias find="fd"
 fi
 
 # Git shortcuts
@@ -85,22 +112,25 @@ alias gco="git checkout"
 # ─────────────────────────────────────────────────────────────────────────────
 setopt AUTO_CD              # cd by typing directory name
 setopt HIST_IGNORE_DUPS     # Don't record duplicate commands
+setopt HIST_IGNORE_SPACE    # Don't record commands starting with space
 setopt SHARE_HISTORY        # Share history between sessions
 setopt APPEND_HISTORY       # Append to history file
 setopt INC_APPEND_HISTORY   # Add commands immediately
+setopt EXTENDED_HISTORY     # Record timestamp in history
 
-HISTSIZE=10000
-SAVEHIST=10000
+HISTSIZE=50000
+SAVEHIST=50000
 HISTFILE=~/.zsh_history
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Completion System
+# Completion System (handled by zinit's zicompinit)
 # ─────────────────────────────────────────────────────────────────────────────
-autoload -Uz compinit
-compinit
 
 # Case-insensitive completion
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+
+# Completion menu with selection
+zstyle ':completion:*' menu select
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Machine-Specific Configuration (gitignored)

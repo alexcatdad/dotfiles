@@ -31,15 +31,24 @@ export default defineConfig({
   packages: {
     // Common packages (installed on all platforms via Homebrew/Linuxbrew)
     common: [
+      // Prompt
       "starship",     // Cross-shell prompt
+
+      // Modern CLI replacements
       "eza",          // Modern ls replacement
-      "zoxide",       // Smarter cd command
-      "fzf",          // Fuzzy finder
-      "bat",          // Cat with syntax highlighting
       "fd",           // Modern find replacement
       "ripgrep",      // Fast grep replacement
+      "fzf",          // Fuzzy finder
+      "zoxide",       // Smarter cd command
+
+      // Utilities
       "jq",           // JSON processor
       "gh",           // GitHub CLI
+      "tldr",         // Simplified man pages
+      "ncdu",         // Disk usage analyzer
+      "btop",         // Modern system monitor
+      "direnv",       // Per-directory environment variables
+      "fnm",          // Fast Node Manager (replaces nvm)
     ],
 
     // macOS-specific packages (casks)
