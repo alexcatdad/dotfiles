@@ -41,7 +41,7 @@ export function getHomeDir(): string {
 
 /**
  * Get the repository directory (where the dotfiles config lives)
- * Supports: environment variable, common locations, or import.meta.dir (dev mode)
+ * Supports: environment variable, current dir, common locations, or import.meta.dir (dev mode)
  */
 export function getRepoDir(): string {
   // 1. Check environment variable first (allows custom location)
@@ -50,7 +50,17 @@ export function getRepoDir(): string {
     return envDir;
   }
 
-  // 2. Check common dotfiles locations
+  // 2. Check current working directory (for CI and running from repo)
+  const cwd = process.cwd();
+  try {
+    if (Bun.file(`${cwd}/dotfiles.config.ts`).size !== undefined) {
+      return cwd;
+    }
+  } catch {
+    // Not in repo directory
+  }
+
+  // 3. Check common dotfiles locations
   const home = getHomeDir();
   const commonPaths = [
     `${home}/Projects/dotfiles`,
@@ -63,8 +73,6 @@ export function getRepoDir(): string {
   for (const path of commonPaths) {
     try {
       // Check if this looks like our dotfiles repo (has dotfiles.config.ts)
-      const configFile = Bun.file(`${path}/dotfiles.config.ts`);
-      // Synchronous existence check via accessing the file
       if (Bun.file(`${path}/dotfiles.config.ts`).size !== undefined) {
         return path;
       }
@@ -73,13 +81,13 @@ export function getRepoDir(): string {
     }
   }
 
-  // 3. Fallback to import.meta.dir (works in dev mode when running from source)
+  // 4. Fallback to import.meta.dir (works in dev mode when running from source)
   const metaDir = import.meta.dir;
   if (!metaDir.includes("$bunfs") && !metaDir.includes("bunfs")) {
     return metaDir.replace(/\/src\/core$/, "");
   }
 
-  // 4. Last resort - assume first common path
+  // 5. Last resort - assume first common path
   return commonPaths[0];
 }
 
