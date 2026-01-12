@@ -206,9 +206,9 @@ jobs:
 
             **Install:**
             ```bash
-            curl -fsSL https://raw.githubusercontent.com/alexalexandrescu/dotfiles/main/install.sh | bash
+            curl -fsSL https://raw.githubusercontent.com/alexcatdad/dotfiles/main/install.sh | bash
             ```
 
-            **Changes:** See [commit history](https://github.com/alexalexandrescu/dotfiles/commits/main)
+            **Changes:** See [commit history](https://github.com/alexcatdad/dotfiles/commits/main)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

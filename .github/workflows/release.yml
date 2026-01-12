@@ -44,7 +44,7 @@ jobs:
             ## Installation
 
             ```bash
-            curl -fsSL https://raw.githubusercontent.com/alexalexandrescu/dotfiles/main/install.sh | bash
+            curl -fsSL https://raw.githubusercontent.com/alexcatdad/dotfiles/main/install.sh | bash
             ```
 
             Or download the binary for your platform and place it in your PATH.

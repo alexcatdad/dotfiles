@@ -2,23 +2,40 @@
 
 > Personal dotfiles manager - one command to rule them all
 
-[![CI](https://github.com/alexalexandrescu/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/alexalexandrescu/dotfiles/actions/workflows/ci.yml)
-[![Release](https://github.com/alexalexandrescu/dotfiles/actions/workflows/release.yml/badge.svg)](https://github.com/alexalexandrescu/dotfiles/releases)
+[![CI](https://github.com/alexcatdad/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/alexcatdad/dotfiles/actions/workflows/ci.yml)
+[![Release](https://github.com/alexcatdad/dotfiles/actions/workflows/release.yml/badge.svg)](https://github.com/alexcatdad/dotfiles/releases)
 
 A TypeScript/Bun-powered dotfiles automation system. Manages shell configuration, packages, and symlinks across macOS and Linux.
 
 ## Quick Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/alexalexandrescu/dotfiles/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/alexcatdad/dotfiles/main/install.sh | bash
 ```
 
 This will:
 1. Clone the repo to `~/Projects/dotfiles`
 2. Install the `paw` CLI to `~/.local/bin`
-3. Install all packages via Homebrew
-4. Symlink all config files
-5. Set up your shell with Zinit, Starship, and modern CLI tools
+3. **Migrate** existing SSH hosts to `~/.ssh/config.local` (won't lose your hosts!)
+4. Install all packages via Homebrew
+5. Symlink all config files
+6. Set up your shell with Zinit, Starship, and modern CLI tools
+
+### Install Options
+
+```bash
+# Check version without installing
+curl -fsSL ... | bash -s -- --version
+
+# Force reinstall even if up to date
+curl -fsSL ... | bash -s -- --force
+
+# Accept breaking changes on major upgrades
+curl -fsSL ... | bash -s -- --upgrade
+
+# Skip package installation
+curl -fsSL ... | bash -s -- --skip-packages
+```
 
 ## What You Get
 
@@ -219,6 +236,36 @@ bun run build:all
 The `paw` binary finds your repo by checking:
 1. `$PAW_REPO` or `$DOTFILES_DIR` environment variable
 2. Common paths: `~/Projects/dotfiles`, `~/.dotfiles`, etc.
+
+## Updates & Versioning
+
+This project uses [Semantic Versioning](https://semver.org/):
+
+| Update Type | Example | Requires `--upgrade` |
+|-------------|---------|----------------------|
+| Patch | 1.0.0 → 1.0.1 | No |
+| Minor | 1.0.0 → 1.1.0 | No |
+| Major | 1.0.0 → 2.0.0 | **Yes** |
+
+### Safe Updates (automatic)
+
+```bash
+# Re-run install script - auto-updates if new version available
+curl -fsSL https://raw.githubusercontent.com/alexcatdad/dotfiles/main/install.sh | bash
+```
+
+### Major Updates (breaking changes)
+
+Major versions may include breaking changes. The install script will:
+1. Detect the major version bump
+2. Show what might break
+3. Require explicit `--upgrade` flag
+
+```bash
+curl -fsSL ... | bash -s -- --upgrade
+```
+
+See [VERSIONING.md](VERSIONING.md) for full compatibility guarantees.
 
 ## License
 

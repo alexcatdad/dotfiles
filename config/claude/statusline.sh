@@ -1,7 +1,7 @@
 #!/bin/bash
 # ══════════════════════════════════════════════════════════════════════════════
 # Claude Code Status Line - Gruvbox Dark Theme with Powerline
-# Managed by dotfiles: https://github.com/alexalexandrescu/dotfiles
+# Managed by dotfiles: https://github.com/alexcatdad/dotfiles
 # ══════════════════════════════════════════════════════════════════════════════
 
 # Read JSON input from stdin
