@@ -11,7 +11,7 @@ import { createSymlinks, removeSymlinks, getSymlinkStatus, statesToEntries } fro
 import { generateTemplates } from "./core/templates";
 import { installPackages, checkPackages } from "./core/packages";
 import { listBackups, restoreBackup, cleanBackups, rollback, saveLastRunState, loadLastRunState } from "./core/backup";
-import { migrateSSHConfig } from "./core/ssh";
+import { addSuggestions, SSH_SUGGESTIONS } from "./core/suggestions";
 import { logger } from "./core/logger";
 import type { InstallOptions, BackupEntry } from "./types";
 
@@ -109,14 +109,6 @@ async function installCommand(options: InstallOptions): Promise<void> {
     logger.info("Skipping package installation (--skip-packages)");
   }
 
-  // Migrate existing SSH config to config.local (before symlinking overwrites it)
-  if (config.symlinks["ssh/config"]) {
-    const migrated = await migrateSSHConfig({ dryRun: options.dryRun });
-    if (migrated) {
-      logger.newline();
-    }
-  }
-
   // Create symlinks
   logger.header("Creating Symlinks");
   const states = await createSymlinks(config.symlinks, options);
@@ -137,6 +129,10 @@ async function installCommand(options: InstallOptions): Promise<void> {
     logger.header("Generating Template Files");
     await generateTemplates(config.templates, options);
   }
+
+  // Add best-practice suggestions to config files (non-destructive)
+  logger.header("Config Suggestions");
+  await addSuggestions(SSH_SUGGESTIONS, { dryRun: options.dryRun, force: options.force });
 
   // Run post-install hook
   if (config.hooks?.postInstall) {
@@ -207,14 +203,6 @@ async function linkCommand(options: InstallOptions): Promise<void> {
       },
       commandExists,
     });
-  }
-
-  // Migrate existing SSH config to config.local (before symlinking overwrites it)
-  if (config.symlinks["ssh/config"]) {
-    const migrated = await migrateSSHConfig({ dryRun: options.dryRun });
-    if (migrated) {
-      logger.newline();
-    }
   }
 
   const states = await createSymlinks(config.symlinks, options);
