@@ -59,7 +59,7 @@ Defines:
 - **History**: atuin (SQLite-backed, syncable)
 
 ## Packages Installed
-`starship`, `eza`, `fd`, `ripgrep`, `fzf`, `zoxide`, `jq`, `gh`, `tldr`, `ncdu`, `btop`, `direnv`, `fnm`, `dust`, `atuin`
+`starship`, `eza`, `fd`, `ripgrep`, `fzf`, `zoxide`, `jq`, `gh`, `tldr`, `dust`, `btop`, `direnv`, `fnm`, `atuin`
 
 ## Key Aliases
 ```bash

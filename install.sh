@@ -72,8 +72,10 @@ is_major_upgrade() {
   local current="$1"
   local new="$2"
 
-  local current_major=$(echo "$current" | cut -d. -f1)
-  local new_major=$(echo "$new" | cut -d. -f1)
+  local current_major
+  local new_major
+  current_major=$(echo "$current" | cut -d. -f1)
+  new_major=$(echo "$new" | cut -d. -f1)
 
   [ "$new_major" -gt "$current_major" ]
 }

@@ -31,10 +31,11 @@ brew "zoxide"             # Smarter cd command (z)
 brew "jq"                 # JSON processor
 brew "gh"                 # GitHub CLI
 brew "tldr"               # Simplified man pages
-brew "ncdu"               # Disk usage analyzer
+brew "dust"               # Disk usage analyzer (modern du)
 brew "btop"               # Modern system monitor
 brew "direnv"             # Per-directory environment variables
 brew "fnm"                # Fast Node Manager
+brew "atuin"              # Better shell history with sync
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Optional CLI Tools (Uncomment as needed)
@@ -44,8 +45,6 @@ brew "fnm"                # Fast Node Manager
 # brew "lazygit"          # Terminal UI for git
 # brew "httpie"           # Modern curl alternative
 # brew "duf"              # Modern df alternative
-brew "dust"               # Modern du alternative
-brew "atuin"              # Better shell history with sync
 # brew "procs"            # Modern ps alternative
 # brew "sd"               # Modern sed alternative
 # brew "hyperfine"        # Command benchmarking
