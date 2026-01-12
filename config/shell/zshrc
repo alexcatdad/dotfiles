@@ -78,6 +78,16 @@ fi
 # Bun completions
 [[ -s "$HOME/.bun/_bun" ]] && source "$HOME/.bun/_bun"
 
+# CLI completions (tools that generate their own)
+command -v claude &> /dev/null && eval "$(claude completion zsh)"
+command -v gh &> /dev/null && eval "$(gh completion -s zsh)"
+
+# paw update checker (background, non-blocking)
+# Checks for dotfiles updates and sends desktop notification if available
+if command -v paw &> /dev/null; then
+  (paw check-update &) 2>/dev/null
+fi
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Aliases - Modern CLI Replacements
 # ─────────────────────────────────────────────────────────────────────────────
