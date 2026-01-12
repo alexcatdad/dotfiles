@@ -56,9 +56,10 @@ Defines:
 - **Node**: fnm (Fast Node Manager)
 - **Navigation**: zoxide
 - **Fuzzy Finder**: fzf
+- **History**: atuin (SQLite-backed, syncable)
 
 ## Packages Installed
-`starship`, `eza`, `fd`, `ripgrep`, `fzf`, `zoxide`, `jq`, `gh`, `tldr`, `ncdu`, `btop`, `direnv`, `fnm`
+`starship`, `eza`, `fd`, `ripgrep`, `fzf`, `zoxide`, `jq`, `gh`, `tldr`, `dust`, `btop`, `direnv`, `fnm`, `atuin`
 
 ## Key Aliases
 ```bash

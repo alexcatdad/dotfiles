@@ -52,10 +52,11 @@ export default defineConfig({
       "jq",           // JSON processor
       "gh",           // GitHub CLI
       "tldr",         // Simplified man pages
-      "ncdu",         // Disk usage analyzer
+      "dust",         // Disk usage analyzer (modern du)
       "btop",         // Modern system monitor
       "direnv",       // Per-directory environment variables
       "fnm",          // Fast Node Manager (replaces nvm)
+      "atuin",        // Better shell history with sync
     ],
 
     // macOS-specific packages (casks)

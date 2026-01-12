@@ -70,6 +70,11 @@ if command -v direnv &> /dev/null; then
   eval "$(direnv hook zsh)"
 fi
 
+# Atuin (better shell history with sync)
+if command -v atuin &> /dev/null; then
+  eval "$(atuin init zsh)"
+fi
+
 # Bun completions
 [[ -s "$HOME/.bun/_bun" ]] && source "$HOME/.bun/_bun"
 
