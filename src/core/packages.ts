@@ -44,12 +44,56 @@ async function installHomebrew(platform: Platform, options: InstallOptions): Pro
 }
 
 /**
- * Check if a Homebrew package is installed
+ * Check if a font is installed on macOS (regardless of how it was installed)
+ */
+async function isFontInstalled(fontName: string): Promise<boolean> {
+  // Extract the font family name from cask name (e.g., "font-fira-code-nerd-font" -> "fira")
+  const searchTerms = fontName
+    .replace(/^font-/, "")
+    .replace(/-nerd-font$/, "")
+    .replace(/-/g, " ");
+
+  try {
+    // Use system_profiler to check installed fonts (more reliable than fc-list on macOS)
+    const result = await $`system_profiler SPFontsDataType`.quiet().nothrow();
+    if (result.exitCode === 0) {
+      const output = result.stdout.toString().toLowerCase();
+      // Check if any variant of the font name is present
+      const terms = searchTerms.toLowerCase().split(" ");
+      return terms.every(term => output.includes(term)) && output.includes("nerd");
+    }
+  } catch {
+    // Fall through to false
+  }
+
+  return false;
+}
+
+/**
+ * Check if a Homebrew package is installed (formula or cask)
  */
 async function isBrewPackageInstalled(pkg: string, brewPath: string): Promise<boolean> {
   try {
-    const result = await $`${brewPath} list ${pkg}`.quiet().nothrow();
-    return result.exitCode === 0;
+    // Special handling for fonts - check if font is actually installed on system
+    if (pkg.startsWith("font-") && pkg.includes("nerd-font")) {
+      if (await isFontInstalled(pkg)) {
+        return true;
+      }
+    }
+
+    // Check formulae first
+    const formulaResult = await $`${brewPath} list --formula ${pkg}`.quiet().nothrow();
+    if (formulaResult.exitCode === 0) {
+      return true;
+    }
+
+    // Check casks (for GUI apps, fonts, etc.)
+    const caskResult = await $`${brewPath} list --cask ${pkg}`.quiet().nothrow();
+    if (caskResult.exitCode === 0) {
+      return true;
+    }
+
+    return false;
   } catch {
     return false;
   }

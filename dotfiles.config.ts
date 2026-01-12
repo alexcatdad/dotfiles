@@ -11,6 +11,7 @@ export default defineConfig({
     // Shell configuration
     "shell/zshrc": ".zshrc",
     "shell/zshenv": ".zshenv",
+    "shell/functions": ".config/shell/functions",
 
     // Starship prompt (unified Gruvbox Dark theme)
     "starship/starship.toml": ".config/starship.toml",
@@ -19,12 +20,18 @@ export default defineConfig({
     "git/gitconfig": ".gitconfig",
     "git/ignore": ".config/git/ignore",
 
+    // SSH configuration
+    "ssh/config": ".ssh/config",
+
     // Claude Code
     "claude/settings.json": ".claude/settings.json",
     "claude/statusline.sh": ".claude/statusline-command.sh",
 
     // Terminal emulators
     "terminal/ghostty/config": ".config/ghostty/config",
+
+    // Homebrew
+    "homebrew/Brewfile": ".config/homebrew/Brewfile",
   },
 
   // Packages to install
@@ -75,6 +82,7 @@ export default defineConfig({
     "templates/zshrc.local.template": ".zshrc.local",
     "templates/zshenv.local.template": ".zshenv.local",
     "templates/gitconfig.local.template": ".gitconfig.local",
+    "templates/ssh-config.local.template": ".ssh/config.local",
   },
 
   // Files/patterns to never overwrite (gitignored, machine-specific)
@@ -82,6 +90,7 @@ export default defineConfig({
     ".zshrc.local",
     ".zshenv.local",
     ".gitconfig.local",
+    ".ssh/config.local",
     ".claude/settings.local.json",
     ".claude/.credentials.json",
   ],

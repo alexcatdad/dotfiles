@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * Dotfiles CLI
- * Personal dotfiles manager with TypeScript/Bun
+ * Personal paw manager with TypeScript/Bun
  */
 
 import { parseArgs } from "util";
@@ -21,10 +21,10 @@ const VERSION = "1.0.0";
  */
 function printHelp(): void {
   console.log(`
-${"\x1b[1m"}dotfiles${"\x1b[0m"} v${VERSION} - Personal dotfiles manager
+${"\x1b[1m"}paw${"\x1b[0m"} v${VERSION} - Personal dotfiles manager 🐱
 
 ${"\x1b[1m"}USAGE${"\x1b[0m"}
-  dotfiles <command> [options]
+  paw <command> [options]
 
 ${"\x1b[1m"}COMMANDS${"\x1b[0m"}
   install          Full setup: install packages and create symlinks
@@ -35,7 +35,8 @@ ${"\x1b[1m"}COMMANDS${"\x1b[0m"}
   backup list      List all backup files
   backup restore   Restore a specific backup file
   backup clean     Remove old backups based on retention policy
-  update           Update the dotfiles binary (self-update)
+  update           Update the paw binary (self-update)
+  doctor           Check dotfiles health and diagnose issues
 
 ${"\x1b[1m"}OPTIONS${"\x1b[0m"}
   -n, --dry-run        Show what would be done without making changes
@@ -46,15 +47,15 @@ ${"\x1b[1m"}OPTIONS${"\x1b[0m"}
   --version            Show version number
 
 ${"\x1b[1m"}EXAMPLES${"\x1b[0m"}
-  dotfiles install              # Full installation
-  dotfiles install --dry-run    # Preview installation
-  dotfiles link --force         # Force symlinks with backup
-  dotfiles status               # Check current state
-  dotfiles rollback             # Undo last install/link
-  dotfiles backup clean         # Clean old backups
+  paw install              # Full installation
+  paw install --dry-run    # Preview installation
+  paw link --force         # Force symlinks with backup
+  paw status               # Check current state
+  paw rollback             # Undo last install/link
+  paw backup clean         # Clean old backups
 
 ${"\x1b[1m"}FIRST TIME SETUP${"\x1b[0m"}
-  curl -fsSL https://raw.githubusercontent.com/alexalexandrescu/dotfiles/main/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/alexalexandrescu/paw/main/install.sh | bash
 `);
 }
 
@@ -62,7 +63,7 @@ ${"\x1b[1m"}FIRST TIME SETUP${"\x1b[0m"}
  * Print version
  */
 function printVersion(): void {
-  console.log(`dotfiles v${VERSION}`);
+  console.log(`paw v${VERSION}`);
 }
 
 /**
@@ -327,7 +328,7 @@ async function backupCommand(subcommand: string, args: string[], options: Instal
 
     case "restore":
       if (args.length === 0) {
-        logger.error("Usage: dotfiles backup restore <backup-file>");
+        logger.error("Usage: paw backup restore <backup-file>");
         process.exit(1);
       }
       await restoreBackup(args[0], options);
@@ -361,6 +362,127 @@ async function updateCommand(options: InstallOptions): Promise<void> {
   logger.header("Self Update");
   logger.warn("Self-update is not yet implemented for source installs.");
   logger.info("To update, run: git pull && bun install");
+}
+
+/**
+ * Doctor command - check paw health
+ */
+async function doctorCommand(options: InstallOptions): Promise<void> {
+  logger.header("Dotfiles Doctor");
+
+  const config = await loadConfig();
+  let issues = 0;
+
+  // System Info
+  logger.subheader("System");
+  logger.table({
+    "Platform": getPlatform(),
+    "Home": getHomeDir(),
+    "Repo": getRepoDir(),
+    "Shell": process.env.SHELL ?? "unknown",
+  });
+
+  // Check Symlinks
+  logger.subheader("Symlinks");
+  const symlinkStatus = await getSymlinkStatus(config.symlinks);
+  const linked = symlinkStatus.filter(s => s.status === "linked").length;
+  const conflicts = symlinkStatus.filter(s => s.status === "conflict");
+  const missing = symlinkStatus.filter(s => s.status === "missing" || s.status === "source-missing");
+
+  if (conflicts.length > 0) {
+    logger.warn(`${conflicts.length} conflict(s):`);
+    conflicts.forEach(s => logger.info(`  - ${contractPath(s.target)}`));
+    issues += conflicts.length;
+  }
+  if (missing.length > 0) {
+    logger.warn(`${missing.length} missing:`);
+    missing.forEach(s => logger.info(`  - ${contractPath(s.target)}`));
+    issues += missing.length;
+  }
+  logger.info(`${linked}/${symlinkStatus.length} symlinks active`);
+
+  // Check Required Tools
+  logger.subheader("Required Tools");
+  const requiredTools = ["git", "zsh", "curl", "nano", "ssh", "tar", "gzip"];
+  for (const tool of requiredTools) {
+    if (await commandExists(tool)) {
+      logger.success(tool);
+    } else {
+      logger.error(`${tool} - NOT FOUND`);
+      issues++;
+    }
+  }
+
+  // Check Optional Tools (from packages)
+  logger.subheader("Optional Tools");
+  const optionalTools = config.packages.common;
+  const installedTools: string[] = [];
+  const missingTools: string[] = [];
+
+  for (const tool of optionalTools) {
+    if (await commandExists(tool)) {
+      installedTools.push(tool);
+    } else {
+      missingTools.push(tool);
+    }
+  }
+
+  logger.info(`${installedTools.length}/${optionalTools.length} packages installed`);
+  if (missingTools.length > 0 && options.verbose) {
+    logger.warn(`Missing: ${missingTools.join(", ")}`);
+  }
+
+  // Check Shell Configuration
+  logger.subheader("Shell Config");
+  const homeDir = getHomeDir();
+  const zshrcPath = `${homeDir}/.zshrc`;
+  const zshrcFile = Bun.file(zshrcPath);
+
+  if (await zshrcFile.exists()) {
+    const zshrcContent = await zshrcFile.text();
+    const checks = [
+      { name: "Zinit", check: zshrcContent.includes("zinit") },
+      { name: "Starship", check: zshrcContent.includes("starship") },
+      { name: "Zoxide", check: zshrcContent.includes("zoxide") },
+      { name: "FZF", check: zshrcContent.includes("fzf") },
+    ];
+    for (const { name, check } of checks) {
+      if (check) {
+        logger.success(name);
+      } else {
+        logger.warn(`${name} - not configured`);
+      }
+    }
+  } else {
+    logger.error(".zshrc not found");
+    issues++;
+  }
+
+  // Check SSH config
+  logger.subheader("SSH");
+  const sshConfigPath = `${homeDir}/.ssh/config`;
+  const sshSocketsPath = `${homeDir}/.ssh/sockets`;
+  const sshConfigFile = Bun.file(sshConfigPath);
+
+  if (await sshConfigFile.exists()) {
+    logger.success("SSH config exists");
+  } else {
+    logger.info("SSH config not found (optional)");
+  }
+
+  // Check for SSH sockets directory (for connection multiplexing)
+  const { existsSync } = await import("fs");
+  if (!existsSync(sshSocketsPath)) {
+    logger.info("SSH sockets directory missing - run: mkdir -p ~/.ssh/sockets");
+  }
+
+  // Summary
+  logger.newline();
+  if (issues === 0) {
+    logger.success("All checks passed!");
+  } else {
+    logger.warn(`Found ${issues} issue(s). Run 'paw install --force' to fix.`);
+  }
 }
 
 /**
@@ -430,6 +552,10 @@ async function main(): Promise<void> {
 
       case "update":
         await updateCommand(options);
+        break;
+
+      case "doctor":
+        await doctorCommand(options);
         break;
 
       case "help":

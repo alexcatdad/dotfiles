@@ -1,0 +1,47 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# SSH Configuration - Base Settings
+# ══════════════════════════════════════════════════════════════════════════════
+# Machine-specific hosts should go in ~/.ssh/config.local (gitignored)
+# This file contains safe-to-commit defaults and best practices.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Global Defaults
+# ─────────────────────────────────────────────────────────────────────────────
+Host *
+  # Security
+  AddKeysToAgent yes
+  IdentitiesOnly yes
+
+  # macOS Keychain integration (ignored on Linux)
+  UseKeychain yes
+
+  # Connection keepalive (prevents drops on idle connections)
+  ServerAliveInterval 60
+  ServerAliveCountMax 3
+
+  # Multiplexing (reuse connections for speed)
+  ControlMaster auto
+  ControlPath ~/.ssh/sockets/%r@%h-%p
+  ControlPersist 600
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GitHub
+# ─────────────────────────────────────────────────────────────────────────────
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GitLab
+# ─────────────────────────────────────────────────────────────────────────────
+Host gitlab.com
+  HostName gitlab.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Machine-Specific Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+# Include local overrides (hosts, work servers, etc.)
+Include ~/.ssh/config.local

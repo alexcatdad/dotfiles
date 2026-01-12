@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ══════════════════════════════════════════════════════════════════════════════
-# DOTFILES BOOTSTRAP SCRIPT
+# PAW - Dotfiles Bootstrap Script
 # Run this on a new machine to set everything up:
 #   curl -fsSL https://raw.githubusercontent.com/alexalexandrescu/dotfiles/main/install.sh | bash
 # ══════════════════════════════════════════════════════════════════════════════
@@ -8,16 +8,18 @@
 set -e
 
 REPO="alexalexandrescu/dotfiles"
-INSTALL_DIR="${DOTFILES_DIR:-$HOME/Projects/dotfiles}"
+INSTALL_DIR="${PAW_REPO:-${DOTFILES_DIR:-$HOME/Projects/dotfiles}}"
+BIN_DIR="$HOME/.local/bin"
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}═══ Dotfiles Bootstrap ═══${NC}"
+echo -e "${CYAN}🐱 paw${NC} - dotfiles manager"
 echo ""
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -58,22 +60,25 @@ fi
 cd "$INSTALL_DIR"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Create bin directory
+# ─────────────────────────────────────────────────────────────────────────────
+mkdir -p "$BIN_DIR"
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Try to use pre-built binary first
 # ─────────────────────────────────────────────────────────────────────────────
-BINARY="dotfiles-${OS}-${ARCH}"
+BINARY="paw-${OS}-${ARCH}"
 DOWNLOAD_URL="https://github.com/${REPO}/releases/latest/download/${BINARY}"
 
 # Check if release exists
 if curl --output /dev/null --silent --head --fail "$DOWNLOAD_URL"; then
   echo -e "${GREEN}→${NC} Downloading pre-built binary..."
-  TEMP_BIN=$(mktemp)
-  curl -fsSL "$DOWNLOAD_URL" -o "$TEMP_BIN"
-  chmod +x "$TEMP_BIN"
+  curl -fsSL "$DOWNLOAD_URL" -o "$BIN_DIR/paw"
+  chmod +x "$BIN_DIR/paw"
+  echo -e "${GREEN}✓${NC} Installed paw to $BIN_DIR/paw"
 
-  echo -e "${GREEN}→${NC} Running dotfiles installer..."
-  "$TEMP_BIN" install "$@"
-
-  rm -f "$TEMP_BIN"
+  echo -e "${GREEN}→${NC} Running paw install..."
+  "$BIN_DIR/paw" install "$@"
 else
   # ─────────────────────────────────────────────────────────────────────────────
   # Fall back to running from source with Bun
@@ -94,11 +99,17 @@ else
   echo -e "${GREEN}→${NC} Installing dependencies..."
   bun install
 
+  # Build and install paw binary
+  echo -e "${GREEN}→${NC} Building paw..."
+  bun build src/index.ts --compile --outfile="$BIN_DIR/paw"
+  echo -e "${GREEN}✓${NC} Installed paw to $BIN_DIR/paw"
+
   # Run the installer
-  echo -e "${GREEN}→${NC} Running dotfiles installer..."
-  bun run src/index.ts install "$@"
+  echo -e "${GREEN}→${NC} Running paw install..."
+  "$BIN_DIR/paw" install "$@"
 fi
 
 echo ""
 echo -e "${GREEN}✓${NC} Setup complete!"
 echo -e "${BLUE}→${NC} Restart your shell or run: ${YELLOW}source ~/.zshrc${NC}"
+echo -e "${BLUE}→${NC} Then use ${CYAN}paw${NC} to manage your dotfiles"

@@ -1,10 +1,10 @@
 {
-  "name": "dotfiles",
+  "name": "paw",
   "version": "1.0.0",
   "description": "Personal dotfiles automation with TypeScript/Bun",
   "type": "module",
   "bin": {
-    "dotfiles": "./src/index.ts"
+    "paw": "./src/index.ts"
   },
   "scripts": {
     "dev": "bun run src/index.ts",
@@ -15,10 +15,10 @@
     "typecheck": "tsc --noEmit",
     "build": "bun run build:all",
     "build:all": "bun run build:darwin-arm64 && bun run build:darwin-x64 && bun run build:linux-x64 && bun run build:linux-arm64",
-    "build:darwin-arm64": "bun build src/index.ts --compile --target=bun-darwin-arm64 --outfile=dist/dotfiles-darwin-arm64",
-    "build:darwin-x64": "bun build src/index.ts --compile --target=bun-darwin-x64 --outfile=dist/dotfiles-darwin-x64",
-    "build:linux-x64": "bun build src/index.ts --compile --target=bun-linux-x64 --outfile=dist/dotfiles-linux-x64",
-    "build:linux-arm64": "bun build src/index.ts --compile --target=bun-linux-arm64 --outfile=dist/dotfiles-linux-arm64"
+    "build:darwin-arm64": "bun build src/index.ts --compile --target=bun-darwin-arm64 --outfile=dist/paw-darwin-arm64",
+    "build:darwin-x64": "bun build src/index.ts --compile --target=bun-darwin-x64 --outfile=dist/paw-darwin-x64",
+    "build:linux-x64": "bun build src/index.ts --compile --target=bun-linux-x64 --outfile=dist/paw-linux-x64",
+    "build:linux-arm64": "bun build src/index.ts --compile --target=bun-linux-arm64 --outfile=dist/paw-linux-arm64"
   },
   "dependencies": {},
   "devDependencies": {

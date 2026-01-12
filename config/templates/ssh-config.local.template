@@ -1,0 +1,36 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# SSH Configuration - Local/Machine-Specific
+# ══════════════════════════════════════════════════════════════════════════════
+# This file is gitignored. Add your personal/work hosts here.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Example: Personal Server
+# ─────────────────────────────────────────────────────────────────────────────
+# Host myserver
+#   HostName 192.168.1.100
+#   User alex
+#   IdentityFile ~/.ssh/id_ed25519
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Example: Work Server with Jump Host
+# ─────────────────────────────────────────────────────────────────────────────
+# Host work-prod
+#   HostName 10.0.0.50
+#   User deployer
+#   ProxyJump bastion.company.com
+#   IdentityFile ~/.ssh/work_key
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Example: AWS EC2 Instance
+# ─────────────────────────────────────────────────────────────────────────────
+# Host aws-web
+#   HostName ec2-XX-XX-XX-XX.compute-1.amazonaws.com
+#   User ec2-user
+#   IdentityFile ~/.ssh/aws-key.pem
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Example: Raspberry Pi
+# ─────────────────────────────────────────────────────────────────────────────
+# Host pi
+#   HostName raspberrypi.local
+#   User pi

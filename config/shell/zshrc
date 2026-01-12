@@ -15,12 +15,6 @@ elif [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Path Configuration
-# ─────────────────────────────────────────────────────────────────────────────
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="$HOME/.bun/bin:$PATH"
-
-# ─────────────────────────────────────────────────────────────────────────────
 # Zinit Plugin Manager
 # ─────────────────────────────────────────────────────────────────────────────
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
@@ -40,6 +34,10 @@ zinit wait lucid for \
   zsh-users/zsh-autosuggestions \
   zsh-users/zsh-completions \
   djui/alias-tips
+
+# Load custom functions (turbo mode for async loading)
+[[ -d "$HOME/.config/shell/functions" ]] && \
+  zinit wait lucid for $HOME/.config/shell/functions
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Tool Initialization
@@ -106,6 +104,10 @@ alias gc="git commit"
 alias gp="git push"
 alias gl="git log --oneline -10"
 alias gco="git checkout"
+
+# Shell benchmarking
+alias zsh-time='time zsh -i -c exit'
+alias zsh-trace='time ZSH_DEBUGRC=1 zsh -i -c exit'
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Shell Options

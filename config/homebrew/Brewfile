@@ -1,63 +1,76 @@
 # ══════════════════════════════════════════════════════════════════════════════
-# DOTFILES GITIGNORE
+# Brewfile - Declarative Package Management
 # ══════════════════════════════════════════════════════════════════════════════
+# Usage: brew bundle --file=~/.config/homebrew/Brewfile
+# Dump current: brew bundle dump --file=~/.config/homebrew/Brewfile --force
+#
+# This file mirrors packages.common and packages.darwin from dotfiles.config.ts
+# for users who prefer Homebrew's native bundle management.
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Dependencies
+# Taps (Third-party repositories)
 # ─────────────────────────────────────────────────────────────────────────────
-node_modules/
+tap "homebrew/bundle"
+tap "homebrew/cask-fonts"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Build Output
+# CLI Tools (Cross-platform via Homebrew/Linuxbrew)
 # ─────────────────────────────────────────────────────────────────────────────
-dist/
+
+# Prompt
+brew "starship"           # Cross-shell prompt
+
+# Modern CLI replacements
+brew "eza"                # Modern ls replacement
+brew "fd"                 # Modern find replacement
+brew "ripgrep"            # Fast grep replacement (rg)
+brew "fzf"                # Fuzzy finder
+brew "zoxide"             # Smarter cd command (z)
+
+# Utilities
+brew "jq"                 # JSON processor
+brew "gh"                 # GitHub CLI
+brew "tldr"               # Simplified man pages
+brew "ncdu"               # Disk usage analyzer
+brew "btop"               # Modern system monitor
+brew "direnv"             # Per-directory environment variables
+brew "fnm"                # Fast Node Manager
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Local Configuration (machine-specific, never commit)
+# Optional CLI Tools (Uncomment as needed)
 # ─────────────────────────────────────────────────────────────────────────────
-*.local
-*.local.*
-!*.local.template
+# brew "bat"              # Cat with syntax highlighting
+# brew "delta"            # Better git diffs
+# brew "lazygit"          # Terminal UI for git
+# brew "httpie"           # Modern curl alternative
+# brew "duf"              # Modern df alternative
+# brew "dust"             # Modern du alternative
+# brew "procs"            # Modern ps alternative
+# brew "sd"               # Modern sed alternative
+# brew "hyperfine"        # Command benchmarking
+# brew "glow"             # Markdown renderer
+# brew "age"              # Simple file encryption
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Secrets (never commit)
+# macOS Casks (GUI applications - macOS only)
 # ─────────────────────────────────────────────────────────────────────────────
-.env
-.env.*
-credentials*
-*.credentials*
-*.secret*
-.secrets/
+cask "font-fira-code-nerd-font"   # Nerd Font for terminal icons
+cask "ghostty"                     # Terminal emulator
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Backups Created by Dotfiles Tool
+# Optional macOS Apps (Uncomment as needed)
 # ─────────────────────────────────────────────────────────────────────────────
-*.backup.*
+# cask "raycast"          # Spotlight replacement
+# cask "rectangle"        # Window management
+# cask "alt-tab"          # Windows-style alt-tab
+# cask "stats"            # System monitor in menu bar
+# cask "monitorcontrol"   # External monitor brightness control
+# cask "karabiner-elements" # Keyboard customization
 
 # ─────────────────────────────────────────────────────────────────────────────
-# OS Generated Files
+# VS Code Extensions (Optional - uncomment if using VS Code)
 # ─────────────────────────────────────────────────────────────────────────────
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Editor/IDE
-# ─────────────────────────────────────────────────────────────────────────────
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Serena/Claude Cache
-# ─────────────────────────────────────────────────────────────────────────────
-.serena/
-.claude/
-!config/claude/
-*.bun-build
+# vscode "github.copilot"
+# vscode "vscodevim.vim"
+# vscode "esbenp.prettier-vscode"
+# vscode "dbaeumer.vscode-eslint"
