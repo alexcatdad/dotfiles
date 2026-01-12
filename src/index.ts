@@ -11,6 +11,7 @@ import { createSymlinks, removeSymlinks, getSymlinkStatus, statesToEntries } fro
 import { generateTemplates } from "./core/templates";
 import { installPackages, checkPackages } from "./core/packages";
 import { listBackups, restoreBackup, cleanBackups, rollback, saveLastRunState, loadLastRunState } from "./core/backup";
+import { migrateSSHConfig } from "./core/ssh";
 import { logger } from "./core/logger";
 import type { InstallOptions, BackupEntry } from "./types";
 
@@ -108,6 +109,14 @@ async function installCommand(options: InstallOptions): Promise<void> {
     logger.info("Skipping package installation (--skip-packages)");
   }
 
+  // Migrate existing SSH config to config.local (before symlinking overwrites it)
+  if (config.symlinks["ssh/config"]) {
+    const migrated = await migrateSSHConfig({ dryRun: options.dryRun });
+    if (migrated) {
+      logger.newline();
+    }
+  }
+
   // Create symlinks
   logger.header("Creating Symlinks");
   const states = await createSymlinks(config.symlinks, options);
@@ -198,6 +207,14 @@ async function linkCommand(options: InstallOptions): Promise<void> {
       },
       commandExists,
     });
+  }
+
+  // Migrate existing SSH config to config.local (before symlinking overwrites it)
+  if (config.symlinks["ssh/config"]) {
+    const migrated = await migrateSSHConfig({ dryRun: options.dryRun });
+    if (migrated) {
+      logger.newline();
+    }
   }
 
   const states = await createSymlinks(config.symlinks, options);
