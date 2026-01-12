@@ -44,7 +44,8 @@ brew "fnm"                # Fast Node Manager
 # brew "lazygit"          # Terminal UI for git
 # brew "httpie"           # Modern curl alternative
 # brew "duf"              # Modern df alternative
-# brew "dust"             # Modern du alternative
+brew "dust"               # Modern du alternative
+brew "atuin"              # Better shell history with sync
 # brew "procs"            # Modern ps alternative
 # brew "sd"               # Modern sed alternative
 # brew "hyperfine"        # Command benchmarking

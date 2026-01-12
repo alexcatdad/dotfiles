@@ -56,6 +56,8 @@ export default defineConfig({
       "btop",         // Modern system monitor
       "direnv",       // Per-directory environment variables
       "fnm",          // Fast Node Manager (replaces nvm)
+      "dust",         // Modern du alternative
+      "atuin",        // Better shell history with sync
     ],
 
     // macOS-specific packages (casks)
