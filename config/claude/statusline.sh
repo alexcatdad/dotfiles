@@ -25,7 +25,7 @@ sep_right=$'\xee\x82\xb0'   # Powerline right arrow (U+E0B0)
 sep_left=$'\xee\x82\xb2'    # Powerline left arrow (U+E0B2)
 
 # Get data from JSON
-username=$(whoami)
+hostname=$(hostname -s)
 cwd=$(echo "$input" | jq -r '.workspace.current_dir')
 model=$(echo "$input" | jq -r '.model.display_name')
 
@@ -88,7 +88,7 @@ if [ "$usage" != "null" ]; then
 fi
 
 # Build the status line with powerline style
-printf "\033[48;2;214;93;14m\033[38;2;251;241;199m %s %s " "$os_symbol" "$username"
+printf "\033[48;2;214;93;14m\033[38;2;251;241;199m %s %s " "$os_symbol" "$hostname"
 printf "\033[48;2;215;153;33m\033[38;2;214;93;14m%s" "$sep_right"
 printf "\033[48;2;215;153;33m\033[38;2;251;241;199m %s " "$display_path"
 
