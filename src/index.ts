@@ -6,13 +6,14 @@
 
 import { parseArgs } from "util";
 import { loadConfig } from "./core/config";
-import { getPlatform, getSystemInfo, getHomeDir, getRepoDir, commandExists, contractPath } from "./core/os";
+import { getPlatform, getSystemInfo, getHomeDir, getRepoDir, commandExists, contractPath, getArch } from "./core/os";
 import { createSymlinks, removeSymlinks, getSymlinkStatus, statesToEntries } from "./core/symlinks";
 import { generateTemplates } from "./core/templates";
 import { installPackages, checkPackages } from "./core/packages";
 import { listBackups, restoreBackup, cleanBackups, rollback, saveLastRunState, loadLastRunState } from "./core/backup";
 import { addSuggestions, SSH_SUGGESTIONS } from "./core/suggestions";
 import { logger } from "./core/logger";
+import { checkForUpdatesAndNotify, checkForUpdatesSilent, getLatestVersion, compareVersions, saveUpdateState } from "./core/update";
 import type { InstallOptions, BackupEntry } from "./types";
 
 const VERSION = "1.0.0";
@@ -365,8 +366,73 @@ async function rollbackCommand(options: InstallOptions): Promise<void> {
  */
 async function updateCommand(options: InstallOptions): Promise<void> {
   logger.header("Self Update");
-  logger.warn("Self-update is not yet implemented for source installs.");
-  logger.info("To update, run: git pull && bun install");
+
+  const platform = getPlatform();
+  const arch = getArch();
+  const binaryName = `paw-${platform}-${arch}`;
+  const binPath = `${getHomeDir()}/.local/bin/paw`;
+
+  logger.info("Checking for updates...");
+
+  // Fetch latest release info
+  const release = await getLatestVersion();
+  if (!release) {
+    logger.error("Failed to check for updates. Check your network connection.");
+    return;
+  }
+
+  const latestVersion = release.tag_name.replace(/^v/, "");
+  const currentVersion = VERSION;
+
+  logger.table({
+    "Current version": `v${currentVersion}`,
+    "Latest version": `v${latestVersion}`,
+  });
+  console.log();
+
+  if (compareVersions(latestVersion, currentVersion) <= 0) {
+    logger.success("Already up to date!");
+    return;
+  }
+
+  const downloadUrl = `https://github.com/alexcatdad/dotfiles/releases/download/${release.tag_name}/${binaryName}`;
+
+  if (options.dryRun) {
+    logger.dryRun(`Would download ${binaryName}`);
+    logger.dryRun(`Would install to ${contractPath(binPath)}`);
+    return;
+  }
+
+  logger.info(`Downloading ${binaryName}...`);
+
+  try {
+    const response = await fetch(downloadUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const binary = await response.arrayBuffer();
+
+    // Write the binary
+    await Bun.write(binPath, binary);
+
+    // Make executable
+    const { chmod } = await import("node:fs/promises");
+    await chmod(binPath, 0o755);
+
+    // Update state file
+    await saveUpdateState({
+      lastCheck: new Date().toISOString(),
+      latestVersion,
+      currentVersion: latestVersion,
+    });
+
+    logger.success(`Updated to v${latestVersion}`);
+    logger.info("Restart your shell to use the new version.");
+  } catch (error) {
+    logger.error(`Update failed: ${error}`);
+    logger.info("Try manual update: curl -fsSL https://raw.githubusercontent.com/alexcatdad/dotfiles/main/install.sh | bash -s -- --force");
+  }
 }
 
 /**
@@ -563,6 +629,11 @@ async function main(): Promise<void> {
         await doctorCommand(options);
         break;
 
+      case "check-update":
+        // Silent background check with desktop notification (used by shell hook)
+        await checkForUpdatesSilent(VERSION);
+        process.exit(0); // Exit without triggering the normal update check
+
       case "help":
         printHelp();
         break;
@@ -572,6 +643,9 @@ async function main(): Promise<void> {
         printHelp();
         process.exit(1);
     }
+
+    // Check for updates after command completes (non-blocking notification)
+    await checkForUpdatesAndNotify(VERSION);
   } catch (error) {
     logger.error(`Command failed: ${error}`);
     if (options.verbose) {

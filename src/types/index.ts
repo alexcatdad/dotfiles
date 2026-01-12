@@ -106,3 +106,21 @@ export interface LastRunState {
   /** Symlinks created during this run */
   symlinks: SymlinkEntry[];
 }
+
+export interface UpdateState {
+  /** ISO timestamp of last update check */
+  lastCheck: string;
+  /** Latest version found from GitHub */
+  latestVersion: string;
+  /** Current version when check was performed */
+  currentVersion: string;
+}
+
+export interface GitHubRelease {
+  /** Git tag name (e.g., "v1.2.0") */
+  tag_name: string;
+  /** URL to release page */
+  html_url: string;
+  /** ISO timestamp of release */
+  published_at: string;
+}
