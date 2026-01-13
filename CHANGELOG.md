@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/alexcatdad/dotfiles/compare/v1.1.2...v1.1.3) (2026-01-13)
+
+
+### Bug Fixes
+
+* make postInstall hook fail gracefully when statusline file not created ([#13](https://github.com/alexcatdad/dotfiles/issues/13)) ([ba3f762](https://github.com/alexcatdad/dotfiles/commit/ba3f762f79dc04f8e1971fd1c5a1176d125937d2))
+
 ## [1.1.2](https://github.com/alexcatdad/dotfiles/compare/v1.1.1...v1.1.2) (2026-01-13)
 
 
