@@ -14,12 +14,11 @@ curl -fsSL https://raw.githubusercontent.com/alexcatdad/dotfiles/main/install.sh
 ```
 
 This will:
-1. Clone the repo to `~/Projects/dotfiles`
+1. Clone the repo to `~/dotfiles`
 2. Install the `paw` CLI to `~/.local/bin`
-3. **Migrate** existing SSH hosts to `~/.ssh/config.local` (won't lose your hosts!)
-4. Install all packages via Homebrew
-5. Symlink all config files
-6. Set up your shell with Zinit, Starship, and modern CLI tools
+3. Install all packages via Homebrew
+4. Symlink all config files
+5. Set up your shell with Zinit, Starship, and modern CLI tools
 
 ### Install Options
 
@@ -43,13 +42,14 @@ curl -fsSL ... | bash -s -- --skip-packages
 
 | Tool | Replaces | What it does |
 |------|----------|--------------|
-| [Starship](https://starship.rs) | bash prompt | Fast, customizable prompt (Gruvbox theme) |
+| [Starship](https://starship.rs) | bash prompt | Fast, customizable prompt (Gruvbox Dark Powerline) |
 | [eza](https://eza.rocks) | `ls` | Icons, git status, tree view |
 | [fd](https://github.com/sharkdp/fd) | `find` | Simpler syntax, faster |
 | [ripgrep](https://github.com/BurntSushi/ripgrep) | `grep` | Blazingly fast search |
 | [fzf](https://github.com/junegunn/fzf) | - | Fuzzy finder for everything |
 | [zoxide](https://github.com/ajeetdsouza/zoxide) | `cd` | Learns your habits |
-| [bat](https://github.com/sharkdp/bat) | `cat` | Syntax highlighting |
+| [atuin](https://atuin.sh) | shell history | SQLite-backed, syncable history |
+| [dust](https://github.com/bootandy/dust) | `du` | Intuitive disk usage |
 
 ### Shell Plugins (via Zinit)
 
@@ -61,7 +61,7 @@ curl -fsSL ... | bash -s -- --skip-packages
 ### Packages Installed
 
 ```
-starship  eza  fd  ripgrep  fzf  zoxide  jq  gh  tldr  ncdu  btop  direnv  fnm
+starship  eza  fd  ripgrep  fzf  zoxide  jq  gh  tldr  dust  btop  direnv  fnm  atuin
 ```
 
 Plus on macOS: `ghostty` (terminal) and `FiraCode Nerd Font`
@@ -90,19 +90,22 @@ paw doctor --verbose       # Detailed health check
 ## Config Structure
 
 ```
-~/Projects/dotfiles/
+~/dotfiles/
 ├── config/
 │   ├── shell/
 │   │   ├── zshrc              # Main shell config
 │   │   ├── zshenv             # Environment variables & PATH
 │   │   └── functions/         # Custom shell functions
+│   │       ├── git.zsh        # Git helper functions
+│   │       └── utils.zsh      # General utilities
 │   ├── starship/
-│   │   └── starship.toml      # Prompt theme (Gruvbox Dark)
+│   │   └── starship.toml      # Prompt theme (Gruvbox Dark Powerline)
 │   ├── git/
 │   │   ├── gitconfig          # Git settings & aliases
 │   │   └── ignore             # Global gitignore
-│   ├── ssh/
-│   │   └── config             # SSH settings (Include local)
+│   ├── claude/
+│   │   ├── settings.json      # Claude Code settings
+│   │   └── statusline.sh      # Claude Code Powerline statusline
 │   ├── homebrew/
 │   │   └── Brewfile           # Declarative packages
 │   └── terminal/
@@ -119,9 +122,9 @@ Files ending in `.local` are gitignored - perfect for machine-specific settings:
 
 ```bash
 ~/.zshrc.local        # Local shell additions
+~/.zshenv.local       # Local environment variables
 ~/.gitconfig.local    # Name, email, signing key
 ~/.ssh/config.local   # Work servers, personal hosts
-~/.zshenv.local       # Local environment variables
 ```
 
 ### Adding Packages
@@ -170,34 +173,63 @@ symlinks: {
 
 Custom functions loaded via Zinit (in `config/shell/functions/`):
 
+### General Utilities
+
 | Function | What it does |
 |----------|--------------|
 | `extract <file>` | Extract any archive format |
 | `mkcd <dir>` | Create directory and cd into it |
-| `serve [port]` | Quick HTTP server |
-| `myip` | Show public IP |
+| `serve [port]` | Quick HTTP server (default: 8000) |
+| `myip` / `localip` | Show public/local IP |
 | `zf` | Fuzzy cd with zoxide + fzf |
-| `gcof` | Interactive git branch checkout |
+| `note [text]` | Quick timestamped notes |
+| `weather [city]` | Weather in terminal |
+| `cheat <cmd>` | Cheat sheet for commands |
+| `calc <expr>` | Quick calculator |
+| `killnamed <name>` | Find and kill process by name |
+| `backup <file>` | Create timestamped backup |
+| `duf [dir]` | Disk usage sorted by size |
+
+### Git Functions
+
+| Function | What it does |
+|----------|--------------|
+| `gcof` | Interactive branch checkout with fzf |
 | `gshow` | Git log with fzf preview |
-| `git-cleanup` | Delete merged branches |
+| `gadd` | Interactive staging with fzf |
+| `gstash` | Interactive stash management |
+| `glog` | Pretty git log graph |
+| `gfind <text>` | Find commits by message |
+| `gblame <file>` | Color-coded blame |
+| `git-cleanup` | Delete merged branches (safe) |
+| `git-amend` | Quick amend without editing |
 
 ## Aliases
 
 ```bash
-# Modern replacements
-ll          # eza -lag --git
+# Modern replacements (eza)
 ls          # eza with icons
-tree        # eza tree view
+ll          # eza -lag --git (detailed list)
+la          # eza -a (show hidden)
+lt          # eza -T (tree, 2 levels)
+tree        # eza -T (full tree)
+
+# Modern replacements (others)
+grep        # ripgrep --smart-case
+find        # fd
 
 # Git shortcuts
+g           # git
 gs          # git status
 gd          # git diff
 gc          # git commit
 gp          # git push
-gl          # git log --oneline
+gl          # git log --oneline -10
+gco         # git checkout
 
 # Utilities
 zsh-time    # Benchmark shell startup
+zsh-trace   # Trace shell startup with timing
 ```
 
 ## Development
@@ -235,7 +267,7 @@ bun run build:all
 
 The `paw` binary finds your repo by checking:
 1. `$PAW_REPO` or `$DOTFILES_DIR` environment variable
-2. Common paths: `~/Projects/dotfiles`, `~/.dotfiles`, etc.
+2. Common paths: `~/dotfiles`, `~/.dotfiles`, etc.
 
 ## Updates & Versioning
 
