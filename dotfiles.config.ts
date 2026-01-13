@@ -32,6 +32,9 @@ export default defineConfig({
 
     // Homebrew
     "homebrew/Brewfile": ".config/homebrew/Brewfile",
+
+    // Ripgrep
+    "ripgrep/config": ".config/ripgrep/config",
   },
 
   // Packages to install
