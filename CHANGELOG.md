@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/alexcatdad/dotfiles/compare/v1.1.3...v1.1.4) (2026-01-13)
+
+
+### Bug Fixes
+
+* simplify install script to only install paw binary ([#15](https://github.com/alexcatdad/dotfiles/issues/15)) ([288a226](https://github.com/alexcatdad/dotfiles/commit/288a2263ea0208ed554205cd69cc871b1139c22f))
+
 ## [1.1.3](https://github.com/alexcatdad/dotfiles/compare/v1.1.2...v1.1.3) (2026-01-13)
 
 
