@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/alexcatdad/dotfiles/compare/v1.1.1...v1.1.2) (2026-01-13)
+
+
+### Bug Fixes
+
+* install script fallback, ripgrep config, and release workflow ([#11](https://github.com/alexcatdad/dotfiles/issues/11)) ([3cdfe4d](https://github.com/alexcatdad/dotfiles/commit/3cdfe4da95c8d8f77ea8712ec4f879cdae8e2a55))
+
 ## [1.1.1](https://github.com/alexcatdad/dotfiles/compare/v1.1.0...v1.1.1) (2026-01-13)
 
 
