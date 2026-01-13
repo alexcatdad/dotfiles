@@ -16,24 +16,12 @@ curl -fsSL https://raw.githubusercontent.com/alexcatdad/dotfiles/main/install.sh
 This will:
 1. Clone the repo to `~/dotfiles`
 2. Install the `paw` CLI to `~/.local/bin`
-3. Install all packages via Homebrew
-4. Symlink all config files
-5. Set up your shell with Zinit, Starship, and modern CLI tools
 
-### Install Options
-
+Then run `paw install` to complete setup:
 ```bash
-# Check version without installing
-curl -fsSL ... | bash -s -- --version
-
-# Force reinstall even if up to date
-curl -fsSL ... | bash -s -- --force
-
-# Accept breaking changes on major upgrades
-curl -fsSL ... | bash -s -- --upgrade
-
-# Skip package installation
-curl -fsSL ... | bash -s -- --skip-packages
+paw install          # Full setup: packages + symlinks
+paw install --dry-run # Preview changes first
+paw --help           # See all options
 ```
 
 ## What You Get
@@ -269,35 +257,20 @@ The `paw` binary finds your repo by checking:
 1. `$PAW_REPO` or `$DOTFILES_DIR` environment variable
 2. Common paths: `~/dotfiles`, `~/.dotfiles`, etc.
 
-## Updates & Versioning
-
-This project uses [Semantic Versioning](https://semver.org/):
-
-| Update Type | Example | Requires `--upgrade` |
-|-------------|---------|----------------------|
-| Patch | 1.0.0 → 1.0.1 | No |
-| Minor | 1.0.0 → 1.1.0 | No |
-| Major | 1.0.0 → 2.0.0 | **Yes** |
-
-### Safe Updates (automatic)
+## Updates
 
 ```bash
-# Re-run install script - auto-updates if new version available
+# Update paw binary
 curl -fsSL https://raw.githubusercontent.com/alexcatdad/dotfiles/main/install.sh | bash
+
+# Update dotfiles config
+cd ~/dotfiles && git pull
+
+# Re-apply configuration
+paw install
 ```
 
-### Major Updates (breaking changes)
-
-Major versions may include breaking changes. The install script will:
-1. Detect the major version bump
-2. Show what might break
-3. Require explicit `--upgrade` flag
-
-```bash
-curl -fsSL ... | bash -s -- --upgrade
-```
-
-See [VERSIONING.md](VERSIONING.md) for full compatibility guarantees.
+See [VERSIONING.md](VERSIONING.md) for versioning details.
 
 ## License
 
