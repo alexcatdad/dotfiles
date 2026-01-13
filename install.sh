@@ -208,10 +208,9 @@ mkdir -p "$BIN_DIR"
 BINARY="paw-${OS}-${ARCH}"
 DOWNLOAD_URL="https://github.com/${REPO}/releases/latest/download/${BINARY}"
 
-# Check if release exists
-if curl --output /dev/null --silent --head --fail "$DOWNLOAD_URL"; then
-  echo -e "${GREEN}→${NC} Downloading pre-built binary..."
-  curl -fsSL "$DOWNLOAD_URL" -o "$BIN_DIR/paw"
+# Try to download pre-built binary
+echo -e "${GREEN}→${NC} Checking for pre-built binary..."
+if curl -fsSL "$DOWNLOAD_URL" -o "$BIN_DIR/paw" 2>/dev/null; then
   chmod +x "$BIN_DIR/paw"
   echo -e "${GREEN}✓${NC} Installed paw to $BIN_DIR/paw"
 
