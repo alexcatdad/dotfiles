@@ -1,0 +1,24 @@
+# Ripgrep Configuration
+# See: https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md#configuration-file
+
+# Smart case (case-insensitive unless uppercase used)
+--smart-case
+
+# Follow symlinks
+--follow
+
+# Add common type definitions
+--type-add=web:*.{html,css,js,ts,tsx,jsx}
+
+# Ignore common directories
+--glob=!.git
+--glob=!node_modules
+--glob=!.next
+--glob=!dist
+--glob=!build
+--glob=!coverage
+--glob=!*.min.js
+--glob=!*.min.css
+--glob=!package-lock.json
+--glob=!yarn.lock
+--glob=!bun.lockb
