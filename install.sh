@@ -13,7 +13,7 @@
 set -e
 
 REPO="alexcatdad/dotfiles"
-INSTALL_DIR="${PAW_REPO:-${DOTFILES_DIR:-$HOME/Projects/dotfiles}}"
+INSTALL_DIR="${PAW_REPO:-${DOTFILES_DIR:-$HOME/dotfiles}}"
 BIN_DIR="$HOME/.local/bin"
 STATE_FILE="$HOME/.paw-version"
 
@@ -121,6 +121,30 @@ esac
 echo -e "${GREEN}→${NC} Detected: ${OS}-${ARCH}"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Check for git
+# ─────────────────────────────────────────────────────────────────────────────
+if ! command -v git &> /dev/null; then
+  echo -e "${RED}✗${NC} Git is not installed. Please install git first."
+  exit 1
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Clone repository if not exists (needed before running paw)
+# ─────────────────────────────────────────────────────────────────────────────
+ensure_repo() {
+  if [ ! -d "$INSTALL_DIR" ]; then
+    echo -e "${GREEN}→${NC} Cloning dotfiles repository..."
+    mkdir -p "$(dirname "$INSTALL_DIR")"
+    git clone "https://github.com/${REPO}.git" "$INSTALL_DIR"
+  else
+    echo -e "${GREEN}→${NC} Dotfiles directory exists, pulling latest..."
+    cd "$INSTALL_DIR"
+    git pull --rebase || true
+  fi
+  cd "$INSTALL_DIR"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Check versions and handle upgrades
 # ─────────────────────────────────────────────────────────────────────────────
 INSTALLED_VERSION=$(get_installed_version)
@@ -135,6 +159,8 @@ if [ "$INSTALLED_VERSION" != "0.0.0" ]; then
     echo -e "${GREEN}✓${NC} Already up to date!"
     echo -e "${BLUE}→${NC} Use ${YELLOW}--force${NC} to reinstall anyway"
     echo ""
+    # Ensure repo exists and cd to it before running paw
+    ensure_repo
     echo -e "${GREEN}→${NC} Running paw install to sync config..."
     "$BIN_DIR/paw" install "${PASS_ARGS[@]}"
     exit 0
@@ -167,27 +193,9 @@ if [ "$INSTALLED_VERSION" != "0.0.0" ]; then
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Check for git
+# Ensure repo exists and cd to it before installing/upgrading
 # ─────────────────────────────────────────────────────────────────────────────
-if ! command -v git &> /dev/null; then
-  echo -e "${RED}✗${NC} Git is not installed. Please install git first."
-  exit 1
-fi
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Clone repository if not exists
-# ─────────────────────────────────────────────────────────────────────────────
-if [ ! -d "$INSTALL_DIR" ]; then
-  echo -e "${GREEN}→${NC} Cloning dotfiles repository..."
-  mkdir -p "$(dirname "$INSTALL_DIR")"
-  git clone "https://github.com/${REPO}.git" "$INSTALL_DIR"
-else
-  echo -e "${GREEN}→${NC} Dotfiles directory exists, pulling latest..."
-  cd "$INSTALL_DIR"
-  git pull --rebase || true
-fi
-
-cd "$INSTALL_DIR"
+ensure_repo
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Create bin directory
