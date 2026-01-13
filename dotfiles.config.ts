@@ -109,9 +109,9 @@ export default defineConfig({
   // Lifecycle hooks
   hooks: {
     postInstall: async (ctx) => {
-      // Make statusline script executable
+      // Make statusline script executable (fail gracefully if symlink wasn't created)
       if (!ctx.dryRun) {
-        await ctx.shell("chmod +x ~/.claude/statusline-command.sh");
+        await ctx.shell("[ -f ~/.claude/statusline-command.sh ] && chmod +x ~/.claude/statusline-command.sh || true");
       }
     },
   },
