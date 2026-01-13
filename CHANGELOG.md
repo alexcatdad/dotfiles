@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/alexcatdad/dotfiles/compare/v1.1.0...v1.1.1) (2026-01-13)
+
+
+### Bug Fixes
+
+* ensure repo is cloned before running paw install ([#9](https://github.com/alexcatdad/dotfiles/issues/9)) ([5e7ead7](https://github.com/alexcatdad/dotfiles/commit/5e7ead7c8731e4ab0fb62bf12ff3d80f5f45ddd1))
+
 ## [1.1.0](https://github.com/alexcatdad/dotfiles/compare/v1.0.0...v1.1.0) (2026-01-12)
 
 
