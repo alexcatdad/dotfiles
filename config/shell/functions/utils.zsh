@@ -117,3 +117,38 @@ backup() {
 duf() {
   du -sh "${1:-.}"/* 2>/dev/null | sort -rh | head -20
 }
+
+# Suggest aliases for frequently used long commands
+# Usage: suggest-aliases [min_count] [min_length]
+suggest-aliases() {
+  if ! command -v atuin &> /dev/null; then
+    echo "Requires atuin for history analysis"
+    return 1
+  fi
+
+  local min_count="${1:-5}"
+  local min_length="${2:-20}"
+
+  echo "Commands run ${min_count}+ times, longer than ${min_length} chars:\n"
+
+  atuin history list --cmd-only 2>/dev/null | \
+    sort | uniq -c | sort -rn | \
+    while read count cmd; do
+      # Skip short commands
+      [[ ${#cmd} -lt $min_length ]] && continue
+      # Skip if run less than min_count times
+      [[ $count -lt $min_count ]] && continue
+      # Skip simple cd commands
+      [[ "$cmd" =~ ^cd\ +[^\ ]+$ ]] && continue
+
+      # Generate suggested alias name
+      local suggestion=$(echo "$cmd" | awk '{print $1}' | sed 's/.*\///')
+      if [[ "$cmd" == *" "* ]]; then
+        # Multi-word: use first letters
+        suggestion=$(echo "$cmd" | awk '{for(i=1;i<=NF&&i<=3;i++) printf substr($i,1,1)}')
+      fi
+
+      printf "%4d×  %s\n" "$count" "$cmd"
+      printf "       → alias %s='%s'\n\n" "$suggestion" "$cmd"
+    done
+}

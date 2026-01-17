@@ -48,9 +48,9 @@ if command -v starship &> /dev/null; then
   eval "$(starship init zsh)"
 fi
 
-# Zoxide (smart cd)
+# Zoxide (smart cd - replaces cd to learn from navigation)
 if command -v zoxide &> /dev/null; then
-  eval "$(zoxide init zsh)"
+  eval "$(zoxide init zsh --cmd cd)"
 fi
 
 # FZF fuzzy finder
@@ -113,6 +113,9 @@ alias gco="git checkout"
 # Shell benchmarking
 alias zsh-time='time zsh -i -c exit'
 alias zsh-trace='time ZSH_DEBUGRC=1 zsh -i -c exit'
+
+# Claude Code
+alias yolo='claude --allow-dangerously-skip-permissions'
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Shell Options
