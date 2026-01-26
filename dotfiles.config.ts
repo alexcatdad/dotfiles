@@ -3,9 +3,7 @@
  * Defines symlinks, packages, and templates for dotfiles management
  */
 
-import { defineConfig } from "./src/core/config";
-
-export default defineConfig({
+export default {
   // Symlink mappings: source (relative to config/) -> target (relative to $HOME)
   symlinks: {
     // Shell configuration
@@ -115,4 +113,4 @@ export default defineConfig({
       }
     },
   },
-});
+};
