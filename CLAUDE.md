@@ -1,87 +1,58 @@
 # CLAUDE.md - Project Context for Claude Code
 
 ## Project Overview
-**paw** 🐱 - Personal dotfiles automation system using TypeScript/Bun. Manages shell configuration, packages, and symlinks across macOS and Linux machines.
+**alexcatdad/dotfiles** 🐱 - Personal dotfiles configuration. Contains shell configs, packages, and symlink mappings managed by the [paw CLI](https://github.com/alexcatdad/paw).
 
 ## Quick Commands
 ```bash
-# Using paw CLI (after install)
+# Using paw CLI
 paw install          # Full setup: packages + symlinks
 paw link --force     # Symlinks only
 paw status           # Check current state
+paw sync             # Pull changes and refresh links
+paw push "message"   # Commit and push changes
 paw doctor           # Health check
-paw rollback         # Undo last install
-
-# Development (from source)
-bun run src/index.ts install --dry-run
-bun run typecheck
-bun run build
 ```
 
-## Architecture
+## Repo Structure
+```
+dotfiles/
+├── config/              # All dotfiles to be symlinked
+│   ├── shell/           # Shell configuration
+│   ├── starship/        # Prompt theme
+│   ├── git/             # Git configuration
+│   ├── claude/          # Claude Code settings
+│   ├── homebrew/        # Brewfile
+│   └── terminal/        # Terminal configs
+├── dotfiles.config.ts   # Symlink/package definitions
+├── install.sh           # Bootstrap script
+└── CLAUDE.md            # This file
+```
 
-### CLI (`src/index.ts`)
-Commands: `install`, `link`, `unlink`, `status`, `rollback`, `backup`, `doctor`
-
-### Core Modules (`src/core/`)
-- `config.ts` - Loads `dotfiles.config.ts`
-- `packages.ts` - Homebrew/Linuxbrew package installation
-- `symlinks.ts` - Symlink management with backup
-- `templates.ts` - Generates `.local` files from templates
-- `backup.ts` - Backup/restore/rollback functionality
-- `os.ts` - Platform detection (darwin/linux)
-- `logger.ts` - Colored console output
-
-### Configuration (`dotfiles.config.ts`)
+## Configuration (`dotfiles.config.ts`)
 Defines:
 - `symlinks`: Map of source (config/) to target (~/)
 - `packages`: Common + platform-specific packages
 - `templates`: .local file templates
 - `hooks`: Pre/post install callbacks
 
-### Config Files (`config/`)
+## Config Files (`config/`)
 - `shell/zshrc` - Main shell config with Zinit plugins
-- `shell/functions/` - Custom shell functions (loaded via Zinit)
+- `shell/functions/` - Custom shell functions
 - `starship/starship.toml` - Gruvbox Dark prompt
-- `claude/statusline.sh` - Claude Code Powerline statusline
 - `git/gitconfig` - Git configuration
 - `ssh/config` - SSH config with local override pattern
-- `terminal/ghostty/config` - Ghostty terminal
 - `homebrew/Brewfile` - Declarative package management
+- `terminal/ghostty/config` - Ghostty terminal
 
 ## Shell Stack
-- **Plugin Manager**: Zinit (turbo mode for async loading)
+- **Plugin Manager**: Zinit (turbo mode)
 - **Plugins**: fast-syntax-highlighting, zsh-autosuggestions, zsh-completions, alias-tips
 - **Prompt**: Starship (Gruvbox Dark)
-- **Node**: fnm (Fast Node Manager)
+- **Node**: fnm
 - **Navigation**: zoxide
 - **Fuzzy Finder**: fzf
-- **History**: atuin (SQLite-backed, syncable)
-
-## Packages Installed
-`starship`, `eza`, `fd`, `ripgrep`, `fzf`, `zoxide`, `jq`, `gh`, `tldr`, `dust`, `btop`, `direnv`, `fnm`, `atuin`
-
-## Key Aliases
-```bash
-ll         # eza -lag --git (list with git status)
-gs         # git status
-z          # zoxide (smart cd)
-zsh-time   # Benchmark shell startup time
-zsh-trace  # Trace shell startup with timing
-```
-
-## Shell Functions (`config/shell/functions/`)
-Custom functions loaded via Zinit in turbo mode:
-- `extract` - Extract any archive format
-- `mkcd` - Create directory and cd into it
-- `serve` - Quick HTTP server
-- `myip/localip` - Get public/local IP
-- `note` - Quick timestamped notes
-- `zf` - Fuzzy cd with zoxide + fzf
-- `gcof` - Interactive git branch checkout with fzf
-- `gshow` - Git log with fzf preview
-- `git-cleanup` - Delete merged branches
-- `gadd` - Interactive git staging
+- **History**: atuin
 
 ## Machine-Specific Config
 Files ending in `.local` are gitignored and machine-specific:
@@ -89,53 +60,23 @@ Files ending in `.local` are gitignored and machine-specific:
 - `~/.gitconfig.local` - Local git config (name, email)
 - `~/.ssh/config.local` - Local SSH hosts
 
-Templates in `config/templates/` provide starting points.
-
-## Brewfile
-Alternative package management using Homebrew's bundle:
-```bash
-# Install packages from Brewfile
-brew bundle --file=~/.config/homebrew/Brewfile
-
-# Dump current packages to Brewfile
-brew bundle dump --file=~/.config/homebrew/Brewfile --force
-```
-
 ## Testing Changes
 ```bash
-# Syntax check
-zsh -n ~/.zshrc
-
-# Dry run install
-paw install --dry-run
-
-# Force update symlinks
-paw link --force
-
-# Health check
-paw doctor --verbose
-
-# Benchmark shell startup
-zsh-time
+zsh -n ~/.zshrc         # Syntax check
+paw install --dry-run   # Preview install
+paw link --force        # Force update symlinks
+paw doctor --verbose    # Health check
+zsh-time                # Benchmark shell startup
 ```
 
-## CI/CD
-- `.github/workflows/ci.yml` - Lint, type check, test on macOS + Linux, build binaries
-- `.github/workflows/release.yml` - Creates stable release on version tags (v*)
-
-**Automation:**
-- Push to `main` → runs CI, builds all binaries, updates `latest` pre-release
-- Push tag `v*` → creates stable release with binaries
-- PRs → runs lint, security scan, tests
-
-## Building
+## Cross-Machine Sync
 ```bash
-# Build for current platform
-bun build src/index.ts --compile --outfile=dist/paw
+# On machine A (making changes)
+paw push "update zsh config"
 
-# Build all platforms
-bun run build:all
-
-# Install locally
-cp dist/paw-darwin-arm64 ~/.local/bin/paw
+# On machine B
+paw sync
 ```
+
+## Related
+- [paw](https://github.com/alexcatdad/paw) - The CLI that manages this repo

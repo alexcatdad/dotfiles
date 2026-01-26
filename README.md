@@ -1,11 +1,6 @@
-# 🐱 paw
+# 🐱 alexcatdad/dotfiles
 
-> Personal dotfiles manager - one command to rule them all
-
-[![CI](https://github.com/alexcatdad/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/alexcatdad/dotfiles/actions/workflows/ci.yml)
-[![Release](https://github.com/alexcatdad/dotfiles/actions/workflows/release.yml/badge.svg)](https://github.com/alexcatdad/dotfiles/releases)
-
-A TypeScript/Bun-powered dotfiles automation system. Manages shell configuration, packages, and symlinks across macOS and Linux.
+> Personal dotfiles configuration - shell, packages, and config files
 
 ## Quick Install
 
@@ -14,15 +9,8 @@ curl -fsSL https://raw.githubusercontent.com/alexcatdad/dotfiles/main/install.sh
 ```
 
 This will:
-1. Clone the repo to `~/dotfiles`
-2. Install the `paw` CLI to `~/.local/bin`
-
-Then run `paw install` to complete setup:
-```bash
-paw install          # Full setup: packages + symlinks
-paw install --dry-run # Preview changes first
-paw --help           # See all options
-```
+1. Install the [paw](https://github.com/alexcatdad/paw) CLI
+2. Clone this repo and run `paw install`
 
 ## What You Get
 
@@ -37,7 +25,6 @@ paw --help           # See all options
 | [fzf](https://github.com/junegunn/fzf) | - | Fuzzy finder for everything |
 | [zoxide](https://github.com/ajeetdsouza/zoxide) | `cd` | Learns your habits |
 | [atuin](https://atuin.sh) | shell history | SQLite-backed, syncable history |
-| [dust](https://github.com/bootandy/dust) | `du` | Intuitive disk usage |
 
 ### Shell Plugins (via Zinit)
 
@@ -46,24 +33,15 @@ paw --help           # See all options
 - **zsh-completions** - Enhanced tab completion
 - **alias-tips** - Reminds you of aliases
 
-### Packages Installed
-
-```
-starship  eza  fd  ripgrep  fzf  zoxide  jq  gh  tldr  dust  btop  direnv  fnm  atuin
-```
-
-Plus on macOS: `ghostty` (terminal) and `FiraCode Nerd Font`
-
 ## Commands
 
 ```bash
 paw install          # Full setup: packages + symlinks
 paw link             # Symlinks only
-paw unlink           # Remove symlinks
 paw status           # Show current state
+paw sync             # Pull dotfiles and refresh links
+paw push [message]   # Commit and push changes
 paw doctor           # Health check & diagnostics
-paw rollback         # Undo last install
-paw backup list      # List backups
 ```
 
 ### Options
@@ -71,8 +49,7 @@ paw backup list      # List backups
 ```bash
 paw install --dry-run      # Preview without changes
 paw install --force        # Overwrite existing (backs up first)
-paw install --skip-packages # Skip Homebrew
-paw doctor --verbose       # Detailed health check
+paw sync --quiet           # Silent sync (for shell startup)
 ```
 
 ## Config Structure
@@ -84,21 +61,18 @@ paw doctor --verbose       # Detailed health check
 │   │   ├── zshrc              # Main shell config
 │   │   ├── zshenv             # Environment variables & PATH
 │   │   └── functions/         # Custom shell functions
-│   │       ├── git.zsh        # Git helper functions
-│   │       └── utils.zsh      # General utilities
 │   ├── starship/
-│   │   └── starship.toml      # Prompt theme (Gruvbox Dark Powerline)
+│   │   └── starship.toml      # Prompt theme
 │   ├── git/
 │   │   ├── gitconfig          # Git settings & aliases
 │   │   └── ignore             # Global gitignore
 │   ├── claude/
-│   │   ├── settings.json      # Claude Code settings
-│   │   └── statusline.sh      # Claude Code Powerline statusline
+│   │   └── settings.json      # Claude Code settings
 │   ├── homebrew/
 │   │   └── Brewfile           # Declarative packages
 │   └── terminal/
 │       └── ghostty/config     # Terminal emulator
-├── dotfiles.config.ts         # Main configuration
+├── dotfiles.config.ts         # Symlink/package configuration
 └── install.sh                 # Bootstrap script
 ```
 
@@ -110,7 +84,6 @@ Files ending in `.local` are gitignored - perfect for machine-specific settings:
 
 ```bash
 ~/.zshrc.local        # Local shell additions
-~/.zshenv.local       # Local environment variables
 ~/.gitconfig.local    # Name, email, signing key
 ~/.ssh/config.local   # Work servers, personal hosts
 ```
@@ -121,30 +94,9 @@ Edit `dotfiles.config.ts`:
 
 ```typescript
 packages: {
-  common: [
-    "starship",
-    "eza",
-    // Add your packages here
-    "lazygit",
-    "httpie",
-  ],
-  darwin: [
-    "font-fira-code-nerd-font",
-    // macOS-only apps
-    "raycast",
-  ],
+  common: ["starship", "eza", "your-package"],
+  darwin: ["font-fira-code-nerd-font"],
 }
-```
-
-Or use the Brewfile directly:
-
-```bash
-# Add to ~/.config/homebrew/Brewfile
-brew "lazygit"
-cask "raycast"
-
-# Then run
-brew bundle --file=~/.config/homebrew/Brewfile
 ```
 
 ### Adding Symlinks
@@ -152,125 +104,32 @@ brew bundle --file=~/.config/homebrew/Brewfile
 ```typescript
 symlinks: {
   "shell/zshrc": ".zshrc",
-  // Add your own
   "nvim/init.lua": ".config/nvim/init.lua",
 }
 ```
 
-## Shell Functions
+## Cross-Machine Sync
 
-Custom functions loaded via Zinit (in `config/shell/functions/`):
-
-### General Utilities
-
-| Function | What it does |
-|----------|--------------|
-| `extract <file>` | Extract any archive format |
-| `mkcd <dir>` | Create directory and cd into it |
-| `serve [port]` | Quick HTTP server (default: 8000) |
-| `myip` / `localip` | Show public/local IP |
-| `zf` | Fuzzy cd with zoxide + fzf |
-| `note [text]` | Quick timestamped notes |
-| `weather [city]` | Weather in terminal |
-| `cheat <cmd>` | Cheat sheet for commands |
-| `calc <expr>` | Quick calculator |
-| `killnamed <name>` | Find and kill process by name |
-| `backup <file>` | Create timestamped backup |
-| `duf [dir]` | Disk usage sorted by size |
-
-### Git Functions
-
-| Function | What it does |
-|----------|--------------|
-| `gcof` | Interactive branch checkout with fzf |
-| `gshow` | Git log with fzf preview |
-| `gadd` | Interactive staging with fzf |
-| `gstash` | Interactive stash management |
-| `glog` | Pretty git log graph |
-| `gfind <text>` | Find commits by message |
-| `gblame <file>` | Color-coded blame |
-| `git-cleanup` | Delete merged branches (safe) |
-| `git-amend` | Quick amend without editing |
-
-## Aliases
-
+On machine A (making changes):
 ```bash
-# Modern replacements (eza)
-ls          # eza with icons
-ll          # eza -lag --git (detailed list)
-la          # eza -a (show hidden)
-lt          # eza -T (tree, 2 levels)
-tree        # eza -T (full tree)
-
-# Modern replacements (others)
-grep        # ripgrep --smart-case
-find        # fd
-
-# Git shortcuts
-g           # git
-gs          # git status
-gd          # git diff
-gc          # git commit
-gp          # git push
-gl          # git log --oneline -10
-gco         # git checkout
-
-# Utilities
-zsh-time    # Benchmark shell startup
-zsh-trace   # Trace shell startup with timing
+paw push "update zsh config"
 ```
 
-## Development
-
-### Prerequisites
-
-- [Bun](https://bun.sh) runtime
-
-### Commands
-
+On machine B (shell startup auto-syncs or manually):
 ```bash
-bun install              # Install dependencies
-bun run dev              # Run from source
-bun run typecheck        # Type check
-bun run build            # Build all platforms
+paw sync
 ```
-
-### Building
-
-```bash
-# Single platform
-bun build src/index.ts --compile --outfile=dist/paw
-
-# All platforms
-bun run build:all
-```
-
-## How It Works
-
-1. **Bootstrap** (`install.sh`) - Clones repo, installs `paw` binary
-2. **Config** (`dotfiles.config.ts`) - Defines symlinks, packages, templates
-3. **Symlinks** - Creates links from `config/*` to `~/*`
-4. **Packages** - Installs via Homebrew/Linuxbrew
-5. **Templates** - Generates `.local` files for customization
-
-The `paw` binary finds your repo by checking:
-1. `$PAW_REPO` or `$DOTFILES_DIR` environment variable
-2. Common paths: `~/dotfiles`, `~/.dotfiles`, etc.
 
 ## Updates
 
 ```bash
-# Update paw binary
-curl -fsSL https://raw.githubusercontent.com/alexcatdad/dotfiles/main/install.sh | bash
-
-# Update dotfiles config
-cd ~/dotfiles && git pull
-
-# Re-apply configuration
-paw install
+paw update    # Update paw binary
+paw sync      # Pull dotfiles changes
 ```
 
-See [VERSIONING.md](VERSIONING.md) for versioning details.
+## Related
+
+- [paw](https://github.com/alexcatdad/paw) - The dotfiles manager CLI
 
 ## License
 
