@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0](https://github.com/alexcatdad/dotfiles/compare/v1.1.4...v1.2.0) (2026-01-26)
+
+
+### Features
+
+* add sync and update commands for multi-device dotfiles ([4f7e697](https://github.com/alexcatdad/dotfiles/commit/4f7e6978c4746f4c091ea7c8553815eaf086bc29))
+* enhance shell, terminal, and Claude Code configurations ([6ab195b](https://github.com/alexcatdad/dotfiles/commit/6ab195b57808b56f8232985e26c9dd8775d73035))
+* update Claude plugins and optimize Ghostty for OLED ([cef7f7a](https://github.com/alexcatdad/dotfiles/commit/cef7f7a34859c86f9af54fbd8aa10dd7416436e9))
+
 ## [1.1.4](https://github.com/alexcatdad/dotfiles/compare/v1.1.3...v1.1.4) (2026-01-13)
 
 
