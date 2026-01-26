@@ -13,9 +13,12 @@ import { installPackages, checkPackages } from "./core/packages";
 import { listBackups, restoreBackup, cleanBackups, rollback, saveLastRunState, loadLastRunState } from "./core/backup";
 import { addSuggestions, SSH_SUGGESTIONS } from "./core/suggestions";
 import { logger } from "./core/logger";
-import type { InstallOptions, BackupEntry } from "./types";
+import { performUpdate } from "./core/update";
+import { runSync, printSyncSummary } from "./core/sync";
+import type { InstallOptions, BackupEntry, SyncOptions } from "./types";
+import pkg from "../package.json";
 
-const VERSION = "1.0.0";
+const VERSION = pkg.version;
 
 /**
  * Print help message
@@ -32,11 +35,12 @@ ${"\x1b[1m"}COMMANDS${"\x1b[0m"}
   link             Create symlinks only (skip package installation)
   unlink           Remove all managed symlinks
   status           Show current symlink and package status
+  sync             Pull dotfiles repo and refresh links if needed
+  update           Update the paw binary (self-update)
   rollback         Restore backups and remove symlinks from last run
   backup list      List all backup files
   backup restore   Restore a specific backup file
   backup clean     Remove old backups based on retention policy
-  update           Update the paw binary (self-update)
   doctor           Check dotfiles health and diagnose issues
 
 ${"\x1b[1m"}OPTIONS${"\x1b[0m"}
@@ -44,6 +48,9 @@ ${"\x1b[1m"}OPTIONS${"\x1b[0m"}
   -f, --force          Overwrite existing files (creates backups)
   -v, --verbose        Show detailed output
   --skip-packages      Skip package installation (install command only)
+  -q, --quiet          Suppress output (sync command)
+  --skip-update        Skip paw binary update check (sync command)
+  --auto-update        Auto-update paw without prompting (sync command)
   -h, --help           Show this help message
   --version            Show version number
 
@@ -52,6 +59,9 @@ ${"\x1b[1m"}EXAMPLES${"\x1b[0m"}
   paw install --dry-run    # Preview installation
   paw link --force         # Force symlinks with backup
   paw status               # Check current state
+  paw sync                 # Pull repo and refresh config
+  paw sync --quiet         # Silent sync (for shell startup)
+  paw update               # Update paw binary
   paw rollback             # Undo last install/link
   paw backup clean         # Clean old backups
 
@@ -365,8 +375,22 @@ async function rollbackCommand(options: InstallOptions): Promise<void> {
  */
 async function updateCommand(options: InstallOptions): Promise<void> {
   logger.header("Self Update");
-  logger.warn("Self-update is not yet implemented for source installs.");
-  logger.info("To update, run: git pull && bun install");
+  await performUpdate(options);
+}
+
+/**
+ * Sync command - pull repo and refresh links
+ */
+async function syncCommand(options: SyncOptions): Promise<void> {
+  if (!options.quiet) {
+    logger.header("Dotfiles Sync");
+  }
+
+  const result = await runSync(options);
+
+  if (!options.quiet) {
+    printSyncSummary(result);
+  }
 }
 
 /**
@@ -501,6 +525,9 @@ async function main(): Promise<void> {
       "force": { type: "boolean", short: "f", default: false },
       "verbose": { type: "boolean", short: "v", default: false },
       "skip-packages": { type: "boolean", default: false },
+      "quiet": { type: "boolean", short: "q", default: false },
+      "skip-update": { type: "boolean", default: false },
+      "auto-update": { type: "boolean", default: false },
       "help": { type: "boolean", short: "h", default: false },
       "version": { type: "boolean", default: false },
     },
@@ -554,6 +581,17 @@ async function main(): Promise<void> {
       case "backup":
         await backupCommand(subArgs[0] ?? "list", subArgs.slice(1), options);
         break;
+
+      case "sync": {
+        const syncOptions: SyncOptions = {
+          ...options,
+          quiet: values.quiet as boolean,
+          skipUpdate: values["skip-update"] as boolean,
+          autoUpdate: values["auto-update"] as boolean,
+        };
+        await syncCommand(syncOptions);
+        break;
+      }
 
       case "update":
         await updateCommand(options);

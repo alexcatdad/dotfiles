@@ -106,3 +106,48 @@ export interface LastRunState {
   /** Symlinks created during this run */
   symlinks: SymlinkEntry[];
 }
+
+// ============================================================================
+// Update & Sync Types
+// ============================================================================
+
+export interface UpdateState {
+  /** ISO timestamp of last version check */
+  lastCheck: string;
+  /** Latest version found on GitHub */
+  latestVersion: string;
+  /** Current installed version */
+  currentVersion: string;
+}
+
+export interface GitHubRelease {
+  /** Release tag name (e.g., "v1.2.0") */
+  tag_name: string;
+  /** Release assets (binaries, etc.) */
+  assets: GitHubAsset[];
+}
+
+export interface GitHubAsset {
+  /** Asset filename */
+  name: string;
+  /** Download URL */
+  browser_download_url: string;
+}
+
+export interface SyncResult {
+  /** Whether paw binary was updated */
+  pawUpdated: boolean;
+  /** Whether dotfiles repo was updated (git pull) */
+  repoUpdated: boolean;
+  /** Whether symlinks were refreshed */
+  linksRefreshed: boolean;
+}
+
+export interface SyncOptions extends InstallOptions {
+  /** Suppress output (for background sync) */
+  quiet: boolean;
+  /** Skip paw binary update check */
+  skipUpdate: boolean;
+  /** Automatically update paw without prompting */
+  autoUpdate: boolean;
+}
