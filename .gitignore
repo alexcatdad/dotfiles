@@ -59,5 +59,4 @@ Thumbs.db
 # ─────────────────────────────────────────────────────────────────────────────
 .serena/
 .claude/
-!config/claude/
-*.bun-build
+!home/.claude/
