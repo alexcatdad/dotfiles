@@ -12,9 +12,6 @@ Host *
   AddKeysToAgent yes
   IdentitiesOnly yes
 
-  # macOS Keychain integration (ignored on Linux)
-  UseKeychain yes
-
   # Connection keepalive (prevents drops on idle connections)
   ServerAliveInterval 60
   ServerAliveCountMax 3
@@ -45,3 +42,9 @@ Host gitlab.com
 # ─────────────────────────────────────────────────────────────────────────────
 # Include local overrides (hosts, work servers, etc.)
 Include ~/.ssh/config.local
+
+# ─────────────────────────────────────────────────────────────────────────────
+# macOS only — add to your local ~/.ssh/config.local (or ~/.ssh/config):
+# Host *
+#   UseKeychain yes
+# ─────────────────────────────────────────────────────────────────────────────

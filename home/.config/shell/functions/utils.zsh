@@ -101,10 +101,36 @@ calc() {
   echo "$@" | bc -l
 }
 
-# Find and kill process by name
+# Find and kill process by name with preview and confirmation
 # Usage: killnamed chrome
 killnamed() {
-  ps aux | grep -i "$1" | grep -v grep | awk '{print $2}' | xargs kill -9
+  local pattern="$1"
+  if [[ -z "$pattern" ]]; then
+    echo "Usage: killnamed <pattern>" >&2
+    return 1
+  fi
+
+  # Preview matching processes
+  local matches
+  matches=$(ps aux | grep -i "$pattern" | grep -v grep | grep -v "killnamed")
+
+  if [[ -z "$matches" ]]; then
+    echo "No processes matching '$pattern' found."
+    return 0
+  fi
+
+  echo "Processes matching '$pattern':"
+  echo "$matches"
+  echo ""
+  printf "Send SIGTERM to these processes? [y/N] "
+  read -r response
+
+  if [[ "$response" =~ ^[Yy]$ ]]; then
+    echo "$matches" | awk '{print $2}' | xargs kill -15
+    echo "SIGTERM sent."
+  else
+    echo "Cancelled."
+  fi
 }
 
 # Create a backup of a file
