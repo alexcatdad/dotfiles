@@ -20,7 +20,6 @@
     "hookify@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
-    "talos-gitops-ops@talos-gitops-ops": true,
     "github@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true
   }
