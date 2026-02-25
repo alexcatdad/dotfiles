@@ -7,22 +7,9 @@
 # Read JSON input from stdin
 input=$(cat)
 
-# Gruvbox Dark color palette
-color_fg0='#fbf1c7'
-color_bg1='#3c3836'
-color_bg3='#665c54'
-color_blue='#458588'
-color_aqua='#689d6a'
-color_green='#98971a'
-color_orange='#d65d0e'
-color_purple='#b16286'
-color_red='#cc241d'
-color_yellow='#d79921'
-
 # Powerline separator characters (U+E0B0, U+E0B2)
 # Using ANSI-C quoting $'...' which bash interprets at assignment time
 sep_right=$'\xee\x82\xb0'   # Powerline right arrow (U+E0B0)
-sep_left=$'\xee\x82\xb2'    # Powerline left arrow (U+E0B2)
 
 # Get data from JSON
 hostname=$(hostname -s)
