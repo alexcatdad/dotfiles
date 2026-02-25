@@ -1,0 +1,63 @@
+version = 1
+layout = "hybrid"
+
+[packages]
+common = [
+  "starship",
+  "eza",
+  "fd",
+  "ripgrep",
+  "fzf",
+  "zoxide",
+  "jq",
+  "gh",
+  "tldr",
+  "dust",
+  "btop",
+  "direnv",
+  "fnm",
+  "atuin",
+]
+# TODO: "kilo code" intentionally omitted because no Homebrew formula/cask exists yet.
+darwin = [
+  "font-fira-code-nerd-font",
+  "ghostty",
+  "google-chrome",
+  "cursor",
+  "claude-code",
+  "gemini-cli",
+  "bat",
+  "tree",
+  "wget",
+  "git-extras",
+  "orbstack",
+  "fork",
+]
+linux_apt = ["build-essential", "curl", "git"]
+linux_brew = []
+wsl_apt = ["build-essential", "curl", "git"]
+wsl_brew = []
+
+[hooks]
+post_install = "[ -f ~/.claude/statusline-command.sh ] && chmod +x ~/.claude/statusline-command.sh || true"
+
+[ignore]
+paths = [
+  ".zshrc.local",
+  ".zshenv.local",
+  ".gitconfig.local",
+  ".ssh/config.local",
+  ".claude/settings.local.json",
+  ".claude/.credentials.json",
+]
+
+[backup]
+enabled = true
+max_age = 30
+max_count = 5
+
+[templates]
+"templates/zshrc.local.template" = ".zshrc.local"
+"templates/zshenv.local.template" = ".zshenv.local"
+"templates/gitconfig.local.template" = ".gitconfig.local"
+"templates/ssh-config.local.template" = ".ssh/config.local"

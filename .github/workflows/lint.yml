@@ -12,8 +12,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check shell scripts
+      - name: Install linters
         run: |
-          sudo apt-get update && sudo apt-get install -y shellcheck
-          shellcheck install.sh || true
-          find config -name "*.sh" -exec shellcheck {} \; || true
+          sudo apt-get update
+          sudo apt-get install -y shellcheck yamllint zsh
+
+      - name: Lint shell scripts (shellcheck)
+        run: |
+          shellcheck install.sh
+          shellcheck home/.claude/statusline-command.sh
+
+      - name: Validate zsh syntax
+        run: |
+          zsh -n home/.zshrc
+          zsh -n home/.zshenv
+          find home/.config/shell/functions -type f -name "*.zsh" -print0 | xargs -0 -n1 zsh -n
+
+      - name: Lint GitHub workflow YAML
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable}}" .github/workflows/*.yml
