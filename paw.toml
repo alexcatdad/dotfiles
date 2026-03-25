@@ -17,6 +17,8 @@ common = [
   "direnv",
   "fnm",
   "atuin",
+  "go",
+  "bun",
 ]
 # TODO: "kilo code" intentionally omitted because no Homebrew formula/cask exists yet.
 darwin = [
@@ -24,7 +26,11 @@ darwin = [
   "ghostty",
   "google-chrome",
   "cursor",
+  "claude",
   "claude-code",
+  "codex",
+  "codex-app",
+  "chatgpt",
   "gemini-cli",
   "bat",
   "tree",
@@ -32,6 +38,10 @@ darwin = [
   "git-extras",
   "orbstack",
   "fork",
+  "notion",
+  "proton-mail",
+  "proton-pass",
+  "helium-browser",
 ]
 linux_apt = ["build-essential", "curl", "git"]
 linux_brew = []

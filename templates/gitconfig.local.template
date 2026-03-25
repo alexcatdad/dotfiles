@@ -6,32 +6,30 @@
 [user]
     name = Your Name
     email = your.email@example.com
+    # signingkey = ~/.ssh/id_ed25519.pub
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Credential Helpers (choose based on your OS)
+# Credential Helpers
 # ─────────────────────────────────────────────────────────────────────────────
-
-# macOS (uses Keychain)
-# [credential]
-#     helper = osxkeychain
-
-# Linux (stores in plaintext - less secure)
-# [credential]
-#     helper = store
 
 # GitHub CLI authentication (recommended)
 # [credential "https://github.com"]
 #     helper =
 #     helper = !/opt/homebrew/bin/gh auth git-credential
-
 # [credential "https://gist.github.com"]
 #     helper =
 #     helper = !/opt/homebrew/bin/gh auth git-credential
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Signing (optional)
+# Commit Signing via SSH (recommended)
 # ─────────────────────────────────────────────────────────────────────────────
+# Uncomment below and set signingkey above to enable signed commits.
+
+# [gpg]
+#     format = ssh
 # [commit]
 #     gpgsign = true
-# [user]
-#     signingkey = YOUR_GPG_KEY_ID
+# [tag]
+#     gpgsign = true
+# [gpg "ssh"]
+#     allowedSignersFile = ~/.ssh/allowed_signers

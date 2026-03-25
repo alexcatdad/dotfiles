@@ -48,11 +48,6 @@ if command -v starship &> /dev/null; then
   eval "$(starship init zsh)"
 fi
 
-# Zoxide (smart cd - replaces cd to learn from navigation)
-if command -v zoxide &> /dev/null; then
-  eval "$(zoxide init zsh --cmd cd)"
-fi
-
 # FZF fuzzy finder
 if [[ -f ~/.fzf.zsh ]]; then
   source ~/.fzf.zsh
@@ -143,6 +138,15 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' menu select
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Machine-Specific Configuration (gitignored)
+# Zoxide (hooks into cd via chpwd — must init before .zshrc.local)
+# ─────────────────────────────────────────────────────────────────────────────
+if command -v zoxide &> /dev/null; then
+  # Suppress false-positive doctor warnings in non-TTY/agentic contexts
+  export _ZO_DOCTOR=0
+  eval "$(zoxide init zsh --cmd cd)"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Machine-Specific Configuration (gitignored) — must be last
 # ─────────────────────────────────────────────────────────────────────────────
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
