@@ -6,7 +6,7 @@ Use explicit per-file copies. Repository edits must not silently change a runnin
 
 ## File destinations
 
-`~` means the confirmed target user's home, not the controlling agent's home on another machine. All rows use copies, not links. Shared shell files apply to devices using the approved Zsh baseline; installing Bun, Go, and jq on a device does not require adopting its shell configuration.
+`~` means the confirmed target user's home, not the controlling agent's home on another machine. All rows use copies, not links. Shared shell files apply to devices using the approved Zsh baseline; installing Go and jq on a device does not require adopting its shell configuration.
 
 | Candidate source | Destination | Scope / acceptance |
 | --- | --- | --- |
@@ -89,7 +89,7 @@ An originally absent file has no backup; its journal entry must explicitly recor
 
 ## Explicit activation
 
-Install only the selected missing dependencies during an authorized package step, using native manifests and the runbook's no-upgrade command. No cleanup, uninstall, account enrollment, license activation, or OS permission grants occur implicitly. jq, Bun, and Go are required on every managed machine; optional shell features need their own listed tools/plugins. Review OS compatibility rather than applying the Mac Brewfile to Linux.
+Install only the selected missing dependencies during an authorized package step, using native manifests and the runbook's no-upgrade command. No cleanup, uninstall, account enrollment, license activation, or OS permission grants occur implicitly. jq and Go are required on every managed machine; optional shell features need their own listed tools/plugins. Review OS compatibility rather than applying the Mac Brewfile to Linux.
 
 Copy dependency/configuration files before shell startup entrypoints; keep `.zshenv`, `.zprofile`, and `.zshrc` until last. Close the gap between review and write: recheck parent safety and compare the current destination with the journaled prior state immediately before replacement. If anything changed, stop that file and review the conflict. Do not overwrite concurrent edits.
 
@@ -99,9 +99,9 @@ If the portable guidance needs merging with existing instructions, prepare and r
 
 ## Manual device acceptance
 
-- Parse each selected Zsh file before executing it, then check fresh login and non-login shells for errors and approved PATH precedence. Confirm aliases, Zoxide `cd`, Ctrl-R Atuin search, direnv, Bun/fnm behavior, completion, highlighting, suggestions, and alias reminders. Use synthetic commands; do not dump real history. Retain existing history databases and caches.
-- Verify jq, Bun, and Go are available. Check project runtime selection without downloading a project toolchain implicitly. Confirm the preserved prompt and Ghostty's black background/font visually; use the installed native Ghostty validator for a changed configuration. Command-R remains a separate terminal-specific check.
-- On supported interactive Macs, confirm the selected desktop apps: Zen, ChatGPT, Wispr Flow, Proton Pass, Raycast, Ghostty/font, BetterDisplay, usb-boop, and Tailscale. Check Zen default-browser choice and actual Wispr/BetterDisplay behavior. Account sign-ins, purchased licenses, microphone/accessibility permissions, and browser profiles stay private and require deliberate local setup.
+- Parse each selected Zsh file before executing it, then check fresh login and non-login shells for errors and approved PATH precedence. Confirm aliases, Zoxide `cd`, Ctrl-R Atuin search, direnv, completion, highlighting, suggestions, and alias reminders. Use synthetic commands; do not dump real history. Retain existing history databases and caches.
+- Verify jq and Go are available. Check project runtime selection without downloading a project toolchain implicitly. Confirm the preserved prompt and Ghostty's black background/font visually; use the installed native Ghostty validator for a changed configuration. Command-R remains a separate terminal-specific check.
+- On supported interactive Macs, confirm the selected desktop apps: ChatGPT, Wispr Flow, Proton Pass, Raycast, Ghostty/font, BetterDisplay, usb-boop, and Tailscale. Check actual Wispr/BetterDisplay behavior. Account sign-ins, purchased licenses, microphone/accessibility permissions, and browser profiles stay private and require deliberate local setup.
 - Verify existing SSH/Tailscale access only for authorized targets without changing enrollment, authentication, firewall, or routing. Skip unreachable laptops; do not wake or repeatedly reconnect them. Container tests do not prove this connectivity.
 - Confirm reconciled global guidance and selected personal skills are discovered; project-specific instructions remain project-specific. Verify MCP availability through discovered tools only when the relevant task is authorized. Do not access ledger records as a dotfiles health check.
 - Record test results, files activated, device acceptance, unresolved checks, and publication status separately. No Paw service removal is part of file activation; inspect its consumers under separate authorization.

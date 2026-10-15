@@ -8,7 +8,7 @@ This setup preserves the approved shell shortcuts and appearance using plain Zsh
 
 - `home/`: shared candidate files, including the preserved Starship and Ghostty preferences.
 - `machines/mac-studio.zsh`: optional Mac Studio integration. It is not automatically selected by hostname and is not installed in the Linux test image.
-- `packages/Brewfile`: the approved Mac package baseline. `jq`, Bun, and Go are required on every managed device. Use native packages where available; Bun already has an explicit pinned Linux installation in the container setup.
+- `packages/Brewfile`: the approved Mac package baseline. `jq` and Go are required on every managed device. Use native packages where available.
 - `tests/container/`: an isolated ARM64 Debian setup and integration checks. Debian native packages provide the Linux baseline; official pinned binary releases provide tools absent from Debian's package set.
 - `RUNBOOK.md`: locator for operational runbooks in Scratchpad. Scratchpad holds project memory and procedures; `decisions.jsonl` retains historical evidence.
 - `ACTIVATION.md`: per-file destinations, conflict review, repeatable activation, rollback, and device acceptance.
@@ -46,7 +46,7 @@ The intended user-level destination is `~/.agents/skills/`, as documented in [of
 
 ## Preserved behavior
 
-The `ls`, `ll`, `la`, `lt`, `tree`, `grep`, and `find` aliases remain. Zoxide provides `cd`; Atuin provides Ctrl-R search; Bun is the primary runtime while fnm selects Node versions per project. Direnv handles project environments. Autosuggestions, fast syntax highlighting, completion, and alias tips load explicitly. The only custom utility functions are `duf` and `suggest-aliases`.
+The `ls`, `ll`, `la`, `lt`, `tree`, `grep`, and `find` aliases remain. Zoxide provides `cd`; Atuin provides Ctrl-R search; Direnv handles project environments. Autosuggestions, fast syntax highlighting, completion, and alias tips load explicitly. The only custom utility functions are `duf` and `suggest-aliases`.
 
 `.zshenv` provides `woodpecker` → `woodpecker-cli`, `scaleway` → `scw`, `proton-pass` → `pass-cli`, and `opentofu` → `tofu` in interactive and non-interactive Zsh. Each alias requires the target CLI and leaves an existing executable with the alias name untouched. These are shell aliases; shell-free process launches use the native executable names. No optional CLI is installed by this configuration.
 
@@ -73,7 +73,7 @@ docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges d
 
 The build context is allowlisted. No host home, SSH data, private environment, Git metadata, Docker socket, or live dotfiles are mounted into the container. A non-root disposable user runs the checks. Tests create only synthetic history, environment files, and fixture Git repositories inside the container. The named image and build cache remain for reproduction; test containers are removed on exit.
 
-The integration runner uses Bun and a standard-library Go helper for the real pseudo-terminal history search check. Tests also verify that Python is absent. The official binary/plugin archives are version/commit pinned and checksum-verified. The base image is digest pinned. Debian package versions are recorded from the test image but use Debian's current signed repositories rather than a frozen snapshot.
+Bun is retained only as a container test-runner dependency, not a managed shell/runtime requirement. The integration runner uses Bun and a standard-library Go helper for the real pseudo-terminal history search check. Tests also verify that Python is absent. The official binary/plugin archives are version/commit pinned and checksum-verified. The base image is digest pinned. Debian package versions are recorded from the test image but use Debian's current signed repositories rather than a frozen snapshot.
 
 ## Continuous integration
 
@@ -85,19 +85,19 @@ The workflow uses a commit-pinned checkout with read-only repository permission 
 
 ### Native macOS rehearsal
 
-The disposable headless macOS 26.6.2 guest passed 18 native checks, including actual Ctrl-R history search, Bun completion loading, fnm project switching, Go offline compilation, direnv, and native Ghostty validation. The full Brewfile installed after reviewing and trusting its two third-party package entries under Homebrew 7. A repeated package setup required no new installs; repeated file activation made zero writes. All 20 shared files rolled back to independently verified original states. Synthetic checks also exercised interrupted writes, local drift rejection, and symlink preservation.
+The earlier baseline (before removal of Bun, fnm, and Zen) in a disposable headless macOS 26.6.2 guest passed 18 native checks, including actual Ctrl-R history search, Bun completion loading, fnm project switching, Go offline compilation, direnv, and native Ghostty validation. The full Brewfile installed after reviewing and trusting its two third-party package entries under Homebrew 7. A repeated package setup required no new installs; repeated file activation made zero writes. All 20 shared files rolled back to independently verified original states. Synthetic checks also exercised interrupted writes, local drift rejection, and symlink preservation.
 
 This was a prepared Cirrus Labs base image with preinstalled developer/CI tools, not factory Setup Assistant. It does not establish sign-in, license activation, physical USB/display behavior, OS permissions, visual appearance, fresh Codex skill discovery, or real Tailscale enrollment. The preserved Scratchpad runbook, located through `RUNBOOK.md`, contains the native rehearsal and package-trust/completion-permission steps. No host baseline activation or publication occurred. The disposable VM and its image cache were removed; local evidence remains excluded in `outputs/`.
 
 ### Approved desktop apps
 
-The Mac Brewfile includes Zen (the chosen browser), ChatGPT, Wispr Flow, Proton Pass, Raycast, Ghostty and the current font, BetterDisplay, usb-boop from `alexcatdad/tap`, and Tailscale. This is the accepted interactive Mac baseline; other reviewed apps remain optional, development-specific, or hardware-specific.
+The Mac Brewfile includes ChatGPT, Wispr Flow, Proton Pass, Raycast, Ghostty and the current font, BetterDisplay, usb-boop from `alexcatdad/tap`, and Tailscale. This is the accepted interactive Mac baseline; other reviewed apps remain optional, development-specific, or hardware-specific.
 
 At an authorized Mac rollout, use `brew bundle --no-upgrade --file=packages/Brewfile` after reviewing existing packages and compatibility. Do not use cleanup or uninstall commands. The current usb-boop cask requires Apple Silicon and macOS 14 or later; check the installed package metadata again at rollout. Other operating systems use their own supported app distribution paths rather than this Mac manifest. GUI apps are not required on the homelab.
 
-Package installation is separate from sign-in, license activation, OS permissions, setting Zen as the default browser, and verifying app behavior. Those are device-local acceptance steps. No license keys, account sessions, or browser profiles belong in the repository. Nothing is installed or activated during candidate preparation.
+Package installation is separate from sign-in, license activation, OS permissions and verifying app behavior. Those are device-local acceptance steps. No license keys, account sessions, or browser profiles belong in the repository. Nothing is installed or activated during candidate preparation.
 
-On macOS, the Brewfile is a native Homebrew manifest and includes Bun and Go. Go uses the native `golang-go` package in the Debian validation image; other devices use their native Go package or an explicitly installed official distribution. Runtime requirements are device-wide; project-specific Go versions and dependencies remain with each project. On Linux, use the native packages demonstrated in the Dockerfile; fnm, Bun, Starship, and Atuin are explicitly installed during setup where native packages are absent. The Dockerfile is test infrastructure, not a fleet deployment manager.
+On macOS, the Brewfile is a native Homebrew manifest and includes Go. Go uses the native `golang-go` package in the Debian validation image; other devices use their native Go package or an explicitly installed official distribution. Runtime requirements are device-wide; project-specific Go versions and dependencies remain with each project. On Linux, use the native packages demonstrated in the Dockerfile; Starship and Atuin are explicitly installed during setup where native packages are absent. The Dockerfile is test infrastructure, not a fleet deployment manager.
 
 Alias reminders ship with the shared shell files and need no separate installation. On machines without native packages for autosuggestions, highlighting, or completions, the pinned archives in `tests/container/install-plugins.sh` can use the documented `~/.local/share/zsh/plugins/` paths. Do not copy dependency `.git` directories into the dotfiles project.
 

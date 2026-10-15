@@ -21,12 +21,10 @@ bindkey -e
 source "$HOME/.config/shell/aliases.zsh"
 source "$HOME/.config/shell/functions.zsh"
 
-(( $+commands[fnm] )) && eval "$(fnm env --use-on-cd --shell zsh)"
 (( $+commands[zoxide] )) && eval "$(zoxide init zsh --cmd cd)"
 (( $+commands[direnv] )) && eval "$(direnv hook zsh)"
 # Preserve normal Up-arrow behavior; use Atuin explicitly on Ctrl-R.
 (( $+commands[atuin] )) && eval "$(atuin init zsh --disable-up-arrow --disable-ai)"
-[[ -r "$HOME/.bun/_bun" ]] && source "$HOME/.bun/_bun"
 (( $+commands[starship] )) && eval "$(starship init zsh)"
 
 [[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
