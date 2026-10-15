@@ -1,6 +1,6 @@
 # Plain dotfiles baseline
 
-Status: the original reviewed 39-file baseline is published at [alexcatdad/dotfiles](https://github.com/alexcatdad/dotfiles) and activated on the current Mac. All 18 live checks passed; repeated activation made zero writes. Private backups and the deployment journal remain outside the repository. Other devices have not been activated. The current public inventory contains 40 files after adding the CI workflow; see `PUBLIC-CONTENTS.md`.
+Status: the original reviewed 39-file baseline was published at [alexcatdad/dotfiles](https://github.com/alexcatdad/dotfiles) and activated on the current Mac. Its 18 live checks passed; repeated activation made zero writes. The revised baseline removes Zen, Bun, and fnm from managed setup and Bun/fnm shell integration; those shell changes have not been activated on the current Mac. Private backups and the deployment journal remain outside the repository. Other devices have not been activated. The current public inventory contains 40 files after adding the CI workflow; see `PUBLIC-CONTENTS.md`.
 
 This setup preserves the approved shell shortcuts and appearance using plain Zsh files, native package manifests, and explicit machine differences. No Paw, Zinit, Ansible, startup downloads, or synchronization daemon is required.
 
@@ -77,7 +77,7 @@ Bun is retained only as a container test-runner dependency, not a managed shell/
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs on pull requests, pushes to `main`, and manual dispatch. The ARM64 Linux job runs the Docker commands above, including all 18 isolated integration checks. The macOS job parses shared and machine Zsh files and validates the Brewfile with Ruby and Homebrew without installing packages.
+`.github/workflows/ci.yml` runs on pull requests, pushes to `main`, and manual dispatch. The ARM64 Linux job runs the Docker commands above, including all 17 isolated integration checks. The macOS job parses shared and machine Zsh files and validates the Brewfile with Ruby and Homebrew without installing packages.
 
 The workflow uses a commit-pinned checkout with read-only repository permission and no persisted credentials. New runs cancel older runs for the same pull request or branch. CI does not activate dotfiles, validate GUI appearance, or establish real connectivity.
 
