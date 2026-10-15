@@ -47,7 +47,7 @@ bold-is-bright = true
 # ─────────────────────────────────────────────────────────────────────────────
 # macOS-Specific Customizations
 # ─────────────────────────────────────────────────────────────────────────────
-macos-titlebar-style = "tabs"
+macos-titlebar-style = "native"
 macos-titlebar-proxy-icon = "visible"
 macos-icon = "holographic"
 macos-icon-frame = "chrome"
