@@ -1,6 +1,6 @@
 # Reviewed device activation and rollback
 
-Status: the authorized current Mac rollout is complete. Eighteen selected destinations were verified: initial application made 17 writes and one no-op; repeated application made zero writes. Existing identical personal-ledger files were retained in their original skill directory. Private backup objects and the journal remain outside this checkout. All 18 live checks passed. Software checks do not establish visual appearance, account setup, or real connectivity.
+Status: the earlier authorized Mac rollout completed with eighteen selected destinations verified: initial application made 17 writes and one no-op; repeated application made zero writes. Its 18 live checks passed. The revised baseline removes Zen, Bun, and fnm from managed setup and Bun/fnm shell integration; the revised shell files have not been activated on the current Mac. Existing identical personal-ledger files were retained in their original skill directory. Private backup objects and the journal remain outside this checkout. Software checks do not establish visual appearance, account setup, or real connectivity.
 
 Use explicit per-file copies. Repository edits must not silently change a running device through symlinks. Never copy `home/` recursively, replace a whole `.config` directory, or install the project-root `AGENTS.md` as global guidance. The tables below are the complete candidate file inventory; packages and test infrastructure are not home files.
 
