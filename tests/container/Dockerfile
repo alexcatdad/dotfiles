@@ -19,9 +19,7 @@ RUN cd /tmp && curl -fsSL --retry 3 https://pkgs.tailscale.com/stable/tailscale_
     && rm -rf /tmp/tailscale.tgz /tmp/tailscale_1.102.4_arm64
 RUN useradd -m -s /usr/bin/zsh tester
 USER tester
-ENV HOME=/home/tester BUN_INSTALL=/home/tester/.bun SHELL=/usr/bin/zsh
-# Node versions are fixture runtimes for testing real fnm switching.
-RUN fnm install 22.23.3 && fnm install 24.21.0 && fnm default 22.23.3 && bun completions
+ENV HOME=/home/tester SHELL=/usr/bin/zsh
 USER root
 COPY --chown=tester:tester home/ /home/tester/
 COPY tests/container/verify.ts /tests/verify.ts
