@@ -32,6 +32,11 @@ func TestNativeShellStartup(t *testing.T) {
 			o.Repo, _ = filepath.EvalSymlinks(o.Repo)
 			o.Home = filepath.Join(filepath.Dir(o.Home), "home 'quoted 日本")
 			os.Mkdir(o.Home, 0700)
+			for _, path := range []string{filepath.Join(o.Home, ".local", "bin"), filepath.Join(o.Home, "bin")} {
+				if e = os.MkdirAll(path, 0700); e != nil {
+					t.Fatal(e)
+				}
+			}
 			o.Config = filepath.Join(o.Home, "custom config 'quote")
 			o.Data = filepath.Join(o.Home, "custom data")
 			o.Cache = filepath.Join(o.Home, "custom cache")
@@ -72,9 +77,11 @@ func TestNativeShellStartup(t *testing.T) {
 					modes = append(modes, []string{"--noprofile", "--norc", mode, ". \"$HOME/.bash_profile\"; . \"$HOME/.bashrc\"; printf 'READY\\n'"})
 				}
 			case "fish":
-				modes = [][]string{{"--no-config", "-c", "source " + quoteSH(filepath.Join(o.Config, "fish", "conf.d", "dotfiles.fish")) + "; echo READY"}, {"--no-config", "-ic", "source " + quoteSH(filepath.Join(o.Config, "fish", "conf.d", "dotfiles.fish")) + "; echo READY"}}
+				probe := "source " + quoteSH(filepath.Join(o.Config, "fish", "conf.d", "dotfiles.fish")) + "; if test (contains -i -- \"$HOME/.local/bin\" $PATH) -ge (contains -i -- \"$HOME/bin\" $PATH); echo 'incorrect PATH precedence' >&2; exit 1; end; echo READY"
+				modes = [][]string{{"--no-config", "-c", probe}, {"--no-config", "-ic", probe}}
 			case "powershell":
-				modes = [][]string{{"-NoProfile", "-NonInteractive", "-Command", ". " + quotePS(o.PowerShellProfile) + "; Write-Output READY"}}
+				probe := "Set-Variable HOME -Value " + quotePS(o.Home) + " -Force; . " + quotePS(o.PowerShellProfile) + "; $paths = $env:PATH -split [IO.Path]::PathSeparator; if ([Array]::IndexOf($paths, (Join-Path $HOME '.local/bin')) -ge [Array]::IndexOf($paths, (Join-Path $HOME 'bin'))) { throw 'incorrect PATH precedence' }; Write-Output READY"
+				modes = [][]string{{"-NoProfile", "-NonInteractive", "-Command", probe}}
 			case "posix":
 				modes = [][]string{{"-c", ". \"$HOME/.profile\"; printf 'READY\\n'"}}
 			}

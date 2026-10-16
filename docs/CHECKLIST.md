@@ -148,7 +148,7 @@ Upstream decisions are preserved: jq/Go remain required; Bun/fnm integration is 
 - [x] Parse native shell/Brewfile/PowerShell/JSON sources and supply native application validators where available.
 - [x] Isolate test homes, histories, Git fixtures, and project environments from real user state.
 - [x] Keep test results, configured CI, cross-build success, native acceptance, activation, and publication distinct.
-- [ ] Obtain passing hosted results for the final PR head; local registry/download testing is blocked by managed-proxy HTTP 503 until hosted CI runs.
+- [x] Execute the hosted matrix, including real-tool Debian integration on both architectures; record commit-specific results in the PR. The final PR checks remain authoritative.
 - [ ] Execute WSL/NixOS/Termux/remaining BSD/rare-architecture acceptance on native targets before promoting their support status.
 - [ ] Verify full-stack read-only/shared-filesystem and restricted-policy cases on native targets before promising them.
 
@@ -163,5 +163,6 @@ Upstream decisions are preserved: jq/Go remain required; Bun/fnm integration is 
 - [x] Keep examples synthetic and review public files explicitly.
 - [ ] Run native account/SSH/Tailscale/physical-device acceptance only on separately authorized targets.
 - [ ] Save consequential rationale/evidence in Scratchpad when the service is connected; unavailable in this session.
+- [ ] Complete automated security review when the paying account has quota; the review service reports an account usage limit in this session.
 
 The unchecked items remain visible release/acceptance conditions. They are not silently reclassified as completed implementation, and no historical Mac acceptance result is reused as evidence for this revision.

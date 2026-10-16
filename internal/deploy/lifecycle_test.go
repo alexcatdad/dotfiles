@@ -419,3 +419,27 @@ func TestArchiveCacheCannotOverlapRepository(t *testing.T) {
 		t.Fatal("accepted effective archive cache inside repository")
 	}
 }
+
+func TestNestedFileDestinationsFailBeforeWrites(t *testing.T) {
+	for _, ancestorFirst := range []bool{false, true} {
+		o := fixture(t)
+		o.Repo, _ = filepath.Abs(filepath.Join("..", ".."))
+		o.Repo, _ = filepath.EvalSymlinks(o.Repo)
+		o.Components, o.Shells = "shell", "zsh"
+		if ancestorFirst {
+			o.ZshDir = filepath.Join(o.Config, "shell", "capabilities.sh")
+		} else {
+			o.Config = filepath.Join(o.Home, ".zshrc")
+		}
+		if _, e := inventory(o); e == nil || !strings.Contains(e.Error(), "nested file destinations") {
+			t.Fatalf("accepted nested inventory: %v", e)
+		}
+		if e := install(o, Index{}, io.Discard); e == nil {
+			t.Fatal("accepted nested installation")
+		}
+		files, e := os.ReadDir(o.Home)
+		if e != nil || len(files) != 0 {
+			t.Fatalf("failed preflight changed the home: %v %v", files, e)
+		}
+	}
+}

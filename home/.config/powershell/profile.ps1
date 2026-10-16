@@ -9,7 +9,8 @@ $dotfilesPaths = @((Join-Path $HOME '.local/bin'), (Join-Path $HOME 'bin'), (Joi
 if (($env:DOTFILES_RUNTIMES -split ',') -contains 'bun') {
     $dotfilesPaths += if ($env:BUN_INSTALL) { Join-Path $env:BUN_INSTALL 'bin' } else { Join-Path $HOME '.bun/bin' }
 }
-foreach ($dotfilesPath in $dotfilesPaths) {
+for ($dotfilesPathIndex = $dotfilesPaths.Count - 1; $dotfilesPathIndex -ge 0; $dotfilesPathIndex--) {
+    $dotfilesPath = $dotfilesPaths[$dotfilesPathIndex]
     if ((Test-Path -LiteralPath $dotfilesPath -PathType Container) -and ($env:PATH -split [IO.Path]::PathSeparator) -notcontains $dotfilesPath) {
         $env:PATH = $dotfilesPath + [IO.Path]::PathSeparator + $env:PATH
     }
@@ -66,9 +67,6 @@ if ($dotfilesInteractive -and -not [Console]::IsInputRedirected -and $env:DOTFIL
     if (($env:DOTFILES_RUNTIMES -split ',') -contains 'fnm' -and (Test-DotfilesCommand fnm)) { $dotfilesCode = fnm env --use-on-cd --shell powershell 2>$null | Out-String; if ($LASTEXITCODE -eq 0 -and $dotfilesCode.Trim()) { Invoke-Expression $dotfilesCode } }
     if (Test-DotfilesCommand zoxide) { $dotfilesCode = zoxide init powershell --cmd cd 2>$null | Out-String; if ($LASTEXITCODE -eq 0 -and $dotfilesCode.Trim()) { Invoke-Expression $dotfilesCode } }
     if (Test-DotfilesCommand direnv) { $dotfilesCode = direnv hook pwsh 2>$null | Out-String; if ($LASTEXITCODE -eq 0 -and $dotfilesCode.Trim()) { Invoke-Expression $dotfilesCode } }
-    if (Test-DotfilesCommand starship) {
-        if (-not (Test-Path Env:NO_COLOR) -and $env:TERM -ne 'dumb') { $dotfilesCode = starship init powershell 2>$null | Out-String; if ($LASTEXITCODE -eq 0 -and $dotfilesCode.Trim()) { Invoke-Expression $dotfilesCode } }
-    }
     if (Get-Module -ListAvailable PSReadLine) {
         Import-Module PSReadLine
         Set-PSReadLineOption -PredictionSource History
@@ -79,6 +77,11 @@ if ($dotfilesInteractive -and -not [Console]::IsInputRedirected -and $env:DOTFIL
     }
     # Invoke-DotfilesDirenv below also supports explicit environment refresh.
 }
+# Prompt selection applies to every profile, including minimal/container.
+if ($dotfilesInteractive -and (Test-DotfilesCommand starship) -and -not (Test-Path Env:NO_COLOR) -and $env:TERM -ne 'dumb') {
+    $dotfilesCode = starship init powershell 2>$null | Out-String
+    if ($LASTEXITCODE -eq 0 -and $dotfilesCode.Trim()) { Invoke-Expression $dotfilesCode }
+}
 function global:Invoke-DotfilesDirenv {
     if (-not (Test-DotfilesCommand direnv)) { throw 'Requires direnv' }
     $dotfilesEnvironment = direnv export json | ConvertFrom-Json -AsHashtable
@@ -88,4 +91,4 @@ function global:Invoke-DotfilesDirenv {
 }
 $dotfilesLocal = Join-Path $env:DOTFILES_CONFIG_HOME 'powershell/local.ps1'
 if (Test-Path -LiteralPath $dotfilesLocal -PathType Leaf) { . $dotfilesLocal }
-Remove-Variable dotfilesPaths, dotfilesPath, dotfilesPair, dotfilesInteractive, dotfilesLocal -ErrorAction SilentlyContinue
+Remove-Variable dotfilesPaths, dotfilesPath, dotfilesPathIndex, dotfilesPair, dotfilesInteractive, dotfilesLocal -ErrorAction SilentlyContinue

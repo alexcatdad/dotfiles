@@ -193,7 +193,7 @@ func inventory(o Options) ([]Candidate, error) {
 		if runtime.GOOS == "windows" {
 			key = strings.ToLower(key)
 		}
-		if within(o.State, c.Destination) || within(o.Repo, c.Destination) {
+		if within(o.State, c.Destination) || within(c.Destination, o.State) || within(o.Repo, c.Destination) || within(c.Destination, o.Repo) {
 			return nil, fmt.Errorf("destination overlaps repository or state: %s", c.Destination)
 		}
 		if old, ok := seen[key]; ok {
@@ -201,6 +201,11 @@ func inventory(o Options) ([]Candidate, error) {
 				return nil, fmt.Errorf("conflicting destination: %s", c.Destination)
 			}
 			continue
+		}
+		for other := range seen {
+			if within(other, key) || within(key, other) {
+				return nil, fmt.Errorf("nested file destinations: %s and %s", other, c.Destination)
+			}
 		}
 		seen[key] = c
 		unique = append(unique, c)
