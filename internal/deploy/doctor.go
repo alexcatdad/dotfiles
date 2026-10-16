@@ -162,6 +162,9 @@ func packages(o Options, out io.Writer) error {
 		if runtime.GOOS == "darwin" {
 			candidates = []string{"brew"}
 		}
+		if runtime.GOOS == "windows" {
+			candidates = []string{"winget", "scoop", "choco", "nix"}
+		}
 		if os.Getenv("TERMUX_VERSION") != "" {
 			candidates = []string{"pkg"}
 		}
@@ -180,7 +183,7 @@ func packages(o Options, out io.Writer) error {
 		"apk":     {"go": "go", "rg": "ripgrep", "fd": "fd", "pwsh": "", "bun": "", "fnm": ""},
 		"brew":    {"go": "go", "rg": "ripgrep", "fd": "fd", "pwsh": "", "bun": "oven-sh/bun/bun"},
 		"pkg":     {"go": "go", "rg": "ripgrep", "fd": "fd", "pwsh": "", "bun": "", "fnm": "", "atuin": ""},
-		"pkg_add": {"go": "go", "rg": "ripgrep", "fd": "fd", "pwsh": "", "bun": "", "fnm": "", "atuin": "", "zoxide": "", "starship": "", "eza": ""},
+		"pkg_add": {"go": "go", "rg": "ripgrep", "fd": "fd", "fish": "fish%4", "pwsh": "", "bun": "", "fnm": "", "atuin": "", "zoxide": "", "starship": "", "eza": ""},
 		"winget":  {"git": "Git.Git", "git-lfs": "GitHub.GitLFS", "go": "GoLang.Go", "jq": "jqlang.jq", "bun": "Oven-sh.Bun", "pwsh": "Microsoft.PowerShell", "eza": "eza-community.eza", "rg": "BurntSushi.ripgrep.MSVC", "fd": "sharkdp.fd", "zoxide": "ajeetdsouza.zoxide", "fnm": "Schniz.fnm", "starship": "Starship.Starship", "atuin": "", "direnv": "", "zsh": "", "bash": "", "fish": ""},
 		"scoop":   {"go": "go", "rg": "ripgrep", "pwsh": "pwsh", "atuin": "", "direnv": "", "zsh": "", "fish": ""},
 		"choco":   {"go": "golang", "rg": "ripgrep", "pwsh": "powershell-core", "atuin": "", "direnv": "", "zsh": "", "fish": "", "eza": "", "fnm": "", "bun": ""},

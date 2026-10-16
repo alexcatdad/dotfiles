@@ -170,7 +170,7 @@ jobs:
       - uses: vmactions/openbsd-vm@5f7b2c933b8846a138361d6843c52af4bef5d945 # reviewed v1 ref
         with:
           copyback: false
-          prepare: pkg_add -I go zsh bash fish git jq
+          prepare: pkg_add -I go zsh bash 'fish%4' git jq
           run: sh tests/portable/bsd.sh
 
   ghostty:

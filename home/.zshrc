@@ -17,7 +17,9 @@ for _dotfiles_completion in "${HOMEBREW_PREFIX:-/opt/homebrew}/share/zsh/site-fu
 done
 unset _dotfiles_completion
 autoload -Uz compinit
-compinit
+# Audit normally and ignore insecure directories without prompting (SSH/CI
+# sessions may have no terminal). This does not use -u or bypass the audit.
+compinit -i
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' menu select
 bindkey -e

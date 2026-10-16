@@ -35,8 +35,9 @@ func TestWindowsPrivateStateAndOriginalDACLRecovery(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if !strings.HasPrefix(stateACL, "D:P") || !strings.Contains(stateACL, u.Uid) {
-		t.Fatal("private state DACL not applied")
+	userPresent := strings.Contains(stateACL, u.Uid) || strings.HasSuffix(u.Uid, "-500") && strings.Contains(stateACL, ";;;LA)")
+	if !strings.HasPrefix(stateACL, "D:P") || !userPresent || strings.Count(stateACL, "(") != 2 {
+		t.Fatalf("private state DACL not applied: flags=%q entries=%d", strings.SplitN(stateACL, "(", 2)[0], strings.Count(stateACL, "("))
 	}
 	if e = invoke(t, o, "rollback"); e != nil {
 		t.Fatal(e)

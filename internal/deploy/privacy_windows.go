@@ -33,7 +33,7 @@ func restoreACL(path, acl string) error {
 	}
 	advapi := syscall.NewLazyDLL("advapi32.dll")
 	convert := advapi.NewProc("ConvertStringSecurityDescriptorToSecurityDescriptorW")
-	set := advapi.NewProc("SetFileSecurityW")
+	set := advapi.NewProc("SetNamedSecurityInfoW")
 	var descriptor uintptr
 	ok, _, callErr := convert.Call(uintptr(unsafe.Pointer(sddl)), 1, uintptr(unsafe.Pointer(&descriptor)), 0)
 	if ok == 0 {
@@ -41,13 +41,20 @@ func restoreACL(path, acl string) error {
 	}
 	defer syscall.NewLazyDLL("kernel32.dll").NewProc("LocalFree").Call(descriptor)
 	const daclSecurityInformation = 0x4
+	var present, defaulted uint32
+	var dacl uintptr
+	ok, _, callErr = advapi.NewProc("GetSecurityDescriptorDacl").Call(descriptor, uintptr(unsafe.Pointer(&present)), uintptr(unsafe.Pointer(&dacl)), uintptr(unsafe.Pointer(&defaulted)))
+	if ok == 0 || present == 0 {
+		return fmt.Errorf("cannot extract reviewed state DACL: %w", callErr)
+	}
 	protection := uintptr(0x20000000) // UNPROTECTED_DACL_SECURITY_INFORMATION
 	if strings.HasPrefix(acl, "D:P") {
 		protection = 0x80000000
 	}
-	ok, _, callErr = set.Call(uintptr(unsafe.Pointer(p)), daclSecurityInformation|protection, descriptor)
-	if ok == 0 {
-		return fmt.Errorf("cannot protect private state directory: %w", callErr)
+	const seFileObject = 1
+	result, _, _ := set.Call(uintptr(unsafe.Pointer(p)), seFileObject, daclSecurityInformation|protection, 0, 0, dacl, 0)
+	if result != 0 {
+		return fmt.Errorf("cannot apply reviewed file DACL: %w", syscall.Errno(result))
 	}
 	return nil
 }
