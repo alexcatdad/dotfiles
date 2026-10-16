@@ -70,7 +70,7 @@ func TestRuntimesAreOptInAndFailedInitializersAreNotEvaluated(t *testing.T) {
 				if scenario == "opt-in" {
 					want = "1"
 				}
-				if strings.TrimSpace(string(b)) != want {
+				if fixtureShellText(cmd, b) != want {
 					t.Fatalf("runtime scenario %s: %q", scenario, b)
 				}
 				if strings.Contains(stderr.String(), "synthetic") {

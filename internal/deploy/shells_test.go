@@ -104,7 +104,7 @@ func TestNativeShellStartup(t *testing.T) {
 				if e != nil {
 					t.Fatalf("%v: %v\n%s", args, e, stderr.String())
 				}
-				if strings.TrimSpace(string(b)) != "READY" {
+				if fixtureShellText(cmd, b) != "READY" {
 					t.Fatalf("noisy startup: %q", b)
 				}
 				for _, line := range strings.Split(stderr.String(), "\n") {
@@ -139,4 +139,16 @@ func fixtureShellCommand(ctx context.Context, shell, executable string, args ...
 	}
 	cmd.WaitDelay = 2 * time.Second
 	return cmd
+}
+
+func fixtureShellText(cmd *exec.Cmd, output []byte) string {
+	text := string(output)
+	if runtime.GOOS == "freebsd" && filepath.Base(cmd.Path) == "script" {
+		// script sends EOF to its PTY when our input pipe closes. FreeBSD's
+		// terminal driver echoes it as ^D followed by two backspaces before
+		// the child runs. Remove only that transport prefix, retaining all
+		// shell output so unexpected startup messages still fail the probe.
+		text = strings.TrimPrefix(text, "^D\b\b")
+	}
+	return strings.TrimSpace(text)
 }
