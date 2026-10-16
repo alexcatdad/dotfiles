@@ -606,3 +606,25 @@ func TestStickyWritableParentIsNotAnArbitraryTrustBoundary(t *testing.T) {
 		t.Fatal("rejected normal temporary fixture", err)
 	}
 }
+
+func TestDeploymentStateCannotContainRepository(t *testing.T) {
+	for _, location := range []string{"root", "transactions", "nested", "index.json", "pending.json"} {
+		t.Run(location, func(t *testing.T) {
+			o := fixture(t)
+			o.State = filepath.Join(filepath.Dir(o.Repo), "state")
+			o.Repo = o.State
+			if location != "root" {
+				o.Repo = filepath.Join(o.State, location)
+			}
+			if location == "nested" {
+				o.Repo = filepath.Join(o.State, "transactions", "checkout")
+			}
+			if err := Run([]string{"install", "--apply", "--repo", o.Repo, "--home", o.Home, "--state-dir", o.State}, io.Discard); err == nil || !strings.Contains(err.Error(), "deployment state") {
+				t.Fatal("state ancestor was not rejected", err)
+			}
+			if _, err := os.Stat(o.State); !os.IsNotExist(err) {
+				t.Fatal("rejected state boundary wrote files", err)
+			}
+		})
+	}
+}

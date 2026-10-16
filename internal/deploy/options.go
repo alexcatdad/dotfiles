@@ -159,8 +159,8 @@ func (o *Options) normalize() error {
 	if has(o.Components, "machine") && o.Machine == "" {
 		return errors.New("machine component requires --machine")
 	}
-	if within(o.Repo, o.State) {
-		return errors.New("deployment state must be outside the repository")
+	if within(o.Repo, o.State) || within(o.State, o.Repo) {
+		return errors.New("deployment state must not overlap the repository")
 	}
 	archives := filepath.Join(o.Cache, "dotfiles", "archives")
 	if within(o.Repo, o.Cache) || within(o.Repo, archives) || within(archives, o.Repo) {

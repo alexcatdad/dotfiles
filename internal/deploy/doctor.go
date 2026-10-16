@@ -113,6 +113,9 @@ func doctor(o Options, out io.Writer) error {
 			if !same(f, r.Deployed) {
 				fmt.Fprintf(out, "drift\t%s\n", p)
 				failures++
+			} else if r.Deployed.Kind == "symlink" && !readableManagedSource(o.Repo, r.Deployed.Target) {
+				fmt.Fprintf(out, "broken source\t%s\n", p)
+				failures++
 			}
 		}
 	}
@@ -124,6 +127,22 @@ func doctor(o Options, out io.Writer) error {
 		return fmt.Errorf("%d health checks failed", failures)
 	}
 	return nil
+}
+
+// Only inspect the recorded deployed source, never a pre-adoption link target.
+func readableManagedSource(repo, path string) bool {
+	if !within(repo, path) || safeParents(path) != nil {
+		return false
+	}
+	info, err := os.Lstat(path)
+	if err != nil || !info.Mode().IsRegular() {
+		return false
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	return file.Close() == nil
 }
 
 var versionPattern = regexp.MustCompile(`[0-9]+(?:\.[0-9]+)+`)

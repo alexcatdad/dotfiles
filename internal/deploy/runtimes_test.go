@@ -135,3 +135,70 @@ func TestDoctorForcesLocalGoToolchain(t *testing.T) {
 		t.Fatal("doctor changed the caller environment")
 	}
 }
+
+func TestDoctorDetectsBrokenManagedSymlinks(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("native Unix fixture executables")
+	}
+	for _, scenario := range []string{"source-removed", "repo-moved", "source-directory", "source-symlink", "source-unreadable", "valid-source-edit"} {
+		t.Run(scenario, func(t *testing.T) {
+			o := fixture(t)
+			o.Mode = "symlink"
+			o = applyFixture(t, o)
+			bin := filepath.Join(o.Home, "bin")
+			if err := os.Mkdir(bin, 0700); err != nil {
+				t.Fatal(err)
+			}
+			for name, version := range map[string]string{"jq": "jq-1.7", "go": "go version go1.23.4"} {
+				if err := os.WriteFile(filepath.Join(bin, name), []byte("#!/bin/sh\necho '"+version+"'\n"), 0755); err != nil {
+					t.Fatal(err)
+				}
+			}
+			t.Setenv("PATH", bin)
+			if err := doctor(o, io.Discard); err != nil {
+				t.Fatal("healthy symlink", err)
+			}
+			source := filepath.Join(o.Repo, "home", ".config", "ripgrep", "config")
+			switch scenario {
+			case "repo-moved":
+				if err := os.Rename(o.Repo, o.Repo+"-moved"); err != nil {
+					t.Fatal(err)
+				}
+			case "source-unreadable":
+				if os.Geteuid() == 0 {
+					t.Skip("root can read mode-000 sources")
+				}
+				if err := os.Chmod(source, 0000); err != nil {
+					t.Fatal(err)
+				}
+			case "valid-source-edit":
+				if err := os.WriteFile(source, []byte("--case-sensitive\n"), 0644); err != nil {
+					t.Fatal(err)
+				}
+			default:
+				if err := os.Remove(source); err != nil {
+					t.Fatal(err)
+				}
+				if scenario == "source-directory" {
+					if err := os.Mkdir(source, 0700); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if scenario == "source-symlink" {
+					if err := os.Symlink(filepath.Join(o.Home, "unrelated-unreadable"), source); err != nil {
+						t.Fatal(err)
+					}
+				}
+			}
+			var out bytes.Buffer
+			err := doctor(o, &out)
+			if scenario == "valid-source-edit" {
+				if err != nil {
+					t.Fatal("live source edits are supported", err)
+				}
+			} else if err == nil || !strings.Contains(out.String(), "broken source") {
+				t.Fatal("broken managed symlink was not reported", err, out.String())
+			}
+		})
+	}
+}
