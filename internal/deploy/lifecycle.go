@@ -39,6 +39,7 @@ type Journal struct {
 	BeforeIndex, AfterIndex Index
 	Steps                   []Step
 	Directories             []string
+	UnconfirmedDirectories  []string
 	Complete                bool
 }
 type Preview struct {
@@ -366,18 +367,23 @@ func transact(o Options, j *Journal, out io.Writer) error {
 		if !same(f, s.Before) {
 			return fmt.Errorf("concurrent change at %s; transaction retained for rollback", s.Destination)
 		}
-		// Record potential created directories before creating them. Empty-only
-		// cleanup makes interrupted creation recoverable without recursive removal.
+		// Planned creation is not proof of ownership: another process may create
+		// a directory before mkdir. Only confirmed creations may be removed.
 		missing := missingDirs(filepath.Dir(s.Destination))
-		j.Directories = append(j.Directories, missing...)
-		if j.Action == "install" {
-			j.AfterIndex.Directories = append(j.AfterIndex.Directories, missing...)
-		}
+		j.UnconfirmedDirectories = missing
 		if e = writeJSON(journalPath(o, j.ID), j); e != nil {
 			return e
 		}
 		var made []string
 		if e = mkdirTracked(filepath.Dir(s.Destination), &made); e != nil {
+			return e
+		}
+		j.Directories = append(j.Directories, made...)
+		if j.Action == "install" {
+			j.AfterIndex.Directories = append(j.AfterIndex.Directories, made...)
+		}
+		j.UnconfirmedDirectories = nil
+		if e = writeJSON(journalPath(o, j.ID), j); e != nil {
 			return e
 		}
 		if e = put(s.Destination, s.After, s.Content); e != nil {
@@ -415,9 +421,7 @@ func transact(o Options, j *Journal, out io.Writer) error {
 	if j.Action == "uninstall" {
 		for n := len(j.BeforeIndex.Directories) - 1; n >= 0; n-- {
 			p := j.BeforeIndex.Directories[n]
-			if safeParents(p) == nil {
-				_ = os.Remove(p)
-			}
+			removeEmptyDirectory(p)
 		}
 	}
 	fmt.Fprintf(out, "%s: %d files; transaction %s\n", j.Action, len(j.Steps), j.ID)
@@ -548,13 +552,25 @@ func rollback(o Options, out io.Writer) error {
 		return e
 	}
 	for n := len(j.Directories) - 1; n >= 0; n-- {
-		_ = os.Remove(j.Directories[n])
+		removeEmptyDirectory(j.Directories[n])
 	} // Only empty directories can be removed.
 	if e = os.Remove(filepath.Join(o.State, "pending.json")); e != nil {
 		return e
 	}
 	fmt.Fprintf(out, "Rolled back transaction %s. Private backups retained.\n", id)
+	if len(j.UnconfirmedDirectories) > 0 {
+		fmt.Fprintln(out, "Unconfirmed directory creations retained for review in the private journal.")
+	}
 	return nil
+}
+func removeEmptyDirectory(path string) {
+	if safeParents(path) != nil {
+		return
+	}
+	i, e := os.Lstat(path)
+	if e == nil && i.IsDir() && i.Mode()&os.ModeSymlink == 0 && ownedByUser(i) {
+		_ = os.Remove(path)
+	}
 }
 func sortedKeys(m map[string]Record) []string {
 	keys := make([]string, 0, len(m))

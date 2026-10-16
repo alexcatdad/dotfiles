@@ -128,7 +128,8 @@ function prompt() {
 }
 function completions() {
   assert.equal(shell("[[ ${fpath[(r)*/zsh-completions]} != '' ]] || exit 2; print COMPLETE").trim(),"COMPLETE");
-  return "Native additional completion paths are available; Bun completion is optional.";
+  assert.equal(shell("(( $+functions[_bun] )) || exit 1; print OPTIONAL_BUN", "-ic", {env:{...process.env,DOTFILES_RUNTIMES:'bun'}}).trim(), "OPTIONAL_BUN");
+  return "Native additional completions load; Bun completion loads only in the explicitly selected runtime fixture.";
 }
 function privateOverrides() {
   let p = join(HOME,".zshrc.local"); writeFileSync(p,"alias fixture-local='print local-ok'\n");

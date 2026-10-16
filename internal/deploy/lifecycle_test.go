@@ -227,6 +227,17 @@ func TestPermissionDriftIsNotOverwritten(t *testing.T) {
 		t.Fatal("overwrote permission drift")
 	}
 }
+func TestDirectoryCleanupNeverRemovesReplacementFiles(t *testing.T) {
+	o := fixture(t)
+	p := filepath.Join(o.Home, "formerly-a-directory")
+	if e := os.WriteFile(p, []byte("keep user file"), 0600); e != nil {
+		t.Fatal(e)
+	}
+	removeEmptyDirectory(p)
+	if content(t, p) != "keep user file" {
+		t.Fatal("directory cleanup removed a replacement file")
+	}
+}
 func TestStateMustBePrivateAndOutsideRepo(t *testing.T) {
 	o := fixture(t)
 	o.State = filepath.Join(o.Repo, "state")

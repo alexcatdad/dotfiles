@@ -21,7 +21,8 @@ if (-not $env:STARSHIP_CONFIG) { $env:STARSHIP_CONFIG = Join-Path $env:DOTFILES_
 if (-not $env:ATUIN_CONFIG_DIR) { $env:ATUIN_CONFIG_DIR = Join-Path $env:DOTFILES_CONFIG_HOME 'atuin' }
 if (Get-Variable -Name DotfilesProfileLoaded -Scope Global -ValueOnly -ErrorAction SilentlyContinue) { return }
 $global:DotfilesProfileLoaded = $true
-function Test-DotfilesCommand([string]$Name) { return [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
+$dotfilesInteractive = [Environment]::GetCommandLineArgs() -notcontains '-NonInteractive' -and -not [Console]::IsInputRedirected
+function Test-DotfilesCommand([string]$Name) { return [bool](Get-Command -Name $Name -CommandType Application -ErrorAction SilentlyContinue) }
 function global:dotfiles_open([string]$Path) { Invoke-Item -LiteralPath $Path }
 function global:dotfiles_copy { $input | Set-Clipboard }
 function global:dotfiles_paste { Get-Clipboard -Raw }
@@ -48,18 +49,19 @@ function global:suggest-aliases([int]$MinCount = 5, [int]$MinLength = 20) {
     if (-not (Test-DotfilesCommand atuin)) { Write-Error 'Requires atuin'; return }
     atuin history list --cmd-only | Group-Object | Where-Object { $_.Count -ge $MinCount -and $_.Name.Length -ge $MinLength } | Sort-Object Count -Descending | Select-Object Count, Name
 }
-if (Test-DotfilesCommand eza) {
+if ($dotfilesInteractive -and (Test-DotfilesCommand eza)) {
     $global:DotfilesEzaOptions = if ((Test-Path Env:NO_COLOR) -or $env:DOTFILES_ICONS -eq '0' -or $env:TERM -eq 'dumb') { @('--icons=never', '--color=never') } else { @('--icons') }
     # Preserve PowerShell's object-producing ls/dir aliases; enhanced views are explicit.
     function global:ll { eza -lag @global:DotfilesEzaOptions --group-directories-first --git @args }
     function global:la { eza -a @global:DotfilesEzaOptions --group-directories-first @args }
     function global:lt { eza -T @global:DotfilesEzaOptions --level=2 @args }
 }
-foreach ($dotfilesPair in @(@('woodpecker', 'woodpecker-cli'), @('scaleway', 'scw'), @('proton-pass', 'pass-cli'), @('opentofu', 'tofu'))) {
-    if (-not (Test-DotfilesCommand $dotfilesPair[0]) -and (Test-DotfilesCommand $dotfilesPair[1])) { Set-Alias -Scope Global -Name $dotfilesPair[0] -Value $dotfilesPair[1] }
+if ($dotfilesInteractive) {
+    foreach ($dotfilesPair in @(@('woodpecker', 'woodpecker-cli'), @('scaleway', 'scw'), @('proton-pass', 'pass-cli'), @('opentofu', 'tofu'))) {
+        if (-not (Test-DotfilesCommand $dotfilesPair[0]) -and (Test-DotfilesCommand $dotfilesPair[1])) { Set-Alias -Scope Global -Name $dotfilesPair[0] -Value $dotfilesPair[1] }
+    }
 }
 # Interactive integrations only. Pipelines and -NonInteractive stay usable.
-$dotfilesInteractive = [Environment]::GetCommandLineArgs() -notcontains '-NonInteractive'
 if ($dotfilesInteractive -and -not [Console]::IsInputRedirected -and $env:DOTFILES_PROFILE -notin @('minimal', 'container')) {
     if (($env:DOTFILES_RUNTIMES -split ',') -contains 'fnm' -and (Test-DotfilesCommand fnm)) { $dotfilesCode = fnm env --use-on-cd --shell powershell 2>$null | Out-String; if ($LASTEXITCODE -eq 0 -and $dotfilesCode.Trim()) { Invoke-Expression $dotfilesCode } }
     if (Test-DotfilesCommand zoxide) { $dotfilesCode = zoxide init powershell --cmd cd 2>$null | Out-String; if ($LASTEXITCODE -eq 0 -and $dotfilesCode.Trim()) { Invoke-Expression $dotfilesCode } }

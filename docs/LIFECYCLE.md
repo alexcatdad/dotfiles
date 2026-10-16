@@ -38,6 +38,8 @@ Rollback verifies all current destinations and backup hashes before starting res
 
 A stale `lock` directory requires manual inspection: confirm no installer is running before removing that exact empty lock directory. Do not recursively clear the state directory. Preserve journals/backups until device acceptance and retention are agreed.
 
+If interruption occurs between creating a directory and confirming its creation in the journal, recovery retains that unconfirmed path for review. It never infers ownership from a pre-write absence check. Cleanup rechecks directory type and ownership and never deletes a replacement file or symlink.
+
 ## Updates, rollback, and uninstall
 
 A repeated installation with identical bytes is a no-op, including timestamps and permissions. An identical file that existed before adoption remains unowned and will not be deleted on uninstall. An update compares against the last deployed fingerprint; useful local edits must be reconciled deliberately into a candidate or private override.

@@ -14,6 +14,8 @@ GOTOOLCHAIN=local go build -o dotfiles ./cmd/dotfiles
 
 Use the native manager's reviewed privilege procedure for packages; do not run the configuration installer as root against a personal home. Resolve missing packages using `docs/PACKAGES.md`, then add `--apply` to the reviewed individual steps. Select `--components terminal --terminal ghostty` separately on a supported desktop. Shared paths and aliases work with native GNU tools; headless systems do not need GUI packages or fonts.
 
+Bun/fnm stay outside the default baseline. For explicitly selected runtime integration, prepare the desired binaries with `tools --tools bun,fnm`, then pass `--runtimes bun,fnm` to plan/install/doctor. Generate Bun completions during that explicit setup step using the official CLI for the chosen shell; for Zsh, its generated output belongs in `${BUN_INSTALL:-$HOME/.bun}/_bun`. The integration fixture demonstrates that path without enabling it in the default shell baseline.
+
 For a minimal shell, preview `--profile minimal --components shell,git,prompt,search`. Container and minimal profiles skip fnm, Zoxide, direnv, Atuin, and Zsh plugin initialization; optional tools remain available as explicit commands.
 
 On NixOS, import `packages/nixos.nix` into the reviewed system configuration, or enter `nix-shell packages/shell.nix` using a trusted pinned nixpkgs. Preview the system change with the normal NixOS build/diff procedure before switching. Use the lifecycle tool for user files only when another manager does not already own them. Do not install a second Home Manager/symlink owner over the same paths.

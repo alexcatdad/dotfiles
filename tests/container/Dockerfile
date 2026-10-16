@@ -23,7 +23,8 @@ ENV HOME=/home/tester BUN_INSTALL=/home/tester/.bun SHELL=/usr/bin/zsh
 # Node versions are fixture runtimes for testing real fnm switching.
 RUN --mount=type=secret,id=proxy_ca \
     if [ -f /run/secrets/proxy_ca ]; then export SSL_CERT_FILE=/run/secrets/proxy_ca; fi; \
-    fnm install 22.23.3 && fnm install 24.21.0 && fnm default 22.23.3 && bun completions
+    fnm install 22.23.3 && fnm install 24.21.0 && fnm default 22.23.3 \
+    && mkdir -p "$BUN_INSTALL" && bun completions > "$BUN_INSTALL/_bun"
 USER root
 COPY --chown=tester:tester home/ /home/tester/
 COPY tests/container/verify.ts /tests/verify.ts
