@@ -7,7 +7,7 @@ case "$(uname -s)" in
     *) printf '%s\n' 'Unsupported VM probe' >&2; exit 1 ;;
 esac
 mkdir -p /home/tester/dotfiles
-for dotfiles_source in home machines cmd internal tests go.mod; do
+for dotfiles_source in home machines cmd internal tests go.mod README.md; do
     cp -R "$dotfiles_source" /home/tester/dotfiles/
 done
 chown -R tester /home/tester/dotfiles

@@ -10,7 +10,7 @@ Install Go 1.23 or later through your platform's native distribution, then build
 
 ```sh
 GOTOOLCHAIN=local go build -trimpath -o dotfiles ./cmd/dotfiles
-./dotfiles packages                          # preview missing native packages
+./dotfiles packages --shells zsh,bash,fish   # preview missing native packages
 ./dotfiles tools                             # preview pinned binary fallbacks
 ./dotfiles plugins                           # preview the three Zsh plugin sources
 ./dotfiles plan --shells zsh,bash,fish
@@ -20,7 +20,7 @@ GOTOOLCHAIN=local go build -trimpath -o dotfiles ./cmd/dotfiles
 Every write requires an explicit `--apply`. Package/tool setup and configuration deployment are separate operations:
 
 ```sh
-./dotfiles packages --apply                  # native manager; may require privileges
+./dotfiles packages --shells zsh,bash,fish --apply # native manager; may require privileges
 ./dotfiles tools --apply                     # missing pinned tools in ~/.local/bin
 ./dotfiles plugins --apply                   # reviewed plugins in XDG data/zsh/plugins
 ./dotfiles install --shells zsh,bash,fish --apply
@@ -44,7 +44,7 @@ The default components are `shell,git,prompt,history,search`. Select any subset 
 - `--components machine --machine machines/mac-studio.zsh` explicitly selects the existing optional Mac integration. No hostname-based selection occurs.
 - `--git-lfs` adds the separate LFS filter configuration after its CLI is installed.
 
-`--config-dir`, `--data-dir`, `--cache-dir`, `--state-dir`, `--zsh-dir`, and `--powershell-profile` support custom locations. XDG defaults are inherited only when targeting the invoking user's home. Generated startup files record the reviewed configuration paths; other shared files can optionally use `--mode symlink`. Rendered entrypoints always use copies. Symlink mode deliberately makes repository edits affect linked live files.
+`--config-dir`, `--data-dir`, `--cache-dir`, `--state-dir`, `--zsh-dir`, and `--powershell-profile` support custom locations. XDG defaults are inherited only when targeting the invoking user's home. Generated startup files record the reviewed configuration paths; other shared files can optionally use `--mode symlink`. Rendered entrypoints always use copies. Fish receives a managed bootstrap in its normal XDG startup directory when the shared config directory differs. For a custom Zsh plugin directory, pass the same `--plugin-dir /absolute/path` to both `plugins` and `install`; generated Zsh startup records that selection. Symlink mode deliberately makes repository edits affect linked live files.
 
 ## Native Windows
 

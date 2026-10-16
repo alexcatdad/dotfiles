@@ -12,7 +12,7 @@ RUN if command -v apt-get >/dev/null; then \
       apk add --no-cache go zsh bash fish git jq ca-certificates; \
     else exit 1; fi
 RUN mkdir -p /home/tester && chown 10001:10001 /home/tester
-COPY go.mod /src/go.mod
+COPY go.mod README.md /src/
 COPY cmd/ /src/cmd/
 COPY internal/ /src/internal/
 COPY home/ /src/home/

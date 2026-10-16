@@ -4,7 +4,7 @@ export LESS='-R'
 export LESSHISTFILE=-
 [[ -r "${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/ripgrep/config" ]] && export RIPGREP_CONFIG_PATH="${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/ripgrep/config"
 [[ -r "${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/starship.toml" ]] && export STARSHIP_CONFIG="${STARSHIP_CONFIG:-${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/starship.toml}"
-export ATUIN_CONFIG_DIR="${ATUIN_CONFIG_DIR:-${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/atuin}"
+[[ -r "${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/atuin/config.toml" ]] && export ATUIN_CONFIG_DIR="${ATUIN_CONFIG_DIR:-${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/atuin}"
 # CLI aliases also available in non-interactive agent shells.
 (( $+commands[woodpecker-cli] && ! $+commands[woodpecker] )) && alias woodpecker='woodpecker-cli'
 (( $+commands[scw] && ! $+commands[scaleway] )) && alias scaleway='scw'

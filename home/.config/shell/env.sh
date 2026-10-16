@@ -16,5 +16,5 @@ unset _dotfiles_bin
 export PATH LESS='-R' LESSHISTFILE=-
 [ ! -r "$DOTFILES_CONFIG_HOME/ripgrep/config" ] || export RIPGREP_CONFIG_PATH="$DOTFILES_CONFIG_HOME/ripgrep/config"
 [ ! -r "$DOTFILES_CONFIG_HOME/starship.toml" ] || export STARSHIP_CONFIG="${STARSHIP_CONFIG:-$DOTFILES_CONFIG_HOME/starship.toml}"
-export ATUIN_CONFIG_DIR="${ATUIN_CONFIG_DIR:-$DOTFILES_CONFIG_HOME/atuin}"
+[ ! -r "$DOTFILES_CONFIG_HOME/atuin/config.toml" ] || export ATUIN_CONFIG_DIR="${ATUIN_CONFIG_DIR:-$DOTFILES_CONFIG_HOME/atuin}"
 true

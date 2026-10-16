@@ -59,6 +59,9 @@ func inventory(o Options) ([]Candidate, error) {
 				s = "export DOTFILES_CONFIG_HOME=" + quoteSH(o.Config) + "\nexport DOTFILES_DATA_HOME=" + quoteSH(o.Data) + "\nexport DOTFILES_PROFILE=" + quoteSH(o.Profile) + "\n" + s
 			}
 			b = []byte(s)
+			if src == "home/.zshenv" && filepath.Clean(o.PluginDir) != filepath.Join(o.Data, "zsh", "plugins") {
+				b = append([]byte("export DOTFILES_PLUGIN_DIR="+quoteSH(o.PluginDir)+"\n"), b...)
+			}
 			if src != "home/.gitconfig" {
 				if strings.HasSuffix(src, ".ps1") {
 					b = append([]byte("$env:DOTFILES_RUNTIMES = "+quotePS(o.Runtimes)+"\n"), b...)
@@ -117,6 +120,18 @@ func inventory(o Options) ([]Candidate, error) {
 			case "fish":
 				if err := add("home/.config/fish/conf.d/dotfiles.fish", filepath.Join(o.Config, "fish", "conf.d", "dotfiles.fish"), true); err != nil {
 					return nil, err
+				}
+				// Fish discovers conf.d through XDG_CONFIG_HOME, independently of
+				// the selected shared config directory. Manage a bootstrap there.
+				startupConfig := filepath.Join(o.Home, ".config")
+				nativeHome, _ := os.UserHomeDir()
+				if o.Home == nativeHome && filepath.IsAbs(os.Getenv("XDG_CONFIG_HOME")) {
+					startupConfig = filepath.Clean(os.Getenv("XDG_CONFIG_HOME"))
+				}
+				if startupConfig != o.Config {
+					target := filepath.Join(o.Config, "fish", "conf.d", "dotfiles.fish")
+					bootstrap := "if test -r " + quoteSH(target) + "; source " + quoteSH(target) + "; end\n"
+					items = append(items, Candidate{"generated:Fish-config", filepath.Join(startupConfig, "fish", "conf.d", "dotfiles.fish"), "copy", []byte(bootstrap)})
 				}
 			case "powershell":
 				if err := add("home/.config/powershell/profile.ps1", o.PowerShellProfile, true); err != nil {

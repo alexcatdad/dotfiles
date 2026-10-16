@@ -22,7 +22,7 @@ $env:LESS = '-R'
 $env:LESSHISTFILE = '-'
 if (Test-Path -LiteralPath (Join-Path $env:DOTFILES_CONFIG_HOME 'ripgrep/config')) { $env:RIPGREP_CONFIG_PATH = Join-Path $env:DOTFILES_CONFIG_HOME 'ripgrep/config' }
 if (-not $env:STARSHIP_CONFIG -and (Test-Path -LiteralPath (Join-Path $env:DOTFILES_CONFIG_HOME 'starship.toml') -PathType Leaf)) { $env:STARSHIP_CONFIG = Join-Path $env:DOTFILES_CONFIG_HOME 'starship.toml' }
-if (-not $env:ATUIN_CONFIG_DIR) { $env:ATUIN_CONFIG_DIR = Join-Path $env:DOTFILES_CONFIG_HOME 'atuin' }
+if (-not $env:ATUIN_CONFIG_DIR -and (Test-Path -LiteralPath (Join-Path $env:DOTFILES_CONFIG_HOME 'atuin/config.toml') -PathType Leaf)) { $env:ATUIN_CONFIG_DIR = Join-Path $env:DOTFILES_CONFIG_HOME 'atuin' }
 if (Get-Variable -Name DotfilesProfileLoaded -Scope Global -ValueOnly -ErrorAction SilentlyContinue) { return }
 $global:DotfilesProfileLoaded = $true
 $dotfilesInteractive = [Environment]::GetCommandLineArgs() -notcontains '-NonInteractive' -and -not [Console]::IsInputRedirected

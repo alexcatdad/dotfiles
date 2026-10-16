@@ -110,16 +110,21 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Verify private machine files stay outside the build context
+      - name: Verify only reviewed home and machine files enter the build context
         shell: bash
         run: |
           set -eu
           dotfiles_context_fixture=$(mktemp machines/.context-fixture.XXXXXX)
-          trap 'rm -f "$dotfiles_context_fixture"' EXIT
+          dotfiles_home_fixture=$(mktemp -d home/.context-fixture.XXXXXX)
+          trap 'rm -f "$dotfiles_context_fixture" "$dotfiles_home_fixture/unlisted.conf"; rmdir "$dotfiles_home_fixture"' EXIT
           printf '%s\n' 'synthetic private machine fixture' > "$dotfiles_context_fixture"
-          printf 'FROM scratch\nCOPY machines/ /machines/\n' | docker build -f - --output "type=local,dest=$RUNNER_TEMP/dotfiles-context-check" .
+          printf '%s\n' 'synthetic unreviewed home config' > "$dotfiles_home_fixture/unlisted.conf"
+          printf 'FROM scratch\nCOPY machines/ /machines/\nCOPY home/ /home/\n' | docker build -f - --output "type=local,dest=$RUNNER_TEMP/dotfiles-context-check" .
           test -f "$RUNNER_TEMP/dotfiles-context-check/machines/mac-studio.zsh"
           test ! -e "$RUNNER_TEMP/dotfiles-context-check/$dotfiles_context_fixture"
+          find "$RUNNER_TEMP/dotfiles-context-check/home" -type f | sed "s|$RUNNER_TEMP/dotfiles-context-check/||" | LC_ALL=C sort > "$RUNNER_TEMP/context-home-actual"
+          sed -n 's/^- `\(home\/[^`]*\)`$/\1/p' PUBLIC-CONTENTS.md | LC_ALL=C sort > "$RUNNER_TEMP/context-home-expected"
+          diff -u "$RUNNER_TEMP/context-home-expected" "$RUNNER_TEMP/context-home-actual"
       - run: docker build --platform linux/${{ matrix.arch }} -f tests/container/Dockerfile -t dotfiles-validation:review .
       - run: docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges dotfiles-validation:review
 

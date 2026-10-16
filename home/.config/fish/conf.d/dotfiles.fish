@@ -30,7 +30,7 @@ set -gx LESS -R
 set -gx LESSHISTFILE -
 if test -r "$DOTFILES_CONFIG_HOME/ripgrep/config"; set -gx RIPGREP_CONFIG_PATH "$DOTFILES_CONFIG_HOME/ripgrep/config"; end
 if test -r "$DOTFILES_CONFIG_HOME/starship.toml"; and not set -q STARSHIP_CONFIG; set -gx STARSHIP_CONFIG "$DOTFILES_CONFIG_HOME/starship.toml"; end
-if not set -q ATUIN_CONFIG_DIR; set -gx ATUIN_CONFIG_DIR "$DOTFILES_CONFIG_HOME/atuin"; end
+if test -r "$DOTFILES_CONFIG_HOME/atuin/config.toml"; and not set -q ATUIN_CONFIG_DIR; set -gx ATUIN_CONFIG_DIR "$DOTFILES_CONFIG_HOME/atuin"; end
 status is-interactive; or return
 set -q _DOTFILES_FISH_LOADED; and return
 set -g _DOTFILES_FISH_LOADED 1

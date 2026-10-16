@@ -12,7 +12,7 @@ HISTFILE="${HISTFILE:-$HOME/.zsh_history}"
 
 # Additional completions before compinit. No plugin manager or downloads.
 typeset -U fpath
-for _dotfiles_completion in "${HOMEBREW_PREFIX:-/opt/homebrew}/share/zsh/site-functions" /usr/local/share/zsh/site-functions /opt/homebrew/share/zsh-completions /usr/local/share/zsh-completions /usr/local/share/zsh/plugins/zsh-completions/src /usr/share/zsh-completions /usr/share/zsh/vendor-completions /usr/share/zsh/site-functions "${DOTFILES_DATA_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}}/zsh/plugins/zsh-completions/src"; do
+for _dotfiles_completion in "${HOMEBREW_PREFIX:-/opt/homebrew}/share/zsh/site-functions" /usr/local/share/zsh/site-functions /opt/homebrew/share/zsh-completions /usr/local/share/zsh-completions /usr/local/share/zsh/plugins/zsh-completions/src /usr/share/zsh-completions /usr/share/zsh/vendor-completions /usr/share/zsh/site-functions "${DOTFILES_DATA_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}}/zsh/plugins/zsh-completions/src" "${DOTFILES_PLUGIN_DIR:+$DOTFILES_PLUGIN_DIR/zsh-completions/src}"; do
   [[ -d $_dotfiles_completion ]] && fpath=( "$_dotfiles_completion" $fpath )
 done
 unset _dotfiles_completion

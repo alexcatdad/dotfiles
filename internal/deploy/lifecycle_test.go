@@ -457,3 +457,49 @@ func TestNestedFileDestinationsFailBeforeWrites(t *testing.T) {
 		}
 	}
 }
+
+func TestQuickStartPackagesCoverSelectedShells(t *testing.T) {
+	b, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	quick := strings.Split(string(b), "## Native Windows")[0]
+	o := fixture(t)
+	var packagesOptions []Options
+	var installedShells string
+	for _, line := range strings.Split(quick, "\n") {
+		fields := strings.Fields(strings.SplitN(line, "#", 2)[0])
+		if len(fields) < 2 || fields[0] != "./dotfiles" {
+			continue
+		}
+		if fields[1] != "packages" && fields[1] != "install" {
+			continue
+		}
+		args := append(fields[2:], "--repo", o.Repo, "--home", o.Home, "--state-dir", o.State)
+		parsed, err := parse(args, io.Discard)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if fields[1] == "packages" {
+			packagesOptions = append(packagesOptions, parsed)
+		} else {
+			installedShells = parsed.Shells
+		}
+	}
+	if len(packagesOptions) != 2 || installedShells == "" {
+		t.Fatal("quick start must include package preview/apply and shell install")
+	}
+	for _, p := range packagesOptions {
+		for _, shell := range strings.Split(installedShells, ",") {
+			found := false
+			for _, r := range requirements(p) {
+				if r.name == shell && r.required {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("documented packages omit required installed shell %s", shell)
+			}
+		}
+	}
+}

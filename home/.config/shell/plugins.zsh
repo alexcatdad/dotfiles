@@ -1,5 +1,6 @@
 # Install plugins during explicit setup, never from shell startup.
 for _dotfiles_plugin in \
+  "${DOTFILES_PLUGIN_DIR:+$DOTFILES_PLUGIN_DIR/zsh-autosuggestions/zsh-autosuggestions.zsh}" \
   "${HOMEBREW_PREFIX:-/opt/homebrew}/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
   /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
   /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
@@ -13,6 +14,7 @@ done
 [[ -r "${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/shell/alias-tips.zsh" ]] && source "${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/shell/alias-tips.zsh"
 
 for _dotfiles_plugin in \
+  "${DOTFILES_PLUGIN_DIR:+$DOTFILES_PLUGIN_DIR/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh}" \
   "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/zsh-fast-syntax-highlighting/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" \
   /opt/homebrew/opt/zsh-fast-syntax-highlighting/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh \
   /usr/local/opt/zsh-fast-syntax-highlighting/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh \

@@ -383,3 +383,167 @@ func TestPowerShellPromptConfigSelection(t *testing.T) {
 		})
 	}
 }
+
+func TestFishDiscoversCustomConfiguration(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("native Unix shell")
+	}
+	executable, err := exec.LookPath("fish")
+	if err != nil {
+		if has(os.Getenv("DOTFILES_REQUIRED_SHELLS"), "fish") {
+			t.Fatal(err)
+		}
+		t.Skip("native Fish unavailable")
+	}
+	for _, location := range []string{"default", "xdg"} {
+		t.Run(location, func(t *testing.T) {
+			o := fixture(t)
+			o.Repo, _ = filepath.Abs(filepath.Join("..", ".."))
+			o.Repo, _ = filepath.EvalSymlinks(o.Repo)
+			o.Components, o.Shells, o.Profile = "shell", "fish", "minimal"
+			o.Config = filepath.Join(o.Home, "selected config")
+			startup := filepath.Join(o.Home, ".config")
+			if location == "xdg" {
+				startup = filepath.Join(o.Home, "startup config")
+			}
+			t.Setenv("HOME", o.Home)
+			t.Setenv("XDG_CONFIG_HOME", startup)
+			if err = prepareState(o); err != nil {
+				t.Fatal(err)
+			}
+			idx, _ := loadIndex(o)
+			if err = install(o, idx, io.Discard); err != nil {
+				t.Fatal(err)
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			cmd := exec.CommandContext(ctx, executable, "-c", `test "$DOTFILES_CONFIG_HOME" = "$EXPECTED_CONFIG"; or exit 1; echo READY`)
+			cmd.Env = []string{"HOME=" + o.Home, "PATH=" + fixtureShellPath(t, o), "XDG_CONFIG_HOME=" + startup, "EXPECTED_CONFIG=" + o.Config, "LANG=C.UTF-8"}
+			cmd.Dir = o.Home
+			if b, err := cmd.CombinedOutput(); err != nil || strings.TrimSpace(string(b)) != "READY" {
+				t.Fatalf("normal Fish startup: %v %s", err, b)
+			}
+			o.Apply = true
+			if err := invoke(t, o, "uninstall"); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := os.Lstat(filepath.Join(startup, "fish", "conf.d", "dotfiles.fish")); !os.IsNotExist(err) {
+				t.Fatal("owned Fish bootstrap retained", err)
+			}
+		})
+	}
+}
+
+func TestZshLoadsCustomPluginDirectory(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("native Unix shell")
+	}
+	executable, err := exec.LookPath("zsh")
+	if err != nil {
+		t.Skip("native Zsh unavailable")
+	}
+	o := fixture(t)
+	o.Repo, _ = filepath.Abs(filepath.Join("..", ".."))
+	o.Repo, _ = filepath.EvalSymlinks(o.Repo)
+	o.Components, o.Shells = "shell", "zsh"
+	o.ZshDir = filepath.Join(filepath.Dir(o.Home), "ascii-zdotdir")
+	o.PluginDir = filepath.Join(o.Home, "selected plugins")
+	for path, body := range map[string]string{
+		"zsh-autosuggestions/zsh-autosuggestions.zsh":                  "typeset -g DOTFILES_TEST_SUGGESTIONS=1\n",
+		"fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh": "typeset -g DOTFILES_TEST_HIGHLIGHTING=1\n",
+		"zsh-completions/src/_fixture":                                 "#compdef fixture\n",
+	} {
+		p := filepath.Join(o.PluginDir, filepath.FromSlash(path))
+		if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := prepareState(o); err != nil {
+		t.Fatal(err)
+	}
+	idx, _ := loadIndex(o)
+	if err := install(o, idx, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, executable, "-d", "-ic", `[[ ${DOTFILES_TEST_SUGGESTIONS-} == 1 && ${DOTFILES_TEST_HIGHLIGHTING-} == 1 && ${fpath[(Ie)$DOTFILES_PLUGIN_DIR/zsh-completions/src]} -gt 0 ]] || exit 1; print -r -- READY`)
+	cmd.Env = []string{"HOME=" + o.Home, "ZDOTDIR=" + o.ZshDir, "PATH=" + fixtureShellPath(t, o), "TERM=vt100", "NO_COLOR=1"}
+	cmd.Dir = o.Home
+	if b, err := cmd.CombinedOutput(); err != nil || strings.TrimSpace(string(b)) != "READY" {
+		t.Fatalf("custom plugin startup: %v %s", err, b)
+	}
+}
+
+func TestAtuinConfigSelection(t *testing.T) {
+	for _, shell := range []string{"zsh", "bash", "fish", "powershell", "posix"} {
+		t.Run(shell, func(t *testing.T) {
+			if runtime.GOOS == "windows" && shell != "powershell" {
+				t.Skip("native Unix shell")
+			}
+			command := map[string]string{"zsh": "zsh", "bash": "bash", "fish": "fish", "powershell": "pwsh", "posix": "sh"}[shell]
+			executable, err := exec.LookPath(command)
+			if err != nil {
+				if has(os.Getenv("DOTFILES_REQUIRED_SHELLS"), shell) {
+					t.Fatal(err)
+				}
+				t.Skip("native shell unavailable")
+			}
+			for _, scenario := range []string{"missing", "present", "override"} {
+				t.Run(scenario, func(t *testing.T) {
+					o := fixture(t)
+					o.Repo, _ = filepath.Abs(filepath.Join("..", ".."))
+					o.Repo, _ = filepath.EvalSymlinks(o.Repo)
+					o.Components, o.Shells, o.Profile = "shell", shell, "minimal"
+					o.Config = filepath.Join(o.Home, "selected config")
+					o.ZshDir = filepath.Join(filepath.Dir(o.Home), "ascii-zdotdir")
+					want := ""
+					if scenario != "missing" {
+						o.Components += ",history"
+						want = filepath.Join(o.Config, "atuin")
+					}
+					if err := prepareState(o); err != nil {
+						t.Fatal(err)
+					}
+					idx, _ := loadIndex(o)
+					if err := install(o, idx, io.Discard); err != nil {
+						t.Fatal(err)
+					}
+					env := []string{"HOME=" + o.Home, "USERPROFILE=" + o.Home, "ZDOTDIR=" + o.ZshDir, "PATH=" + fixtureShellPath(t, o), "XDG_CONFIG_HOME=" + filepath.Join(o.Home, ".config"), "LANG=C.UTF-8"}
+					if scenario == "override" {
+						want = filepath.Join(o.Home, "private history preferences")
+						env = append(env, "ATUIN_CONFIG_DIR="+want)
+					}
+					for _, name := range []string{"SystemRoot", "WINDIR", "COMSPEC", "PATHEXT", "TEMP", "TMP"} {
+						if v := os.Getenv(name); v != "" {
+							env = append(env, name+"="+v)
+						}
+					}
+					// Exit before READY on a wrong override, including an unsolicited one.
+					probe := `test "${ATUIN_CONFIG_DIR-}" = ` + quoteSH(want) + ` || exit 1; printf 'READY\n'`
+					args := []string{"-d", "-c", probe}
+					switch shell {
+					case "bash":
+						args = []string{"--noprofile", "--norc", "-c", `. "$HOME/.bashrc"; ` + probe}
+					case "posix":
+						args = []string{"-c", `. "$HOME/.profile"; ` + probe}
+					case "fish":
+						args = []string{"--no-config", "-c", "source " + quoteSH(filepath.Join(o.Config, "fish", "conf.d", "dotfiles.fish")) + `; test "$ATUIN_CONFIG_DIR" = ` + quoteSH(want) + `; or exit 1; echo READY`}
+					case "powershell":
+						args = []string{"-NoProfile", "-NonInteractive", "-Command", "Set-Variable HOME -Value " + quotePS(o.Home) + " -Force; . " + quotePS(o.PowerShellProfile) + "; if ([string]$env:ATUIN_CONFIG_DIR -ne " + quotePS(want) + ") { throw 'unexpected Atuin override' }; Write-Output READY"}
+					}
+					ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+					defer cancel()
+					cmd := exec.CommandContext(ctx, executable, args...)
+					cmd.Env, cmd.Dir = env, o.Home
+					if b, err := cmd.CombinedOutput(); err != nil || strings.TrimSpace(string(b)) != "READY" {
+						t.Fatalf("Atuin configuration selection: %v %s", err, b)
+					}
+				})
+			}
+		})
+	}
+}
