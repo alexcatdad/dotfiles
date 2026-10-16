@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -90,7 +91,10 @@ func TestInstallRepeatAndUninstall(t *testing.T) {
 		t.Fatal("repeat changed timestamp")
 	}
 	if e := invoke(t, o, "uninstall"); e != nil {
-		t.Fatal(e)
+		idx, _ := loadIndex(o)
+		actual, _ := fingerprint(target(o))
+		scrub := regexp.MustCompile(`S-[0-9]+(?:-[0-9]+)+`)
+		t.Fatalf("%v (original ACL=%q, observed ACL=%q)", e, scrub.ReplaceAllString(idx.Active[target(o)].Original.ACL, "SID"), scrub.ReplaceAllString(actual.ACL, "SID"))
 	}
 	if _, e := os.Lstat(p); !os.IsNotExist(e) {
 		t.Fatal("uninstall retained owned file")
@@ -160,7 +164,10 @@ func TestUpdatesKeepOriginalForUninstall(t *testing.T) {
 		t.Fatal("update failed")
 	}
 	if e := invoke(t, o, "uninstall"); e != nil {
-		t.Fatal(e)
+		idx, _ := loadIndex(o)
+		actual, _ := fingerprint(target(o))
+		scrub := regexp.MustCompile(`S-[0-9]+(?:-[0-9]+)+`)
+		t.Fatalf("%v (original ACL=%q, observed ACL=%q)", e, scrub.ReplaceAllString(idx.Active[target(o)].Original.ACL, "SID"), scrub.ReplaceAllString(actual.ACL, "SID"))
 	}
 	if content(t, target(o)) != "before adoption" {
 		t.Fatal("uninstall restored intermediate version")

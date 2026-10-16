@@ -87,7 +87,7 @@ func TestDoctorAcceptsRequiredVersionsAndWarnsForOptionalTools(t *testing.T) {
 	os.Mkdir(bin, 0700)
 	for name, version := range map[string]string{"jq": "jq-1.7", "go": "go version go1.23.4", "eza": "eza v0.1.0"} {
 		p := filepath.Join(bin, name)
-		os.WriteFile(p, []byte("#!/bin/sh\nprintf '%s\\n' '"+version+"'\n"), 0755)
+		os.WriteFile(p, []byte("#!/bin/sh\necho '"+version+"'\n"), 0755)
 		os.Chmod(p, 0755)
 	}
 	t.Setenv("PATH", bin)
@@ -98,7 +98,7 @@ func TestDoctorAcceptsRequiredVersionsAndWarnsForOptionalTools(t *testing.T) {
 	if !strings.Contains(out.String(), "ok\tjq 1.7") || !strings.Contains(out.String(), "optional incompatible\teza") {
 		t.Fatal("required version or optional warning missing")
 	}
-	os.WriteFile(filepath.Join(bin, "jq"), []byte("#!/bin/sh\nprintf 'jq-1.3\\n'\n"), 0755)
+	os.WriteFile(filepath.Join(bin, "jq"), []byte("#!/bin/sh\necho 'jq-1.3'\n"), 0755)
 	if e := doctor(o, io.Discard); e == nil {
 		t.Fatal("accepted insufficient required jq version")
 	}

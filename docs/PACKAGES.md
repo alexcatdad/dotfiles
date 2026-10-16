@@ -21,7 +21,7 @@ Package installation is explicit and separate from configuration activation. `do
 | Windows / Scoop | git, git-lfs, jq, go; optional bun | pwsh, eza, ripgrep, fd, zoxide, fnm, starship | Buckets and trust decisions remain explicit |
 | Windows / Chocolatey | git, git-lfs, jq, golang | powershell-core, ripgrep, fd, zoxide, starship | Other tools use verified upstream/native alternatives |
 
-On OpenBSD, `fish%main` selects the current Fish port branch; a numeric major is not its package-path branch name. Some distro Fish packages pull in Python for auxiliary tools. The shared configuration and Go CLI do not use Python; the Python-free full Zsh integration image excludes Fish, while separate native Fish probes use distro packages.
+On OpenBSD, `fish%main` selects the current Fish port branch; a numeric major is not its package-path branch name. Some distro Fish packages pull in Python for auxiliary tools. The pinned BSD VM actions also use their upstream Python/QEMU helper on hosted runners; that helper is not vendored or modified here. The shared configuration and Go CLI do not use Python; the Python-free full Zsh integration image excludes Fish, while separate native Fish probes use distro packages.
 
 The CLI reports unmapped dependencies rather than claiming setup is complete. An installed executable is retained even when old; `doctor` checks minimum versions. Bash completion and native Zsh plugin packages can be installed separately with the package manager or the CLI Brewfile. The fixed `plugins` setup command supplies user-local Zsh fallbacks.
 
