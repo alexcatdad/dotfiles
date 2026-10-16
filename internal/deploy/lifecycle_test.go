@@ -407,16 +407,30 @@ func TestExplicitPromptSelectionAndProfileDefaults(t *testing.T) {
 	}
 }
 func TestArchiveCacheCannotOverlapRepository(t *testing.T) {
-	o := fixture(t)
-	o.Cache = filepath.Join(o.Repo, "cache")
-	if e := o.normalize(); e == nil {
-		t.Fatal("accepted repository-contained archive cache")
-	}
-	o = fixture(t)
-	o.Repo = filepath.Join(filepath.Dir(o.Repo), "dotfiles")
-	o.Cache = filepath.Dir(o.Repo)
-	if e := o.normalize(); e == nil {
-		t.Fatal("accepted effective archive cache inside repository")
+	for _, relationship := range []string{"cache-in-repo", "cache-root-in-repo", "archives-equal-repo", "repo-in-archives", "separate"} {
+		t.Run(relationship, func(t *testing.T) {
+			o := fixture(t)
+			root := filepath.Dir(o.Repo)
+			switch relationship {
+			case "cache-in-repo":
+				o.Cache = filepath.Join(o.Repo, "cache")
+			case "cache-root-in-repo":
+				o.Repo, o.Cache = filepath.Join(root, "dotfiles"), root
+			case "archives-equal-repo":
+				o.Repo, o.Cache = filepath.Join(root, "dotfiles", "archives"), root
+			case "repo-in-archives":
+				o.Repo, o.Cache = filepath.Join(root, "dotfiles", "archives", "checkout"), root
+			case "separate":
+				o.Cache = root // A sibling checkout and effective archive directory are safe.
+			}
+			err := o.normalize()
+			if relationship == "separate" && err != nil {
+				t.Fatal(err)
+			}
+			if relationship != "separate" && err == nil {
+				t.Fatal("accepted overlapping archive cache")
+			}
+		})
 	}
 }
 

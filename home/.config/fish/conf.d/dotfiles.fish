@@ -70,7 +70,7 @@ for dotfiles_pair in woodpecker:woodpecker-cli scaleway:scw proton-pass:pass-cli
     if not command -q "$parts[1]"; and command -q "$parts[2]"; alias "$parts[1]" "$parts[2]"; end
 end
 # Abbreviations display expansions before execution, using Fish's native editor.
-abbr --add --global dfll 'eza -lag --icons --group-directories-first --git'
+abbr --add --global dfll ll
 function _dotfiles_alias_tip --on-event fish_preexec
     if string match -qr -- '^eza -lag --icons --group-directories-first --git( |$)' "$argv[1]"
         printf 'Alias tip: ll\n'

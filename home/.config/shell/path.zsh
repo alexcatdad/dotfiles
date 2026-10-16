@@ -8,7 +8,7 @@ for _dotfiles_prefix in "${HOMEBREW_PREFIX-}" /home/linuxbrew/.linuxbrew "$HOME/
   [[ -n $_dotfiles_prefix && -d $_dotfiles_prefix/bin ]] && path=( "$_dotfiles_prefix/bin" "$_dotfiles_prefix/sbin" $path )
 done
 # Only retain language/user paths which actually exist on this machine.
-for _dotfiles_bin in "${CARGO_HOME:-$HOME/.cargo}/bin" "${PNPM_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/pnpm}" "${GOBIN:-${GOPATH:-$HOME/go}/bin}" "$HOME/bin" "$HOME/.local/bin"; do
+for _dotfiles_bin in "${CARGO_HOME:-$HOME/.cargo}/bin" "${PNPM_HOME:-${DOTFILES_DATA_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}}/pnpm}" "${GOBIN:-${GOPATH:-$HOME/go}/bin}" "$HOME/bin" "$HOME/.local/bin"; do
   [[ -d $_dotfiles_bin ]] && path=( "$_dotfiles_bin" $path )
 done
 if [[ ,${DOTFILES_RUNTIMES-}, == *,bun,* && -d "${BUN_INSTALL:-$HOME/.bun}/bin" ]]; then

@@ -59,7 +59,7 @@ func TestNativeShellStartup(t *testing.T) {
 			if e = install(o, idx, io.Discard); e != nil {
 				t.Fatal(e)
 			}
-			env := []string{"HOME=" + o.Home, "USERPROFILE=" + o.Home, "USER=fixture", "PATH=" + os.Getenv("PATH"), "TERM=xterm-256color", "LANG=C.UTF-8", "XDG_CONFIG_HOME=" + o.Config, "XDG_DATA_HOME=" + o.Data, "XDG_STATE_HOME=" + filepath.Join(o.Home, "state-home"), "XDG_CACHE_HOME=" + o.Cache, "NO_COLOR=1", "GOTOOLCHAIN=local"}
+			env := []string{"HOME=" + o.Home, "USERPROFILE=" + o.Home, "USER=fixture", "PATH=" + fixtureShellPath(t, o), "TERM=xterm-256color", "LANG=C.UTF-8", "XDG_CONFIG_HOME=" + o.Config, "XDG_DATA_HOME=" + o.Data, "XDG_STATE_HOME=" + filepath.Join(o.Home, "state-home"), "XDG_CACHE_HOME=" + o.Cache, "NO_COLOR=1", "GOTOOLCHAIN=local"}
 			for _, name := range []string{"SystemRoot", "WINDIR", "COMSPEC", "PATHEXT", "TEMP", "TMP"} {
 				if v := os.Getenv(name); v != "" {
 					env = append(env, name+"="+v)
@@ -158,4 +158,107 @@ func fixtureShellText(cmd *exec.Cmd, output []byte) string {
 		text = strings.TrimPrefix(text, "^D\b\b")
 	}
 	return strings.TrimSpace(text)
+}
+
+// Startup deliberately discovers native package directories. Shadow optional
+// host tools in the highest-priority user-local directory so startup probes
+// cannot execute real integrations. Tests replace individual stubs as needed.
+func fixtureShellPath(t *testing.T, o Options) string {
+	t.Helper()
+	bin := filepath.Join(o.Home, ".local", "bin")
+	if err := os.MkdirAll(bin, 0700); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"eza", "rg", "fd", "fdfind", "fnm", "zoxide", "direnv", "atuin", "starship"} {
+		body := "#!/bin/sh\nexit 1\n"
+		if runtime.GOOS == "windows" {
+			name += ".cmd"
+			body = "@exit /b 1\r\n"
+		}
+		if err := os.WriteFile(filepath.Join(bin, name), []byte(body), 0755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if runtime.GOOS == "windows" {
+		return strings.Join([]string{filepath.Join(os.Getenv("SystemRoot"), "System32"), os.Getenv("SystemRoot")}, string(os.PathListSeparator))
+	}
+	return "/usr/bin:/bin"
+}
+
+func TestZshUsesSelectedDataDirectoryForPnpm(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("native Unix shell")
+	}
+	executable, err := exec.LookPath("zsh")
+	if err != nil {
+		t.Skip("native Zsh unavailable")
+	}
+	o := fixture(t)
+	o.Repo, _ = filepath.Abs(filepath.Join("..", ".."))
+	o.Repo, _ = filepath.EvalSymlinks(o.Repo)
+	o.Components, o.Shells = "shell", "zsh"
+	o.Data = filepath.Join(o.Home, "selected data")
+	if err = os.MkdirAll(filepath.Join(o.Data, "pnpm"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	o.ZshDir = filepath.Join(filepath.Dir(o.Home), "ascii-zdotdir")
+	if err = prepareState(o); err != nil {
+		t.Fatal(err)
+	}
+	idx, _ := loadIndex(o)
+	if err = install(o, idx, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, executable, "-d", "-c", `(( ${path[(Ie)$DOTFILES_DATA_HOME/pnpm]} )) || exit 1; print -r -- READY`)
+	cmd.Env = []string{"HOME=" + o.Home, "ZDOTDIR=" + o.ZshDir, "PATH=" + fixtureShellPath(t, o), "XDG_DATA_HOME=" + filepath.Join(o.Home, "other data")}
+	cmd.Dir = o.Home
+	if b, err := cmd.CombinedOutput(); err != nil || strings.TrimSpace(string(b)) != "READY" {
+		t.Fatalf("selected pnpm data directory missing: %v %s", err, b)
+	}
+}
+
+func TestFishAbbreviationRespectsTerminalControls(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("native Unix shell")
+	}
+	executable, err := exec.LookPath("fish")
+	if err != nil {
+		if has(os.Getenv("DOTFILES_REQUIRED_SHELLS"), "fish") {
+			t.Fatal("required Fish unavailable")
+		}
+		t.Skip("native Fish unavailable")
+	}
+	for _, control := range []string{"DOTFILES_ICONS=0", "NO_COLOR=1", "TERM=dumb", "TERM=xterm-256color"} {
+		t.Run(control, func(t *testing.T) {
+			o := fixture(t)
+			source, _ := filepath.Abs(filepath.Join("..", "..", "home", ".config", "fish", "conf.d", "dotfiles.fish"))
+			path := fixtureShellPath(t, o)
+			if err := os.WriteFile(filepath.Join(o.Home, ".local", "bin", "eza"), []byte("#!/bin/sh\nprintf '%s\\n' \"$@\"\n"), 0755); err != nil {
+				t.Fatal(err)
+			}
+			// Execute Fish's actual abbreviation expansion and observe the
+			// arguments received by a synthetic eza, rather than matching source.
+			probe := "source " + quoteSH(source) + "; set -l expansion (abbr --show dfll | string replace -r '^.* -- dfll ' ''); eval (string unescape -- $expansion)"
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			cmd := exec.CommandContext(ctx, executable, "--no-config", "-ic", probe)
+			cmd.Env = []string{"HOME=" + o.Home, "PATH=" + path, "DOTFILES_PROFILE=minimal", control}
+			cmd.Dir = o.Home
+			var stderr bytes.Buffer
+			cmd.Stderr = &stderr
+			b, err := cmd.Output()
+			if err != nil {
+				t.Fatalf("Fish abbreviation: %v %s", err, stderr.String())
+			}
+			want := "--icons=never"
+			if control == "TERM=xterm-256color" {
+				want = "--icons"
+			}
+			if !strings.Contains("\n"+string(b), "\n"+want+"\n") || want == "--icons=never" && strings.Contains("\n"+string(b), "\n--icons\n") {
+				t.Fatalf("%s: eza arguments %q", control, b)
+			}
+		})
+	}
 }

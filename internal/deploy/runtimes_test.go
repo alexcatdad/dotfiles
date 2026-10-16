@@ -34,8 +34,8 @@ func TestRuntimesAreOptInAndFailedInitializersAreNotEvaluated(t *testing.T) {
 				if scenario != "baseline" {
 					o.Runtimes = "fnm"
 				}
-				fakeBin := filepath.Join(o.Home, "fake-bin")
-				os.Mkdir(fakeBin, 0700)
+				fixturePath := fixtureShellPath(t, o)
+				fakeBin := filepath.Join(o.Home, ".local", "bin")
 				status := "0"
 				if scenario == "failed-init" {
 					status = "1"
@@ -50,7 +50,7 @@ func TestRuntimesAreOptInAndFailedInitializersAreNotEvaluated(t *testing.T) {
 				if e = install(o, idx, io.Discard); e != nil {
 					t.Fatal(e)
 				}
-				env := []string{"HOME=" + o.Home, "ZDOTDIR=" + o.ZshDir, "PATH=" + fakeBin + string(os.PathListSeparator) + os.Getenv("PATH"), "TERM=xterm-256color", "NO_COLOR=1", "LANG=C.UTF-8", "XDG_CACHE_HOME=" + o.Cache, "XDG_DATA_HOME=" + o.Data, "XDG_CONFIG_HOME=" + o.Config}
+				env := []string{"HOME=" + o.Home, "ZDOTDIR=" + o.ZshDir, "PATH=" + fixturePath, "TERM=xterm-256color", "NO_COLOR=1", "LANG=C.UTF-8", "XDG_CACHE_HOME=" + o.Cache, "XDG_DATA_HOME=" + o.Data, "XDG_CONFIG_HOME=" + o.Config}
 				args := []string{"-d", "-ic", "printf '%s\\n' \"${DOTFILES_RUNTIME_INIT:-0}\""}
 				if shell == "bash" {
 					args = []string{"--noprofile", "--norc", "-ic", ". \"$HOME/.bashrc\"; printf '%s\\n' \"${DOTFILES_RUNTIME_INIT:-0}\""}
