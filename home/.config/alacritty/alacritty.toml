@@ -1,0 +1,12 @@
+[font]
+size = 13
+[font.normal]
+family = "FiraCode Nerd Font Mono"
+[colors.primary]
+background = "#000000"
+foreground = "#c6c6c6"
+[window.padding]
+x = 10
+y = 8
+[bell]
+duration = 0

@@ -6,6 +6,7 @@ This file governs work in this project. `home/.codex/AGENTS.md` is the separate,
 
 - Use `README.md` for baseline scope and reproducible checks; retrieve relevant project context and runbooks from Scratchpad when changing that baseline. `RUNBOOK.md` locates the central records. Keep future targets and changes within their own task authorization.
 - Shared candidate files live in `home/`, optional machine integrations in `machines/`, native package manifests in `packages/`, and isolated checks in `tests/container/`.
+- Portable lifecycle tooling lives in `cmd/dotfiles` and `internal/deploy`; `docs/COMPATIBILITY.md` and `docs/CHECKLIST.md` distinguish implemented paths, test evidence, and native acceptance. Use the explicit Go inventory rather than adding a configuration DSL.
 - Agents may parallelize independent work. Give each agent clear ownership, integrate its findings, and close it when done. Avoid conflicting edits.
 - Keep project memory and operational runbooks in Scratchpad; confirm project scope on every call. Capture consequential rationale and reusable procedures with accurate authority, confidence, and evidence. Report unsaved records if the service is unavailable.
 
@@ -15,7 +16,7 @@ This file governs work in this project. `home/.codex/AGENTS.md` is the separate,
 - Use `ACTIVATION.md` before a device rollout and `PUBLIC-CONTENTS.md` before publication review. Keep installation separate from upgrades; use the documented no-upgrade setup command. Follow `SKILL-SOURCES.md` for reviewed source revisions rather than silently refreshing skill snapshots.
 - Use plain files, native package managers, and explicit commands. Do not introduce Paw, Ansible, a plugin manager, a sync daemon, or a custom configuration parser.
 - Do not use Python for agent-authored scripts, automation, data processing, or validation commands. Use shell, Bun/TypeScript, or Go instead. Python use requires an explicit user exception. Existing Python-dependent tools are not authorization to use Python for new work; flag their dependencies and preserve approved behavior when planning a replacement.
-- `jq` and Go are required on every managed machine. Preserve approved aliases, Zoxide navigation, Atuin search, direnv, shell plugin features, and appearance. Bun, fnm, and Zen are no longer part of the managed baseline; Bun remains a container test-runner dependency.
+- `jq` and Go are required on every managed machine. Preserve approved aliases, Zoxide navigation, Atuin search, direnv, shell plugin features, and appearance. Bun, fnm, and Zen are no longer part of the managed baseline; Bun remains a container test-runner dependency. Optional runtime integration requires an explicit portability component selection.
 - Keep shared configuration separate from non-secret machine differences and private/generated state. Never bulk-copy a home or `.config` directory.
 - Do not read, print, copy, or publish credentials, private keys, real histories, environment databases, or private project configuration. Use synthetic fixtures for tests.
 - No download, install, synchronization, or update command belongs in shell startup. Native shell caches/history may be written during normal interactive use.
@@ -29,6 +30,7 @@ This file governs work in this project. `home/.codex/AGENTS.md` is the separate,
 
 - For shell, plugin, or package changes, follow the Docker build/run commands in `README.md` and the relevant Scratchpad runbook. Do not rerun the container suite for documentation-only edits.
 - Parse changed Zsh files before executing them. Use synthetic fixtures for behavior tests and validate the native Brewfile syntax separately.
+- For lifecycle or portability changes, run `GOTOOLCHAIN=local go test -v ./...` and `go vet ./...`, parse the affected native shell files, and exercise the relevant CI targets. Missing native prerequisites must be reported as skips or blockers, never as passing platform acceptance. Builds and tests must use writable task-local caches when the runtime home is restricted.
 - Preserve Starship and Ghostty appearance unless the user requests a change. Validate Ghostty with the installed native validator when its configuration changes.
 - Review the exact public file allowlist in `README.md`; never stage the entire workspace. `work/` and `outputs/` are local artifacts, and existing `.git` history remains unreviewed.
 - Report changed files, verified behavior, unresolved device-specific checks, and whether anything was activated or published. Keep hostnames, addresses, identity, and secrets out of public reports and logs.

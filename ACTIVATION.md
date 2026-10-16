@@ -1,5 +1,7 @@
 # Reviewed device activation and rollback
 
+The portable lifecycle CLI implements the per-file workflow below. See `docs/LIFECYCLE.md` for profiles, custom paths, private journals, drift checks, recovery, and uninstall. This revision has not been activated on an existing device. The historical table describes the earlier baseline; `internal/deploy/inventory.go` is the expanded portable inventory. Native acceptance is tracked in `docs/ACCEPTANCE.md` and `docs/CHECKLIST.md`.
+
 Status: the earlier authorized Mac rollout completed with eighteen selected destinations verified: initial application made 17 writes and one no-op; repeated application made zero writes. Its 18 live checks passed. The revised baseline removes Zen, Bun, and fnm from managed setup and Bun/fnm shell integration; the revised shell files have not been activated on the current Mac. Existing identical personal-ledger files were retained in their original skill directory. Private backup objects and the journal remain outside this checkout. Software checks do not establish visual appearance, account setup, or real connectivity.
 
 Use explicit per-file copies. Repository edits must not silently change a running device through symlinks. Never copy `home/` recursively, replace a whole `.config` directory, or install the project-root `AGENTS.md` as global guidance. The tables below are the complete candidate file inventory; packages and test infrastructure are not home files.

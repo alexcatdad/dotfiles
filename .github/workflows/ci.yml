@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      extended:
+        description: Run BSD VM and native Ghostty acceptance probes
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -14,38 +19,176 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  syntax:
-    name: macOS syntax
-    runs-on: macos-15
-    timeout-minutes: 10
+  native:
+    name: Native lifecycle and shells (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-15-intel, windows-2025, windows-11-arm]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     env:
+      GOTOOLCHAIN: local
       HOMEBREW_NO_AUTO_UPDATE: "1"
       HOMEBREW_NO_ANALYTICS: "1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Parse Zsh configuration
-        shell: zsh -f {0}
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Install native Unix shell test dependencies
+        if: runner.os != 'Windows'
+        shell: bash
         run: |
           set -eu
-          for file in home/.zshenv home/.zprofile home/.zshrc home/.config/shell/*.zsh machines/*.zsh; do
-            zsh -n "$file"
-          done
-      - name: Parse native Brewfile without installing packages
+          if [ "$RUNNER_OS" = Linux ]; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends zsh fish
+          else
+            brew install fish
+          fi
+      - name: Native lifecycle, failure recovery, and shell checks
+        shell: pwsh
         run: |
-          ruby -c packages/Brewfile
-          brew bundle list --all --file=packages/Brewfile
+          $env:DOTFILES_REQUIRED_SHELLS = if ($IsWindows) { 'powershell' } else { 'zsh,bash,fish,posix' }
+          go test -v ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go vet ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go build -trimpath -o "${{ runner.temp }}/dotfiles${{ runner.os == 'Windows' && '.exe' || '' }}" ./cmd/dotfiles
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Parse PowerShell and terminal JSON
+        shell: pwsh
+        run: |
+          Get-ChildItem home/.config/powershell/*.ps1, scripts/*.ps1 | ForEach-Object {
+            $tokens = $null; $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errors)
+            if ($errors.Count) { throw ($errors | Out-String) }
+          }
+          Get-Content -Raw home/.config/windows-terminal/settings.json | ConvertFrom-Json | Out-Null
+      - name: Parse Unix configuration and native Brewfiles
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -eu
+          for file in home/.zshenv home/.zprofile home/.zshrc home/.config/shell/*.zsh machines/*.zsh; do zsh -n "$file"; done
+          bash -n home/.bashrc home/.bash_profile home/.config/shell/interactive.bash
+          sh -n home/.profile home/.config/shell/env.sh home/.config/shell/capabilities.sh scripts/install-tools.sh
+          fish --no-config -n home/.config/fish/conf.d/dotfiles.fish
+          if [ "$RUNNER_OS" = macOS ]; then
+            ruby -c packages/Brewfile
+            ruby -c packages/Brewfile.cli
+            ruby -c packages/Brewfile.runtimes
+            brew bundle list --all --file=packages/Brewfile
+            brew bundle list --all --file=packages/Brewfile.cli
+          fi
 
   container:
-    name: ARM64 integration
-    runs-on: ubuntu-24.04-arm
+    name: Full Debian integration (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {runner: ubuntu-24.04, arch: amd64}
+          - {runner: ubuntu-24.04-arm, arch: arm64}
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Build validation image
-        run: docker build --platform linux/arm64 -f tests/container/Dockerfile -t dotfiles-validation:review .
-      - name: Run isolated integration checks
-        run: docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges dotfiles-validation:review
+      - run: docker build --platform linux/${{ matrix.arch }} -f tests/container/Dockerfile -t dotfiles-validation:review .
+      - run: docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges dotfiles-validation:review
+
+  distros:
+    name: Native packages (${{ matrix.distro }})
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [debian:trixie-slim, ubuntu:26.04, fedora:44, archlinux:base, alpine:3.24]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - run: docker build --build-arg DISTRO=${{ matrix.distro }} -f tests/distros/Dockerfile -t dotfiles-distro:test .
+      - run: docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges dotfiles-distro:test
+
+  minimum-go:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00
+        with:
+          go-version: "1.23.12"
+          cache: false
+      - run: GOTOOLCHAIN=local go test ./...
+
+  cross-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Compile supported installer targets
+        run: sh scripts/cross-build.sh
+
+  freebsd:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.extended)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: vmactions/freebsd-vm@c46abacb49f09938ca4e1702d15d836285d694cc # reviewed v1 ref
+        with:
+          copyback: false
+          prepare: pkg install -y go zsh bash fish git jq
+          run: sh tests/portable/bsd.sh
+
+  openbsd:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.extended)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: vmactions/openbsd-vm@5f7b2c933b8846a138361d6843c52af4bef5d945 # reviewed v1 ref
+        with:
+          copyback: false
+          prepare: pkg_add -I go zsh bash fish git jq
+          run: sh tests/portable/bsd.sh
+
+  ghostty:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.extended)
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - run: brew install --cask ghostty font-fira-code-nerd-font
+      - name: Validate a disposable native Ghostty configuration
+        run: |
+          set -eu
+          dotfiles_ghostty="$RUNNER_TEMP/dotfiles-ghostty"
+          mkdir -p "$dotfiles_ghostty"
+          cp home/.config/ghostty/config "$dotfiles_ghostty/config"
+          cp home/.config/ghostty/platforms/macos.conf "$dotfiles_ghostty/platform.conf"
+          /Applications/Ghostty.app/Contents/MacOS/ghostty +validate-config --config-file="$dotfiles_ghostty/config"

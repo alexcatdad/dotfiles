@@ -3,5 +3,4 @@ if [[ $OSTYPE == darwin* ]] && (( $+commands[brew] )); then
   eval "$(brew shellenv)"
 fi
 # Restore user binary priority after macOS path_helper/Homebrew initialization.
-[[ -r "$HOME/.config/shell/path.zsh" ]] && source "$HOME/.config/shell/path.zsh"
-[[ -r "$HOME/.config/shell/machine.zsh" ]] && source "$HOME/.config/shell/machine.zsh"
+[[ -r "${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/shell/path.zsh" ]] && source "${DOTFILES_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/shell/path.zsh"

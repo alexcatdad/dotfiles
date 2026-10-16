@@ -1,104 +1,117 @@
-# Plain dotfiles baseline
+# Portable plain dotfiles
 
-Status: the original reviewed 39-file baseline was published at [alexcatdad/dotfiles](https://github.com/alexcatdad/dotfiles) and activated on the current Mac. Its 18 live checks passed; repeated activation made zero writes. The revised baseline removes Zen, Bun, and fnm from managed setup and Bun/fnm shell integration; those shell changes have not been activated on the current Mac. Private backups and the deployment journal remain outside the repository. Other devices have not been activated. The current public inventory contains 40 files after adding the CI workflow; see `PUBLIC-CONTENTS.md`.
+Shared preferences with native Zsh, Bash, Fish, PowerShell, and POSIX entrypoints, explicit package setup, and a standard-library Go lifecycle tool. Configuration stays in plain files. Shell startup never installs, downloads, updates, or synchronizes software.
 
-This setup preserves the approved shell shortcuts and appearance using plain Zsh files, native package manifests, and explicit machine differences. No Paw, Zinit, Ansible, startup downloads, or synchronization daemon is required.
+The established Mac deployment remains the historical baseline. This portability revision does **not** activate changes on any existing device. See [baseline evidence](docs/BASELINE.md), [compatibility and limitations](docs/COMPATIBILITY.md), and the [complete implementation/acceptance ledger](docs/CHECKLIST.md).
 
-## Contents
+## Quick start
 
-- `home/`: shared candidate files, including the preserved Starship and Ghostty preferences.
-- `machines/mac-studio.zsh`: optional Mac Studio integration. It is not automatically selected by hostname and is not installed in the Linux test image.
-- `packages/Brewfile`: the approved Mac package baseline. `jq` and Go are required on every managed device. Use native packages where available.
-- `tests/container/`: an isolated ARM64 Debian setup and integration checks. Debian native packages provide the Linux baseline; official pinned binary releases provide tools absent from Debian's package set.
-- `RUNBOOK.md`: locator for operational runbooks in Scratchpad. Scratchpad holds project memory and procedures; `decisions.jsonl` retains historical evidence.
-- `ACTIVATION.md`: per-file destinations, conflict review, repeatable activation, rollback, and device acceptance.
-- `PUBLIC-CONTENTS.md`: exact candidate publication inventory and its privacy review boundary.
-- `SKILL-SOURCES.md`: verified public upstream references and revision status for personal skills.
-- `examples/`: synthetic private-override templates; they are not installed automatically.
-- `AGENTS.md`: instructions for maintaining this dotfiles project.
-- `home/.codex/AGENTS.md`: reusable device-wide working agreements, intended for each user's Codex home (normally `~/.codex/AGENTS.md`).
-- `home/.agents/skills/`: selected reusable personal skills and their required references. These are candidate instructions, not MCP connections or installations.
-
-## Agent instruction placement
-
-The project file governs this project. The portable file supplies defaults across projects on each device; do not substitute the project file for it. If a device uses a custom Codex home, place the portable file there instead. An existing non-empty `AGENTS.override.md` takes precedence at that level; inspect and reconcile it rather than deleting or overwriting it blindly. Project instructions are loaded after global instructions and can specialize them.
-
-The portable file is installed on the current Mac after reconciliation with existing global guidance. For each later rollout, review existing instructions, preserve device-specific rules, and merge the portable defaults deliberately. On devices without Codex, a remote maintenance agent can read the file explicitly; installing Codex is not required solely for this workflow.
-
-The 2026-10-06 agent-focused revision is installed on the current Mac. It defines KISS, unattended implementation, and recurring monitoring of PR checks and human/tool feedback until merge or closure, alongside current service roles and language preferences. Green is a readiness report; monitoring continues and merging still requires an explicit request. Operational runbooks and rationale are in Scratchpad, located through `RUNBOOK.md`. Device-specific requirements remain in this project's documents and manifests. The installed file matches the source, no global override masks it, and its original is privately backed up. Codex's refreshed instruction context confirms the new global guidance is loaded.
-
-Source: [official instruction discovery documentation](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
-
-## Portable personal skills
-
-The device-wide instructions identify Scratchpad for project memory and runbooks, and pa-mcp for personal-assistant state: attention, tasks/reminders, bills, pet care, travel, finances, and buying intents. Codex handles conversation and scheduled execution; pa-mcp provides typed domain operations. Available tool schemas determine connected capabilities; installing instructions does not authorize access to personal data.
-
-Scratchpad stores consequential decisions, ADRs, findings, failures, constraints, questions/answers, project state, and runbooks. Use its typed capture and retrieval tools with provenance, authority, and confidence. Optional repository mirroring is managed by Scratchpad. Codex discovers the packaged skills; the installed agent instructions do not duplicate their loading or workflow rules. The personal-ledger snapshot below covers the financial subset of pa-mcp.
-
-| Skill | Purpose | Candidate source and review |
-| --- | --- | --- |
-| `scratchpad-memory` | Recover and preserve project reasoning, decisions, and evidence | Existing personal skill; includes public Scratchpad integration links |
-| `personal-ledger` | Use pa-mcp for requested financial records, reconciliation, reports, and evidence | Existing personal skill plus statement/evidence references and UI metadata; no records or connection configuration |
-
-The copied instructions are unchanged local snapshots. `SKILL-SOURCES.md` records the matching pinned Scratchpad source and the unresolved public ledger skill package. No upstream version upgrade is implied. Frontend design and React/Next.js skills belong in each relevant project rather than the device-wide baseline. Homelab operations and workspace-connectivity skills depend on specific infrastructure and are not part of this shared set. System and plugin skills remain managed by their providers rather than vendored from plugin caches. Before rollout, reconcile equivalent plugin skills and existing personal copies to avoid duplicates.
-
-The intended user-level destination is `~/.agents/skills/`, as documented in [official skill discovery guidance](https://learn.chatgpt.com/docs/build-skills). Deployment and private MCP connection setup are separate tasks. There are no server addresses, key paths, credentials, ledger data, or Scratchpad records in this bundle.
-
-## Preserved behavior
-
-The `ls`, `ll`, `la`, `lt`, `tree`, `grep`, and `find` aliases remain. Zoxide provides `cd`; Atuin provides Ctrl-R search; Direnv handles project environments. Autosuggestions, fast syntax highlighting, completion, and alias tips load explicitly. The only custom utility functions are `duf` and `suggest-aliases`.
-
-`.zshenv` provides `woodpecker` → `woodpecker-cli`, `scaleway` → `scw`, `proton-pass` → `pass-cli`, and `opentofu` → `tofu` in interactive and non-interactive Zsh. Each alias requires the target CLI and leaves an existing executable with the alias name untouched. These are shell aliases; shell-free process launches use the native executable names. No optional CLI is installed by this configuration.
-
-These aliases are active on the current Mac. The isolated 18-check baseline, synthetic argument/exit-status and name-conflict checks, native macOS startup-mode checks, and real CLI version calls passed. `.zshenv` was applied with its original privately backed up and the change journaled; the later agent-instruction rollout verified it unchanged and made no additional shell writes.
-
-Atuin is configured for local history without automatic cloud synchronization, update checks, daemon setup, or AI bindings. Existing account/history data is never copied. Ctrl-R is the shell binding; Command-R is terminal-specific and has not been assumed equivalent.
-
-Alias reminders are implemented in plain Zsh at `home/.config/shell/alias-tips.zsh`; they inspect normal shell aliases without executing their expansions or echoing command arguments. The candidate does not require Python. Homebrew provides autosuggestions, fast syntax highlighting, and completions on macOS. Docker pins the same inspected upstream plugin commits so retained behavior can be verified independently of Zinit.
-
-## Public/private boundary
-
-Use this allowlist for future publication review: `.github/workflows/ci.yml`, `home/`, `machines/`, `packages/`, `tests/`, `examples/`, `README.md`, `AGENTS.md`, `RUNBOOK.md`, `ACTIVATION.md`, `PUBLIC-CONTENTS.md`, `SKILL-SOURCES.md`, `.gitignore`, `.dockerignore`, and a reviewed `decisions.jsonl`. Review the exact individual files listed in `PUBLIC-CONTENTS.md`, not just these directory names. Reports and scratch files are excluded. Inherited unreviewed Git metadata was archived privately; the public repository starts with fresh reviewed history.
-
-Do not copy host credential files, SSH keys/configuration, authorized keys, known hosts, Atuin keys/session/database, shell histories, environment databases, application caches, hardware identities, or project secrets. `.gitconfig.local`, `.zshenv.local`, and `.zshrc.local` remain private. Secret filtering in history is a convenience, not a guarantee that commands are secret-free.
-
-## Reproduce the container checks
-
-From this project directory, using the existing Docker daemon:
+Install Go 1.23 or later through your platform's native distribution, then build from the reviewed checkout:
 
 ```sh
-docker build --platform linux/arm64 -f tests/container/Dockerfile -t dotfiles-validation:review .
+GOTOOLCHAIN=local go build -trimpath -o dotfiles ./cmd/dotfiles
+./dotfiles packages                          # preview missing native packages
+./dotfiles tools                             # preview pinned binary fallbacks
+./dotfiles plugins                           # preview the three Zsh plugin sources
+./dotfiles plan --shells zsh,bash,fish
+./dotfiles doctor --shells zsh,bash,fish
+```
+
+Every write requires an explicit `--apply`. Package/tool setup and configuration deployment are separate operations:
+
+```sh
+./dotfiles packages --apply                  # native manager; may require privileges
+./dotfiles tools --apply                     # missing pinned tools in ~/.local/bin
+./dotfiles plugins --apply                   # reviewed plugins in XDG data/zsh/plugins
+./dotfiles install --shells zsh,bash,fish --apply
+./dotfiles status --shells zsh,bash,fish
+```
+
+An existing different file is a conflict. After reviewing its contents locally and the plan, add `--replace` to back up and adopt that file. That flag never overrides drift in an already managed file. Do not add it blindly to an existing agent-instruction or skill installation. A missing optional dependency leaves the basic shell usable; `doctor` explains missing or incompatible tools.
+
+All examples assume a confirmed target user. `--home /absolute/path` selects a different configuration target, but does not select another user's package installation. No commands change the default shell, enroll accounts, configure credentials, or remove services.
+
+## Components and profiles
+
+The default components are `shell,git,prompt,history,search`. Select any subset with `--components`. Additional opt-in components are `terminal`, `agents`, `skills`, and `machine`.
+
+- `--shells zsh,bash,fish,powershell,posix` selects native entrypoints. POSIX provides login environment only.
+- `--profile server` retains the normal interactive tool integrations without desktop applications.
+- `--profile desktop` uses the same shell baseline; select terminal configuration separately.
+- `--profile minimal` and `--profile container` skip runtime-manager/history/plugin hooks and default to the smaller prompt.
+- `--prompt full|minimal|ascii` selects prompt appearance. `NO_COLOR`, `TERM=dumb`, and `DOTFILES_ICONS=0` provide additional terminal controls.
+- `--components terminal --terminal ghostty|kitty|alacritty|wezterm|windows-terminal` selects a terminal configuration. Windows Terminal is installed as a reference to merge into the real application settings; it never replaces an existing settings database automatically.
+- `--components machine --machine machines/mac-studio.zsh` explicitly selects the existing optional Mac integration. No hostname-based selection occurs.
+- `--git-lfs` adds the separate LFS filter configuration after its CLI is installed.
+
+`--config-dir`, `--data-dir`, `--cache-dir`, `--state-dir`, `--zsh-dir`, and `--powershell-profile` support custom locations. XDG defaults are inherited only when targeting the invoking user's home. Generated startup files record the reviewed configuration paths; other shared files can optionally use `--mode symlink`. Rendered entrypoints always use copies. Symlink mode deliberately makes repository edits affect linked live files.
+
+## Native Windows
+
+Use PowerShell 7.4 or later and native Go:
+
+```powershell
+$env:GOTOOLCHAIN = 'local'
+go build -trimpath -o dotfiles.exe ./cmd/dotfiles
+.\dotfiles.exe packages --shells powershell
+.\dotfiles.exe plan --shells powershell --powershell-profile $PROFILE.CurrentUserAllHosts
+.\dotfiles.exe install --shells powershell --powershell-profile $PROFILE.CurrentUserAllHosts --apply
+```
+
+Pass the actual profile location, especially when Documents is redirected or OneDrive-managed. Native PowerShell keeps its object-producing `ls`/`dir` behavior and exposes `ll`, `la`, and `lt` for enhanced listings. Atuin 18.23 has a native PowerShell hook; PSReadLine provides native prediction. See [platform quick starts](docs/SETUP.md) for WSL, BSD, NixOS, Termux, and restricted/offline environments.
+
+## Lifecycle and recovery
+
+```sh
+./dotfiles plan
+./dotfiles install --apply
+./dotfiles status
+./dotfiles rollback                          # preview latest transaction
+./dotfiles rollback --apply
+./dotfiles uninstall                         # preview restoration of original files
+./dotfiles uninstall --apply
+```
+
+The private deployment index and per-transaction journal live under `${XDG_STATE_HOME:-~/.local/state}/dotfiles` by default. Original files, original symlink objects, permissions, and ownership of created files/directories are tracked. Regular-file contents never appear in plans. Repeated installation makes no managed-file writes when bytes already match. Rollback and uninstall refuse local drift and validate backup hashes before restoration. Interrupted transactions block later writes until recovered.
+
+Backups and journals are sensitive. POSIX state directories require private permissions; Windows state roots receive a protected current-user/SYSTEM DACL. Keep them outside the repository. Uninstall restores only managed files and removes only installer-created empty directories; packages, user history, accounts, and unrelated files remain separate. See [lifecycle details](docs/LIFECYCLE.md) and [device acceptance](ACTIVATION.md).
+
+## Dependencies and updates
+
+`jq` and Go remain the managed-device requirements. Bun and fnm stay outside the baseline; `--runtimes bun,fnm` explicitly enables their optional shell integration. Native package mapping covers Homebrew, APT, DNF, Pacman, Zypper, APK, BSD packages, Nix, Winget, Scoop, and Chocolatey. The existing desktop Brewfile remains available; `packages/Brewfile.cli` provides a CLI-only alternative. Nix consumers can use `packages/shell.nix` or import `packages/nixos.nix` deliberately.
+
+Pinned fallback assets cover the available upstream OS/architecture/libc combinations for Bun, fnm, Starship, and Atuin. Unsupported combinations fail explicitly. Existing PATH tools are retained; an explicit `tools --upgrade --apply` replaces only regular binaries in the chosen prefix and retains their previous bytes in the archive cache. Native package managers can resolve dependency changes even when only missing packages are requested; review their transactions.
+
+```sh
+./dotfiles tools --download-only --apply     # prepare verified offline archives
+./dotfiles plugins --download-only --apply
+./dotfiles tools --offline --apply
+./dotfiles plugins --offline --apply
+```
+
+Use [package mappings and prerequisites](docs/PACKAGES.md) and the [maintenance/release procedure](docs/MAINTENANCE.md). No update process runs at login.
+
+## Verification
+
+```sh
+GOTOOLCHAIN=local go test -v ./...
+GOTOOLCHAIN=local go vet ./...
+sh scripts/cross-build.sh
+
+docker build --platform linux/amd64 -f tests/container/Dockerfile -t dotfiles-validation:review .
 docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges dotfiles-validation:review
 ```
 
-The build context is allowlisted. No host home, SSH data, private environment, Git metadata, Docker socket, or live dotfiles are mounted into the container. A non-root disposable user runs the checks. Tests create only synthetic history, environment files, and fixture Git repositories inside the container. The named image and build cache remain for reproduction; test containers are removed on exit.
+Use `linux/arm64` on ARM64. The 17-check current baseline plus a separate opt-in runtime check now select native architecture assets. New tests cover lifecycle failure/recovery, Unicode and quoted paths, custom XDG locations, permissions, symlinks, offline cache verification, and available native shells. `DOTFILES_REQUIRED_SHELLS` turns missing shell prerequisites into failures instead of skips.
 
-Bun is retained only as a container test-runner dependency, not a managed shell/runtime requirement. The integration runner uses Bun and a standard-library Go helper for the real pseudo-terminal history search check. Tests also verify that Python is absent. The official binary/plugin archives are version/commit pinned and checksum-verified. The base image is digest pinned. Debian package versions are recorded from the test image but use Debian's current signed repositories rather than a frozen snapshot.
+CI covers native Linux/macOS/Windows on x86-64 and ARM64, representative Linux distro containers, minimum Go, and installer cross-compilation. PR CI and manual extended runs add FreeBSD/OpenBSD VM and native Ghostty validation. Cross-compilation does not prove runtime support. WSL, Termux, other BSDs, desktop visuals, physical keyboards, screen readers, and real account/connectivity behavior have explicit acceptance procedures and evidence status.
 
-## Continuous integration
+In managed environments with a custom CA, pass a combined system/proxy bundle as `--secret id=proxy_ca,src=/absolute/bundle.pem` to Docker builds. The networked release/plugin/toolchain steps use the temporary secret with TLS verification enabled. Never mount a real home, histories, credentials, or the Docker socket into test containers.
 
-`.github/workflows/ci.yml` runs on pull requests, pushes to `main`, and manual dispatch. The ARM64 Linux job runs the Docker commands above, including all 17 isolated integration checks. The macOS job parses shared and machine Zsh files and validates the Brewfile with Ruby and Homebrew without installing packages.
+## Project and privacy boundaries
 
-The workflow uses a commit-pinned checkout with read-only repository permission and no persisted credentials. New runs cancel older runs for the same pull request or branch. CI does not activate dotfiles, validate GUI appearance, or establish real connectivity.
+`home/` contains reviewed preferences, `machines/` explicit machine differences, `packages/` native setup sources, `cmd/` and `internal/` the lifecycle tool, and `tests/` synthetic checks. Never bulk-copy a home or `.config` directory.
 
-## Setup later
+`home/.codex/AGENTS.md` and `home/.agents/skills/` are optional reviewed snapshots, governed by [SKILL-SOURCES.md](SKILL-SOURCES.md). Installing them does not configure service connections. The project-root `AGENTS.md` is not global guidance. Existing guidance and overrides need deliberate reconciliation.
 
-### Native macOS rehearsal
-
-The earlier baseline (before removal of Bun, fnm, and Zen) in a disposable headless macOS 26.6.2 guest passed 18 native checks, including actual Ctrl-R history search, Bun completion loading, fnm project switching, Go offline compilation, direnv, and native Ghostty validation. The full Brewfile installed after reviewing and trusting its two third-party package entries under Homebrew 7. A repeated package setup required no new installs; repeated file activation made zero writes. All 20 shared files rolled back to independently verified original states. Synthetic checks also exercised interrupted writes, local drift rejection, and symlink preservation.
-
-This was a prepared Cirrus Labs base image with preinstalled developer/CI tools, not factory Setup Assistant. It does not establish sign-in, license activation, physical USB/display behavior, OS permissions, visual appearance, fresh Codex skill discovery, or real Tailscale enrollment. The preserved Scratchpad runbook, located through `RUNBOOK.md`, contains the native rehearsal and package-trust/completion-permission steps. No host baseline activation or publication occurred. The disposable VM and its image cache were removed; local evidence remains excluded in `outputs/`.
-
-### Approved desktop apps
-
-The Mac Brewfile includes ChatGPT, Wispr Flow, Proton Pass, Raycast, Ghostty and the current font, BetterDisplay, usb-boop from `alexcatdad/tap`, and Tailscale. This is the accepted interactive Mac baseline; other reviewed apps remain optional, development-specific, or hardware-specific.
-
-At an authorized Mac rollout, use `brew bundle --no-upgrade --file=packages/Brewfile` after reviewing existing packages and compatibility. Do not use cleanup or uninstall commands. The current usb-boop cask requires Apple Silicon and macOS 14 or later; check the installed package metadata again at rollout. Other operating systems use their own supported app distribution paths rather than this Mac manifest. GUI apps are not required on the homelab.
-
-Package installation is separate from sign-in, license activation, OS permissions and verifying app behavior. Those are device-local acceptance steps. No license keys, account sessions, or browser profiles belong in the repository. Nothing is installed or activated during candidate preparation.
-
-On macOS, the Brewfile is a native Homebrew manifest and includes Go. Go uses the native `golang-go` package in the Debian validation image; other devices use their native Go package or an explicitly installed official distribution. Runtime requirements are device-wide; project-specific Go versions and dependencies remain with each project. On Linux, use the native packages demonstrated in the Dockerfile; Starship and Atuin are explicitly installed during setup where native packages are absent. The Dockerfile is test infrastructure, not a fleet deployment manager.
-
-Alias reminders ship with the shared shell files and need no separate installation. On machines without native packages for autosuggestions, highlighting, or completions, the pinned archives in `tests/container/install-plugins.sh` can use the documented `~/.local/share/zsh/plugins/` paths. Do not copy dependency `.git` directories into the dotfiles project.
-
-`ACTIVATION.md` maps every managed file and defines explicit copies, private backups, drift checks, repeatable no-ops, rollback, and acceptance. Later activation requires review and authorization of the exact target and file subset. Do not use a bulk copy or Homebrew cleanup command. Paw Proxy consumers must be inspected before any service change. Native startup and synthetic history search passed on the current Mac; terminal appearance, existing history continuity, and remote SSH/Tailscale access remain separate acceptance checks.
+Review exact files in [PUBLIC-CONTENTS.md](PUBLIC-CONTENTS.md) before publication. Local overrides, histories, keys, environment databases, agent connections, deployment state, `work/`, `outputs/`, and compiled `dist/` artifacts stay outside public contents. Project memory is maintained in Scratchpad when connected; [RUNBOOK.md](RUNBOOK.md) locates the established records.

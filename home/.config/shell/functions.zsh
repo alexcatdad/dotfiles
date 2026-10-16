@@ -3,7 +3,11 @@ duf() {
   local -a entries
   entries=( "${1:-.}"/*(N) )
   (( $#entries )) || return 0
-  command du -sh -- "${entries[@]}" 2>/dev/null | command sort -rh | command head -20
+  if command sort -h </dev/null >/dev/null 2>&1; then
+    command du -sh -- "${entries[@]}" 2>/dev/null | command sort -rh | command head -20
+  else
+    command du -sk -- "${entries[@]}" 2>/dev/null | command sort -rn | command head -20
+  fi
 }
 
 suggest-aliases() {

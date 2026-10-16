@@ -1,0 +1,38 @@
+// Reviewed upstream release assets; digests retrieved from GitHub release metadata.
+// Refresh explicitly using the procedure in docs/MAINTENANCE.md.
+package deploy
+
+var assets = []Asset{
+	{"bun", "linux", "amd64", "gnu", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-baseline.zip", "c678040f14fe0440eb839d37cbd0ce4c051a32da72806ac97de6a6aab6bf728f", "bun-linux-x64-baseline/bun"},
+	{"bun", "linux", "arm64", "gnu", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64.zip", "54328bbc2d9c8e0c9f892c544d66c57a83b84139e34909e5ee81758f1ac8fda7", "bun-linux-aarch64/bun"},
+	{"bun", "linux", "amd64", "musl", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-musl-baseline.zip", "76e1db84e98f22f78de0a87e309bfbbf297732847f9720db36750646c85c8c18", "bun-linux-x64-musl-baseline/bun"},
+	{"bun", "linux", "arm64", "musl", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64-musl.zip", "71760b6c8ea30623b81a4907cb815d48e2ea266f2e73e751534a44a0607950df", "bun-linux-aarch64-musl/bun"},
+	{"bun", "darwin", "amd64", "", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-x64-baseline.zip", "bad5bbd6cf14d0980d115f5954c9ff904df619d5e994d2da1ffccd3f316300b0", "bun-darwin-x64-baseline/bun"},
+	{"bun", "darwin", "arm64", "", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-aarch64.zip", "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f", "bun-darwin-aarch64/bun"},
+	{"bun", "windows", "amd64", "", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-x64-baseline.zip", "78c221c2376f79731ccf4e4af0b3bb46d81fefa3296c5abee09ad8a1b21e68c6", "bun-windows-x64-baseline/bun.exe"},
+	{"bun", "windows", "arm64", "", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-aarch64.zip", "a7a16b876a305fd1029c66dbd27007b4f6112ae896532f675878731a21e50cfd", "bun-windows-aarch64/bun.exe"},
+	{"bun", "freebsd", "amd64", "", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-freebsd-x64.zip", "ec044ed91c370a16f5e434208dd502093e98ec86a3cb1aff3aad29b13426ecc2", "bun-freebsd-x64/bun"},
+	{"bun", "freebsd", "arm64", "", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-freebsd-aarch64.zip", "a554958e5691c5036e576da78efb4114665da354c882cb0ca059bbd4a896b44a", "bun-freebsd-aarch64/bun"},
+	{"bun", "android", "arm64", "", "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64-android.zip", "a1c7e2983f1bb65146beb256a4d72449f23042412bc2cf278aa6397ba27e0274", "bun-linux-aarch64-android/bun"},
+	{"atuin", "linux", "amd64", "gnu", "https://github.com/atuinsh/atuin/releases/download/v18.23.0/atuin-x86_64-unknown-linux-gnu.tar.gz", "5cf46e926b696a9b23a3c61ef3cb00f8f7c156d1d7b7967a3b51741653b48ba3", "atuin-x86_64-unknown-linux-gnu/atuin"},
+	{"atuin", "linux", "arm64", "gnu", "https://github.com/atuinsh/atuin/releases/download/v18.23.0/atuin-aarch64-unknown-linux-gnu.tar.gz", "21869faff1fedb9f8fb27837136567b089bcd588d21252533d5b314605517ae2", "atuin-aarch64-unknown-linux-gnu/atuin"},
+	{"atuin", "linux", "amd64", "musl", "https://github.com/atuinsh/atuin/releases/download/v18.23.0/atuin-x86_64-unknown-linux-musl.tar.gz", "d1b40dd6e7cd3d823867ffe22b39a025bc420f7875926ae9ca974155378da14d", "atuin-x86_64-unknown-linux-musl/atuin"},
+	{"atuin", "linux", "arm64", "musl", "https://github.com/atuinsh/atuin/releases/download/v18.23.0/atuin-aarch64-unknown-linux-musl.tar.gz", "faf91adc71e6b661b21ed4f486babbd7af9d17363d4276da4a0251f83c72498d", "atuin-aarch64-unknown-linux-musl/atuin"},
+	{"atuin", "darwin", "amd64", "", "https://github.com/atuinsh/atuin/releases/download/v18.23.0/atuin-x86_64-apple-darwin.tar.gz", "f87ff4bef3f818f81474713dfc964008793a77ade12f8076f9a82237695a587a", "atuin-x86_64-apple-darwin/atuin"},
+	{"atuin", "darwin", "arm64", "", "https://github.com/atuinsh/atuin/releases/download/v18.23.0/atuin-aarch64-apple-darwin.tar.gz", "c988be1cde19cd7295ce64bc8b955d42fb1855e5227cb640c87fc09c8408c3fc", "atuin-aarch64-apple-darwin/atuin"},
+	{"atuin", "windows", "amd64", "", "https://github.com/atuinsh/atuin/releases/download/v18.23.0/atuin-x86_64-pc-windows-msvc.zip", "3e1c1282da39039a7ceb8e53c6b624dfb86200823559bbe80c0ace3d0baf09ae", "atuin-x86_64-pc-windows-msvc/atuin.exe"},
+	{"fnm", "linux", "amd64", "gnu", "https://github.com/Schniz/fnm/releases/download/v1.39.0/fnm-linux.zip", "7807664f39d39fc518da1c35ba0181e4b3267603c4b1dedeb4b5fc6ae440a224", "fnm"},
+	{"fnm", "linux", "arm64", "gnu", "https://github.com/Schniz/fnm/releases/download/v1.39.0/fnm-arm64.zip", "4eaff58b2c5bf30d0934027572dd0b5bbb60d2a1af309230b53662d4b1d45599", "fnm"},
+	{"fnm", "darwin", "amd64", "", "https://github.com/Schniz/fnm/releases/download/v1.39.0/fnm-macos.zip", "f046483e85c53b3278efe49a3620c8680f22efa58a8dabfd03eafc6b59b31a25", "fnm"},
+	{"fnm", "darwin", "arm64", "", "https://github.com/Schniz/fnm/releases/download/v1.39.0/fnm-macos.zip", "f046483e85c53b3278efe49a3620c8680f22efa58a8dabfd03eafc6b59b31a25", "fnm"},
+	{"fnm", "windows", "amd64", "", "https://github.com/Schniz/fnm/releases/download/v1.39.0/fnm-windows.zip", "8183bed4348cb78fdfd8abb3d1247fbeab7b2082f941363929c61e747c001e10", "fnm.exe"},
+	{"starship", "linux", "amd64", "gnu", "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-unknown-linux-musl.tar.gz", "b7c232b0e8249d8e55a40beb79c5c43a7d370f3f9408bd215deb0170daeaadf3", "starship"},
+	{"starship", "linux", "arm64", "gnu", "https://github.com/starship/starship/releases/download/v1.26.0/starship-aarch64-unknown-linux-musl.tar.gz", "dc30189378d2f2e287384e8a692d3f95ad1df64cf0e8c36aa9201516028aed6b", "starship"},
+	{"starship", "linux", "amd64", "musl", "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-unknown-linux-musl.tar.gz", "b7c232b0e8249d8e55a40beb79c5c43a7d370f3f9408bd215deb0170daeaadf3", "starship"},
+	{"starship", "linux", "arm64", "musl", "https://github.com/starship/starship/releases/download/v1.26.0/starship-aarch64-unknown-linux-musl.tar.gz", "dc30189378d2f2e287384e8a692d3f95ad1df64cf0e8c36aa9201516028aed6b", "starship"},
+	{"starship", "darwin", "amd64", "", "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-apple-darwin.tar.gz", "5548f406a4b6f5695903bdea83f77ce47ec12c8c0e62dabd33122d8f133e4207", "starship"},
+	{"starship", "darwin", "arm64", "", "https://github.com/starship/starship/releases/download/v1.26.0/starship-aarch64-apple-darwin.tar.gz", "c40b27b11f580411e068f2fa6c1be7830a387c0bc47a94d1d37f32b054c5361d", "starship"},
+	{"starship", "windows", "amd64", "", "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-pc-windows-msvc.zip", "690021e22f2bf2c57d5867dc0fababe5e55e714c26942bd909ffddb6c5df42f2", "starship.exe"},
+	{"starship", "windows", "arm64", "", "https://github.com/starship/starship/releases/download/v1.26.0/starship-aarch64-pc-windows-msvc.zip", "52e60a2182aed66af225401d8906b2eb8cd2a08d206c7304d503c2cf44345f77", "starship.exe"},
+	{"starship", "freebsd", "amd64", "", "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-unknown-freebsd.tar.gz", "c77cb565f77e743802304aefcc14850ddd95b68e4a3efa9e0385ed1b0c5c4331", "starship"},
+}

@@ -1,0 +1,4 @@
+# Explicit optional runtime set; not part of managed baseline.
+tap "oven-sh/bun"
+brew "oven-sh/bun/bun"
+brew "fnm"

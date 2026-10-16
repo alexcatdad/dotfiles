@@ -1,0 +1,12 @@
+{
+  "$schema": "https://aka.ms/terminal-profiles-schema",
+  "profiles": {
+    "defaults": {
+      "font": { "face": "FiraCode Nerd Font Mono", "size": 13 },
+      "colorScheme": "Dotfiles",
+      "padding": "10, 8, 10, 10",
+      "bellStyle": "none"
+    }
+  },
+  "schemes": [{ "name": "Dotfiles", "background": "#000000", "foreground": "#C6C6C6", "cursorColor": "#80A0FF", "selectionBackground": "#303030", "black": "#080808", "red": "#FF5D5D", "green": "#8CC85F", "yellow": "#E3C78A", "blue": "#80A0FF", "purple": "#AE81FF", "cyan": "#79DAC8", "white": "#C6C6C6", "brightBlack": "#626262", "brightRed": "#FF8080", "brightGreen": "#B3E88D", "brightYellow": "#F0DFAA", "brightBlue": "#A5BBFF", "brightPurple": "#C5A0FF", "brightCyan": "#A2E8D9", "brightWhite": "#EEEEEE" }]
+}

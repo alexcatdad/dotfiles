@@ -4,6 +4,15 @@
 !tests/
 !tests/container/
 !tests/container/**
+!go.mod
+!cmd/
+!cmd/**
+!internal/
+!internal/**
+!machines/
+!machines/**
+!tests/distros/
+!tests/distros/**
 # Never admit private overrides/state even if added under the candidate home.
 home/**/*.local
 home/.config/shell/machine.zsh
@@ -13,3 +22,8 @@ home/.config/atuin/session
 home/.ssh/**
 home/.zsh_history
 home/.zsh_sessions/**
+home/.bash_history
+home/**/fish/local.fish
+home/**/powershell/local.ps1
+home/**/.zcompdump*
+home/**/*.zwc
