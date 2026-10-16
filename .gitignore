@@ -2,6 +2,9 @@
 .DS_Store
 work/
 outputs/
+/dist/
+/dotfiles
+/dotfiles.exe
 *.local
 *.env
 .env
@@ -14,3 +17,8 @@ outputs/
 .config/atuin/key
 .config/atuin/session
 .config/shell/machine.zsh
+**/fish/local.fish
+**/powershell/local.ps1
+.bash_history
+.zcompdump*
+*.zwc

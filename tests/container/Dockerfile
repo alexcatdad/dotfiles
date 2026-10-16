@@ -2,24 +2,29 @@ FROM debian:trixie-slim@sha256:a99cfc517144bc59b1978475ec53b46ecabec7e43635402ee
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates curl unzip zsh git git-lfs jq eza ripgrep fd-find zoxide \
-    direnv golang-go openssh-client less locales util-linux \
+    direnv golang-go openssh-client less locales util-linux bash \
     && rm -rf /var/lib/apt/lists/* \
     && ln -s /usr/bin/fdfind /usr/local/bin/fd \
     && sed -i 's/^# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && locale-gen
 ENV LANG=en_US.UTF-8 TERM=xterm-256color
+COPY go.mod /src/go.mod
+COPY cmd/ /src/cmd/
+COPY internal/ /src/internal/
+RUN cd /src && GOTOOLCHAIN=local go build -o /usr/local/bin/dotfiles ./cmd/dotfiles
 COPY tests/container/install-tools.sh tests/container/install-plugins.sh /tmp/setup/
-RUN sh /tmp/setup/install-tools.sh && sh /tmp/setup/install-plugins.sh
+RUN --mount=type=secret,id=proxy_ca \
+    if [ -f /run/secrets/proxy_ca ]; then export SSL_CERT_FILE=/run/secrets/proxy_ca CURL_CA_BUNDLE=/run/secrets/proxy_ca; fi; \
+    sh /tmp/setup/install-tools.sh && sh /tmp/setup/install-plugins.sh
 FROM tools AS validation
-RUN cd /tmp && curl -fsSL --retry 3 https://pkgs.tailscale.com/stable/tailscale_1.102.4_arm64.tgz -o tailscale.tgz \
-    && echo '9dd1e6a592a014bbaea0103167ffe299adeda4ba14e078ce9c2895364f6c4c3f  tailscale.tgz' | sha256sum -c - \
-    && tar xzf tailscale.tgz \
-    && install -m 755 tailscale_1.102.4_arm64/tailscale /usr/local/bin/tailscale \
-    && install -m 755 tailscale_1.102.4_arm64/tailscaled /usr/local/bin/tailscaled \
-    && rm -rf /tmp/tailscale.tgz /tmp/tailscale_1.102.4_arm64
 RUN useradd -m -s /usr/bin/zsh tester
 USER tester
-ENV HOME=/home/tester SHELL=/usr/bin/zsh
+ENV HOME=/home/tester BUN_INSTALL=/home/tester/.bun SHELL=/usr/bin/zsh
+# Node versions are fixture runtimes for testing real fnm switching.
+RUN --mount=type=secret,id=proxy_ca \
+    if [ -f /run/secrets/proxy_ca ]; then export SSL_CERT_FILE=/run/secrets/proxy_ca; fi; \
+    fnm install 22.23.3 && fnm install 24.21.0 && fnm default 22.23.3 \
+    && mkdir -p "$BUN_INSTALL" && bun completions > "$BUN_INSTALL/_bun"
 USER root
 COPY --chown=tester:tester home/ /home/tester/
 COPY tests/container/verify.ts /tests/verify.ts

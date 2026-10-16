@@ -67,7 +67,7 @@ function environment() {
   assert(shell("source ~/.config/shell/path.zsh; source ~/.config/shell/path.zsh; typeset -a unique_path; unique_path=( ${(u)path} ); (( $#path == $#unique_path )) || exit 1; print ${(j.:.)path}").length > 0);
   assert(!shell("print -r -- ${(k)parameters[(R)*export*]}").includes("LC_ALL"));
   assert(!shell("print ${(k)functions}", "-c").includes("_alias_tips__preexec"));
-  return "PATH remains unique; plugins do not load in non-interactive shells.";
+  return "PATH remains unique; optional runtimes and interactive plugins are not required by the baseline.";
 }
 function gitPreferences() {
   const expected = {"init.defaultBranch":"main", "pull.rebase":"true", "push.default":"current", "push.autoSetupRemote":"true", "fetch.prune":"true", "merge.conflictstyle":"zdiff3", "rerere.enabled":"true", "rerere.autoupdate":"false", "rebase.autoSquash":"true", "diff.algorithm":"histogram", "core.autocrlf":"input"};
@@ -77,6 +77,12 @@ function gitPreferences() {
   assert.equal(run(["git","-C",p,"check-ignore",".DS_Store"]).returncode,0);
   assert.equal(run(["git-lfs","version"]).returncode,0);
   return "Shared Git settings, global ignore, no custom aliases, and LFS availability verified in a fixture repository.";
+}
+function fnmSwitching() {
+  for (const [name,version] of [["node22","22.23.3"],["node24","24.21.0"]]) writeFileSync(join(directory(name),".node-version"),version+"\n");
+  const out = shell('cd "$HOME/fixtures/node22"; node --version; cd "$HOME/fixtures/node24"; node --version; bun --version', '-ic', {env:{...process.env,DOTFILES_RUNTIMES:'bun,fnm'}});
+  for (const version of ["v22.23.3","v24.21.0","1.4.2"]) assert(out.includes(version),out);
+  return "Explicit opt-in runtime fixture switches Node 22→24 offline; Bun remains a test/runtime option.";
 }
 function direnvEnvironment() {
   const p = directory("direnv-project"); writeFileSync(join(p,".envrc"),"export DOTFILES_FIXTURE_FLAG=project-only\n");
@@ -122,7 +128,8 @@ function prompt() {
 }
 function completions() {
   assert.equal(shell("[[ ${fpath[(r)*/zsh-completions]} != '' ]] || exit 2; print COMPLETE").trim(),"COMPLETE");
-  return "Additional completion paths are available.";
+  assert.equal(shell("(( $+functions[_bun] )) || exit 1; print OPTIONAL_BUN", "-ic", {env:{...process.env,DOTFILES_RUNTIMES:'bun'}}).trim(), "OPTIONAL_BUN");
+  return "Native additional completions load; Bun completion loads only in the explicitly selected runtime fixture.";
 }
 function privateOverrides() {
   let p = join(HOME,".zshrc.local"); writeFileSync(p,"alias fixture-local='print local-ok'\n");
@@ -142,8 +149,8 @@ function goRuntime() {
   return "Installed Go compiles and runs a synthetic program offline without fetching a toolchain or modules.";
 }
 function connectivityTools() {
-  for (const args of [["ssh","-V"],["tailscale","version"],["jq","-n",'{"available":true}']]) assert.equal(run(args).returncode,0);
-  return "SSH, Tailscale client, and jq execute; no Tailscale daemon, enrollment, or remote access is attempted.";
+  for (const args of [["ssh","-V"],["jq","-n",'{"available":true}']]) assert.equal(run(args).returncode,0);
+  return "SSH and jq execute. Tailscale remains an optional native integration; no enrollment or remote access is attempted.";
 }
 function noPythonDependency() {
   assert.equal(shell("(( ! $+commands[python] && ! $+commands[python3] )) || exit 32; print PYTHON_FREE").trim(), "PYTHON_FREE");
@@ -153,17 +160,17 @@ const checks: [string,()=>string][] = [
   ["shell startup modes",startup],["retained and omitted aliases",aliases],
   ["plugin and completion loading",pluginLoading],["listing behavior",listing],
   ["custom functions",functions],["PATH and non-interactive isolation",environment],
-  ["Git preferences",gitPreferences],
+  ["Git preferences",gitPreferences],["fnm project switching and Bun",fnmSwitching],
   ["direnv project isolation",direnvEnvironment],["Atuin history and alias suggestions",historyAndSuggestions],
   ["alias tips reminder",aliasTip],["Starship prompt",prompt],
-  ["Additional completions",completions],["private override boundaries",privateOverrides],
+  ["Bun and additional completions",completions],["private override boundaries",privateOverrides],
   ["interactive Ctrl-R history UI",terminalHistoryUI],["connectivity clients and jq",connectivityTools],
   ["Go offline compilation",goRuntime],
   ["Python-free baseline",noPythonDependency],
 ];
 for (const [name,fn] of checks) check(name,fn);
 const versions: Record<string,string[]> = {};
-for (const [tool,args] of Object.entries({zsh:["--version"],git:["--version"],jq:["--version"],eza:["--version"],atuin:["--version"],bun:["--version"],go:["version"],starship:["--version"],tailscale:["version"]})) {
+for (const [tool,args] of Object.entries({zsh:["--version"],git:["--version"],jq:["--version"],eza:["--version"],atuin:["--version"],fnm:["--version"],bun:["--version"],go:["version"],starship:["--version"]})) {
   try { versions[tool] = run([tool,...args]).stdout.trim().split("\n"); }
   catch(error) { versions[tool] = [String(error)]; }
 }

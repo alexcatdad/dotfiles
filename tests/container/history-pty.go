@@ -1,3 +1,5 @@
+//go:build linux
+
 // Linux-only standard-library PTY probe; runs solely in the disposable test home.
 package main
 
