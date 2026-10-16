@@ -275,3 +275,111 @@ func TestFishAbbreviationRespectsTerminalControls(t *testing.T) {
 		})
 	}
 }
+
+func TestNativeLanguageToolPaths(t *testing.T) {
+	for _, shell := range []string{"fish", "powershell"} {
+		t.Run(shell, func(t *testing.T) {
+			if runtime.GOOS == "windows" && shell != "powershell" {
+				t.Skip("Unix shells are tested natively, not through MSYS path translation")
+			}
+			command := "fish"
+			if shell == "powershell" {
+				command = "pwsh"
+			}
+			executable, err := exec.LookPath(command)
+			if err != nil {
+				if has(os.Getenv("DOTFILES_REQUIRED_SHELLS"), shell) {
+					t.Fatal(err)
+				}
+				t.Skip("native shell unavailable")
+			}
+			for _, scenario := range []string{"defaults", "gobin", "gopath"} {
+				t.Run(scenario, func(t *testing.T) {
+					o := fixture(t)
+					pnpm, cargo, gobin := filepath.Join(o.Data, "pnpm"), filepath.Join(o.Home, ".cargo", "bin"), filepath.Join(o.Home, "go", "bin")
+					env := []string{"HOME=" + o.Home, "USERPROFILE=" + o.Home, "PATH=" + fixtureShellPath(t, o), "DOTFILES_DATA_HOME=" + o.Data, "DOTFILES_CONFIG_HOME=" + o.Config}
+					if scenario != "defaults" {
+						pnpm, cargo = filepath.Join(o.Home, "custom pnpm"), filepath.Join(o.Home, "custom cargo", "bin")
+						env = append(env, "PNPM_HOME="+pnpm, "CARGO_HOME="+filepath.Dir(cargo))
+						if scenario == "gobin" {
+							gobin = filepath.Join(o.Home, "custom go bin")
+							env = append(env, "GOBIN="+gobin, "GOPATH="+filepath.Join(o.Home, "unused go"))
+						} else {
+							gobin = filepath.Join(o.Home, "custom go", "bin")
+							env = append(env, "GOPATH="+filepath.Dir(gobin))
+						}
+					}
+					for _, p := range []string{pnpm, cargo, gobin} {
+						if err := os.MkdirAll(p, 0700); err != nil {
+							t.Fatal(err)
+						}
+					}
+					source, _ := filepath.Abs(filepath.Join("..", "..", "home", ".config", "fish", "conf.d", "dotfiles.fish"))
+					probe := "source " + quoteSH(source) + "; for p in " + quoteSH(pnpm) + " " + quoteSH(cargo) + " " + quoteSH(gobin) + "; contains -- $p $PATH; or exit 1; end; echo READY"
+					args := []string{"--no-config", "-c", probe}
+					if shell == "powershell" {
+						source, _ = filepath.Abs(filepath.Join("..", "..", "home", ".config", "powershell", "profile.ps1"))
+						probe = "Set-Variable HOME -Value " + quotePS(o.Home) + " -Force; . " + quotePS(source) + "; $paths = $env:PATH -split [IO.Path]::PathSeparator; foreach ($p in @(" + quotePS(pnpm) + ", " + quotePS(cargo) + ", " + quotePS(gobin) + ")) { if ($paths -notcontains $p) { throw 'missing language-tool path' } }; Write-Output READY"
+						args = []string{"-NoProfile", "-NonInteractive", "-Command", probe}
+					}
+					for _, name := range []string{"SystemRoot", "WINDIR", "COMSPEC", "PATHEXT", "TEMP", "TMP"} {
+						if v := os.Getenv(name); v != "" {
+							env = append(env, name+"="+v)
+						}
+					}
+					ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+					defer cancel()
+					cmd := exec.CommandContext(ctx, executable, args...)
+					cmd.Env, cmd.Dir = env, o.Home
+					if b, err := cmd.CombinedOutput(); err != nil || strings.TrimSpace(string(b)) != "READY" {
+						t.Fatalf("language-tool paths: %v %s", err, b)
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestPowerShellPromptConfigSelection(t *testing.T) {
+	executable, err := exec.LookPath("pwsh")
+	if err != nil {
+		if has(os.Getenv("DOTFILES_REQUIRED_SHELLS"), "powershell") {
+			t.Fatal(err)
+		}
+		t.Skip("native PowerShell unavailable")
+	}
+	for _, scenario := range []string{"missing", "present", "override"} {
+		t.Run(scenario, func(t *testing.T) {
+			o := fixture(t)
+			env := []string{"HOME=" + o.Home, "USERPROFILE=" + o.Home, "PATH=" + fixtureShellPath(t, o), "DOTFILES_CONFIG_HOME=" + o.Config}
+			want := ""
+			if scenario != "missing" {
+				if err := os.MkdirAll(o.Config, 0700); err != nil {
+					t.Fatal(err)
+				}
+				want = filepath.Join(o.Config, "starship.toml")
+				if err := os.WriteFile(want, []byte("add_newline = false\n"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if scenario == "override" {
+				want = filepath.Join(o.Home, "chosen prompt.toml")
+				env = append(env, "STARSHIP_CONFIG="+want)
+			}
+			for _, name := range []string{"SystemRoot", "WINDIR", "COMSPEC", "PATHEXT", "TEMP", "TMP"} {
+				if v := os.Getenv(name); v != "" {
+					env = append(env, name+"="+v)
+				}
+			}
+			source, _ := filepath.Abs(filepath.Join("..", "..", "home", ".config", "powershell", "profile.ps1"))
+			probe := "Set-Variable HOME -Value " + quotePS(o.Home) + " -Force; . " + quotePS(source) + "; if ([string]$env:STARSHIP_CONFIG -ne " + quotePS(want) + ") { throw 'unexpected Starship override' }; Write-Output READY"
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			cmd := exec.CommandContext(ctx, executable, "-NoProfile", "-NonInteractive", "-Command", probe)
+			cmd.Env, cmd.Dir = env, o.Home
+			if b, err := cmd.CombinedOutput(); err != nil || strings.TrimSpace(string(b)) != "READY" {
+				t.Fatalf("prompt config selection: %v %s", err, b)
+			}
+		})
+	}
+}

@@ -10,7 +10,8 @@
 !internal/
 !internal/**
 !machines/
-!machines/**
+machines/**
+!machines/mac-studio.zsh
 !tests/distros/
 !tests/distros/**
 # Never admit private overrides/state even if added under the candidate home.

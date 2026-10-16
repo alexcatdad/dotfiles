@@ -8,10 +8,17 @@ if not set -q DOTFILES_DATA_HOME
     if set -q XDG_DATA_HOME; set -gx DOTFILES_DATA_HOME "$XDG_DATA_HOME"; end
 end
 # Prepend lower-priority paths first so user-local binaries retain precedence.
-for dotfiles_var in CARGO_HOME HOMEBREW_PREFIX
+for dotfiles_var in HOMEBREW_PREFIX
     if set -q $dotfiles_var; and test -d "$$dotfiles_var/bin"; fish_add_path --path "$$dotfiles_var/bin"; end
 end
-for dotfiles_bin in /home/linuxbrew/.linuxbrew/bin /opt/homebrew/bin "$DOTFILES_DATA_HOME/pnpm" "$HOME/go/bin" "$HOME/.cargo/bin" "$HOME/bin" "$HOME/.local/bin"
+set -l dotfiles_pnpm "$DOTFILES_DATA_HOME/pnpm"
+if test -n "$PNPM_HOME"; set dotfiles_pnpm "$PNPM_HOME"; end
+set -l dotfiles_go "$HOME/go/bin"
+if test -n "$GOPATH"; set dotfiles_go "$GOPATH/bin"; end
+if test -n "$GOBIN"; set dotfiles_go "$GOBIN"; end
+set -l dotfiles_cargo "$HOME/.cargo"
+if test -n "$CARGO_HOME"; set dotfiles_cargo "$CARGO_HOME"; end
+for dotfiles_bin in /home/linuxbrew/.linuxbrew/bin /opt/homebrew/bin "$dotfiles_pnpm" "$dotfiles_go" "$dotfiles_cargo/bin" "$HOME/bin" "$HOME/.local/bin"
     if test -d "$dotfiles_bin"; fish_add_path --path "$dotfiles_bin"; end
 end
 if contains -- bun (string split , -- "$DOTFILES_RUNTIMES")

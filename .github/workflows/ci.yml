@@ -110,6 +110,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Verify private machine files stay outside the build context
+        shell: bash
+        run: |
+          set -eu
+          dotfiles_context_fixture=$(mktemp machines/.context-fixture.XXXXXX)
+          trap 'rm -f "$dotfiles_context_fixture"' EXIT
+          printf '%s\n' 'synthetic private machine fixture' > "$dotfiles_context_fixture"
+          printf 'FROM scratch\nCOPY machines/ /machines/\n' | docker build -f - --output "type=local,dest=$RUNNER_TEMP/dotfiles-context-check" .
+          test -f "$RUNNER_TEMP/dotfiles-context-check/machines/mac-studio.zsh"
+          test ! -e "$RUNNER_TEMP/dotfiles-context-check/$dotfiles_context_fixture"
       - run: docker build --platform linux/${{ matrix.arch }} -f tests/container/Dockerfile -t dotfiles-validation:review .
       - run: docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges dotfiles-validation:review
 

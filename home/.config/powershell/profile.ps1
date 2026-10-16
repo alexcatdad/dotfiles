@@ -5,7 +5,10 @@ if (-not $env:DOTFILES_CONFIG_HOME) {
 if (-not $env:DOTFILES_DATA_HOME) {
     $env:DOTFILES_DATA_HOME = if ($env:XDG_DATA_HOME) { $env:XDG_DATA_HOME } else { Join-Path $HOME '.local/share' }
 }
-$dotfilesPaths = @((Join-Path $HOME '.local/bin'), (Join-Path $HOME 'bin'), (Join-Path $HOME '.cargo/bin'), (Join-Path $HOME 'go/bin'))
+$dotfilesCargoHome = if ($env:CARGO_HOME) { $env:CARGO_HOME } else { Join-Path $HOME '.cargo' }
+$dotfilesGoBin = if ($env:GOBIN) { $env:GOBIN } elseif ($env:GOPATH) { Join-Path $env:GOPATH 'bin' } else { Join-Path $HOME 'go/bin' }
+$dotfilesPnpmHome = if ($env:PNPM_HOME) { $env:PNPM_HOME } else { Join-Path $env:DOTFILES_DATA_HOME 'pnpm' }
+$dotfilesPaths = @((Join-Path $HOME '.local/bin'), (Join-Path $HOME 'bin'), (Join-Path $dotfilesCargoHome 'bin'), $dotfilesGoBin, $dotfilesPnpmHome)
 if (($env:DOTFILES_RUNTIMES -split ',') -contains 'bun') {
     $dotfilesPaths += if ($env:BUN_INSTALL) { Join-Path $env:BUN_INSTALL 'bin' } else { Join-Path $HOME '.bun/bin' }
 }
@@ -18,7 +21,7 @@ for ($dotfilesPathIndex = $dotfilesPaths.Count - 1; $dotfilesPathIndex -ge 0; $d
 $env:LESS = '-R'
 $env:LESSHISTFILE = '-'
 if (Test-Path -LiteralPath (Join-Path $env:DOTFILES_CONFIG_HOME 'ripgrep/config')) { $env:RIPGREP_CONFIG_PATH = Join-Path $env:DOTFILES_CONFIG_HOME 'ripgrep/config' }
-if (-not $env:STARSHIP_CONFIG) { $env:STARSHIP_CONFIG = Join-Path $env:DOTFILES_CONFIG_HOME 'starship.toml' }
+if (-not $env:STARSHIP_CONFIG -and (Test-Path -LiteralPath (Join-Path $env:DOTFILES_CONFIG_HOME 'starship.toml') -PathType Leaf)) { $env:STARSHIP_CONFIG = Join-Path $env:DOTFILES_CONFIG_HOME 'starship.toml' }
 if (-not $env:ATUIN_CONFIG_DIR) { $env:ATUIN_CONFIG_DIR = Join-Path $env:DOTFILES_CONFIG_HOME 'atuin' }
 if (Get-Variable -Name DotfilesProfileLoaded -Scope Global -ValueOnly -ErrorAction SilentlyContinue) { return }
 $global:DotfilesProfileLoaded = $true
@@ -91,4 +94,4 @@ function global:Invoke-DotfilesDirenv {
 }
 $dotfilesLocal = Join-Path $env:DOTFILES_CONFIG_HOME 'powershell/local.ps1'
 if (Test-Path -LiteralPath $dotfilesLocal -PathType Leaf) { . $dotfilesLocal }
-Remove-Variable dotfilesPaths, dotfilesPath, dotfilesPathIndex, dotfilesPair, dotfilesInteractive, dotfilesLocal -ErrorAction SilentlyContinue
+Remove-Variable dotfilesCargoHome, dotfilesGoBin, dotfilesPnpmHome, dotfilesPaths, dotfilesPath, dotfilesPathIndex, dotfilesPair, dotfilesInteractive, dotfilesLocal -ErrorAction SilentlyContinue
