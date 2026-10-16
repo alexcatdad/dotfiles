@@ -127,7 +127,7 @@ func inventory(o Options) ([]Candidate, error) {
 				// the selected shared config directory. Manage a bootstrap there.
 				startupConfig := filepath.Join(o.Home, ".config")
 				nativeHome, _ := os.UserHomeDir()
-				if o.Home == nativeHome && filepath.IsAbs(os.Getenv("XDG_CONFIG_HOME")) {
+				if !o.homeExplicit && o.Home == nativeHome && filepath.IsAbs(os.Getenv("XDG_CONFIG_HOME")) {
 					startupConfig = filepath.Clean(os.Getenv("XDG_CONFIG_HOME"))
 				}
 				if startupConfig != o.Config {

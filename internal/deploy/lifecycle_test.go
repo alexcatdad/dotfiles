@@ -628,3 +628,34 @@ func TestDeploymentStateCannotContainRepository(t *testing.T) {
 		})
 	}
 }
+
+func TestExplicitNativeHomeDoesNotInheritXDG(t *testing.T) {
+	o := fixture(t)
+	t.Setenv("HOME", o.Home)
+	t.Setenv("USERPROFILE", o.Home)
+	for _, name := range []string{"CONFIG", "DATA", "STATE", "CACHE"} {
+		t.Setenv("XDG_"+name+"_HOME", filepath.Join(filepath.Dir(o.Home), "inherited-"+name))
+	}
+	for _, explicit := range []bool{false, true} {
+		args := []string{"--repo", o.Repo}
+		if explicit {
+			args = append(args, "--home", o.Home)
+		}
+		got, err := parse(args, io.Discard)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := map[string]string{"CONFIG": filepath.Join(o.Home, ".config"), "DATA": filepath.Join(o.Home, ".local", "share"), "STATE": filepath.Join(o.Home, ".local", "state", "dotfiles"), "CACHE": filepath.Join(o.Home, ".cache")}
+		for name, actual := range map[string]string{"CONFIG": got.Config, "DATA": got.Data, "STATE": got.State, "CACHE": got.Cache} {
+			if !explicit {
+				want[name] = os.Getenv("XDG_" + name + "_HOME")
+				if name == "STATE" {
+					want[name] = filepath.Join(want[name], "dotfiles")
+				}
+			}
+			if actual != want[name] {
+				t.Fatalf("explicit=%t %s: got %q want %q", explicit, name, actual, want[name])
+			}
+		}
+	}
+}

@@ -277,12 +277,15 @@ func TestFishAbbreviationRespectsTerminalControls(t *testing.T) {
 }
 
 func TestNativeLanguageToolPaths(t *testing.T) {
-	for _, shell := range []string{"fish", "powershell"} {
+	for _, shell := range []string{"fish", "powershell", "zsh", "bash", "posix"} {
 		t.Run(shell, func(t *testing.T) {
 			if runtime.GOOS == "windows" && shell != "powershell" {
 				t.Skip("Unix shells are tested natively, not through MSYS path translation")
 			}
-			command := "fish"
+			command := shell
+			if shell == "posix" {
+				command = "sh"
+			}
 			if shell == "powershell" {
 				command = "pwsh"
 			}
@@ -293,11 +296,11 @@ func TestNativeLanguageToolPaths(t *testing.T) {
 				}
 				t.Skip("native shell unavailable")
 			}
-			for _, scenario := range []string{"defaults", "gobin", "gopath"} {
+			for _, scenario := range []string{"defaults", "gobin", "gopath", "multi-root-gopath"} {
 				t.Run(scenario, func(t *testing.T) {
 					o := fixture(t)
 					pnpm, cargo, gobin := filepath.Join(o.Data, "pnpm"), filepath.Join(o.Home, ".cargo", "bin"), filepath.Join(o.Home, "go", "bin")
-					env := []string{"HOME=" + o.Home, "USERPROFILE=" + o.Home, "PATH=" + fixtureShellPath(t, o), "DOTFILES_DATA_HOME=" + o.Data, "DOTFILES_CONFIG_HOME=" + o.Config}
+					env := []string{"HOME=" + o.Home, "USERPROFILE=" + o.Home, "PATH=" + fixtureShellPath(t, o), "DOTFILES_DATA_HOME=" + o.Data, "DOTFILES_CONFIG_HOME=" + o.Config, "LANG=C.UTF-8"}
 					if scenario != "defaults" {
 						pnpm, cargo = filepath.Join(o.Home, "custom pnpm"), filepath.Join(o.Home, "custom cargo", "bin")
 						env = append(env, "PNPM_HOME="+pnpm, "CARGO_HOME="+filepath.Dir(cargo))
@@ -306,7 +309,11 @@ func TestNativeLanguageToolPaths(t *testing.T) {
 							env = append(env, "GOBIN="+gobin, "GOPATH="+filepath.Join(o.Home, "unused go"))
 						} else {
 							gobin = filepath.Join(o.Home, "custom go", "bin")
-							env = append(env, "GOPATH="+filepath.Dir(gobin))
+							gopath := filepath.Dir(gobin)
+							if scenario == "multi-root-gopath" {
+								gopath += string(os.PathListSeparator) + filepath.Join(o.Home, "second go")
+							}
+							env = append(env, "GOPATH="+gopath)
 						}
 					}
 					for _, p := range []string{pnpm, cargo, gobin} {
@@ -321,6 +328,18 @@ func TestNativeLanguageToolPaths(t *testing.T) {
 						source, _ = filepath.Abs(filepath.Join("..", "..", "home", ".config", "powershell", "profile.ps1"))
 						probe = "Set-Variable HOME -Value " + quotePS(o.Home) + " -Force; . " + quotePS(source) + "; $paths = $env:PATH -split [IO.Path]::PathSeparator; foreach ($p in @(" + quotePS(pnpm) + ", " + quotePS(cargo) + ", " + quotePS(gobin) + ")) { if ($paths -notcontains $p) { throw 'missing language-tool path' } }; Write-Output READY"
 						args = []string{"-NoProfile", "-NonInteractive", "-Command", probe}
+					}
+					if shell == "zsh" || shell == "bash" || shell == "posix" {
+						file := "env.sh"
+						if shell == "zsh" {
+							file = "path.zsh"
+						}
+						source, _ = filepath.Abs(filepath.Join("..", "..", "home", ".config", "shell", file))
+						probe = ". " + quoteSH(source) + "; for p in " + quoteSH(pnpm) + " " + quoteSH(cargo) + " " + quoteSH(gobin) + "; do case :$PATH: in *:\"$p\":*) ;; *) exit 1;; esac; done; echo READY"
+						args = []string{"-c", probe}
+						if shell == "zsh" {
+							args = []string{"-dfc", probe}
+						}
 					}
 					for _, name := range []string{"SystemRoot", "WINDIR", "COMSPEC", "PATHEXT", "TEMP", "TMP"} {
 						if v := os.Getenv(name); v != "" {
@@ -543,6 +562,83 @@ func TestAtuinConfigSelection(t *testing.T) {
 						t.Fatalf("Atuin configuration selection: %v %s", err, b)
 					}
 				})
+			}
+		})
+	}
+}
+
+func TestConfiguredHomebrewPrefixPrecedesFallbacks(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("native Unix shell prefixes")
+	}
+	for _, shell := range []string{"zsh", "bash", "posix", "fish"} {
+		t.Run(shell, func(t *testing.T) {
+			name := shell
+			if name == "posix" {
+				name = "sh"
+			}
+			executable, err := exec.LookPath(name)
+			if err != nil {
+				t.Skip("native shell unavailable")
+			}
+			o := fixture(t)
+			selected := filepath.Join(o.Home, "selected brew")
+			fallbacks := []string{"/opt/homebrew/bin", "/home/linuxbrew/.linuxbrew/bin"}
+			if shell == "zsh" {
+				fallback := filepath.Join(o.Home, ".linuxbrew", "bin")
+				if err := os.MkdirAll(fallback, 0700); err != nil {
+					t.Fatal(err)
+				}
+				fallbacks = append(fallbacks, fallback)
+			}
+			hasFallback := false
+			for _, p := range fallbacks {
+				if info, err := os.Stat(p); err == nil && info.IsDir() {
+					hasFallback = true
+				}
+			}
+			if !hasFallback {
+				t.Skip("no native Homebrew fallback directory")
+			}
+			if err := os.MkdirAll(filepath.Join(selected, "bin"), 0700); err != nil {
+				t.Fatal(err)
+			}
+			file := "env.sh"
+			if shell == "zsh" {
+				file = "path.zsh"
+			}
+			source, _ := filepath.Abs(filepath.Join("..", "..", "home", ".config", "shell", file))
+			args := []string{"-c", ". " + quoteSH(source) + "; printf '%s' \"$PATH\""}
+			if shell == "zsh" {
+				args[0] = "-dfc"
+			}
+			if shell == "fish" {
+				source, _ = filepath.Abs(filepath.Join("..", "..", "home", ".config", "fish", "conf.d", "dotfiles.fish"))
+				args = []string{"--no-config", "-c", "source " + quoteSH(source) + "; string join : -- $PATH"}
+			}
+			cmd := exec.Command(executable, args...)
+			cmd.Env = []string{"HOME=" + o.Home, "PATH=" + fixtureShellPath(t, o) + ":" + filepath.Join(selected, "bin"), "HOMEBREW_PREFIX=" + selected, "LANG=C.UTF-8"}
+			b, err := cmd.CombinedOutput()
+			if err != nil {
+				t.Fatal(err, string(b))
+			}
+			paths := strings.Split(strings.TrimSpace(string(b)), ":")
+			selectedIndex := -1
+			for i, p := range paths {
+				if p == filepath.Join(selected, "bin") {
+					selectedIndex = i
+					break
+				}
+			}
+			if selectedIndex < 0 {
+				t.Fatal("configured Homebrew prefix absent")
+			}
+			for _, fallback := range fallbacks {
+				for i, p := range paths {
+					if p == fallback && i < selectedIndex {
+						t.Fatal("fallback precedes configured Homebrew prefix", fallback)
+					}
+				}
 			}
 		})
 	}

@@ -6,7 +6,7 @@ if (-not $env:DOTFILES_DATA_HOME) {
     $env:DOTFILES_DATA_HOME = if ($env:XDG_DATA_HOME) { $env:XDG_DATA_HOME } else { Join-Path $HOME '.local/share' }
 }
 $dotfilesCargoHome = if ($env:CARGO_HOME) { $env:CARGO_HOME } else { Join-Path $HOME '.cargo' }
-$dotfilesGoBin = if ($env:GOBIN) { $env:GOBIN } elseif ($env:GOPATH) { Join-Path $env:GOPATH 'bin' } else { Join-Path $HOME 'go/bin' }
+$dotfilesGoBin = if ($env:GOBIN) { $env:GOBIN } elseif ($env:GOPATH) { Join-Path (($env:GOPATH -split [IO.Path]::PathSeparator)[0]) 'bin' } else { Join-Path $HOME 'go/bin' }
 $dotfilesPnpmHome = if ($env:PNPM_HOME) { $env:PNPM_HOME } else { Join-Path $env:DOTFILES_DATA_HOME 'pnpm' }
 $dotfilesPaths = @((Join-Path $HOME '.local/bin'), (Join-Path $HOME 'bin'), (Join-Path $dotfilesCargoHome 'bin'), $dotfilesGoBin, $dotfilesPnpmHome)
 if (($env:DOTFILES_RUNTIMES -split ',') -contains 'bun') {

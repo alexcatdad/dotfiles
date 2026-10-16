@@ -12,6 +12,7 @@ import (
 )
 
 type Options struct {
+	homeExplicit                                                      bool
 	Repo, Home, Config, Data, State, Cache, ZshDir, PowerShellProfile string
 	Components, Shells, Profile, Mode, Prompt, Terminal, Machine      string
 	Replace, Apply, LFS                                               bool
@@ -64,6 +65,11 @@ func parse(args []string, out io.Writer) (Options, error) {
 	if f.NArg() != 0 {
 		return o, errors.New("unexpected positional arguments")
 	}
+	f.Visit(func(flag *flag.Flag) {
+		if flag.Name == "home" {
+			o.homeExplicit = true
+		}
+	})
 	return o, o.normalize()
 }
 
@@ -88,7 +94,7 @@ func (o *Options) normalize() error {
 	} {
 		if *v.p == "" {
 			*v.p = v.fallback
-			if o.Home == nativeHome && filepath.IsAbs(os.Getenv(v.env)) {
+			if !o.homeExplicit && o.Home == nativeHome && filepath.IsAbs(os.Getenv(v.env)) {
 				*v.p = os.Getenv(v.env)
 			}
 			if v.env == "XDG_STATE_HOME" {
