@@ -14,12 +14,19 @@ import (
 )
 
 func TestNativeShellStartup(t *testing.T) {
-	for _, shell := range []string{"zsh", "bash", "fish", "powershell", "posix"} {
+	shells := []string{"zsh", "bash", "fish", "powershell", "posix"}
+	if runtime.GOOS == "darwin" {
+		shells = append(shells, "bash-system")
+	}
+	for _, shell := range shells {
 		t.Run(shell, func(t *testing.T) {
 			if runtime.GOOS == "windows" && shell != "powershell" {
 				t.Skip("Unix shells are tested natively and under WSL, not through MSYS path translation")
 			}
 			command := map[string]string{"zsh": "zsh", "bash": "bash", "fish": "fish", "powershell": "pwsh", "posix": "sh"}[shell]
+			if shell == "bash-system" {
+				shell, command = "bash", "/bin/bash"
+			}
 			executable, e := exec.LookPath(command)
 			if e != nil {
 				if has(os.Getenv("DOTFILES_REQUIRED_SHELLS"), shell) {
@@ -59,7 +66,9 @@ func TestNativeShellStartup(t *testing.T) {
 			if e = install(o, idx, io.Discard); e != nil {
 				t.Fatal(e)
 			}
-			env := []string{"HOME=" + o.Home, "USERPROFILE=" + o.Home, "USER=fixture", "PATH=" + fixtureShellPath(t, o), "TERM=xterm-256color", "LANG=C.UTF-8", "XDG_CONFIG_HOME=" + o.Config, "XDG_DATA_HOME=" + o.Data, "XDG_STATE_HOME=" + filepath.Join(o.Home, "state-home"), "XDG_CACHE_HOME=" + o.Cache, "NO_COLOR=1", "GOTOOLCHAIN=local"}
+			// vt100 keeps interactive hooks enabled without Bash 3.2's
+			// meta-mode transport escapes when stdin/stderr are pipes.
+			env := []string{"HOME=" + o.Home, "USERPROFILE=" + o.Home, "USER=fixture", "PATH=" + fixtureShellPath(t, o), "INPUTRC=" + filepath.Join(o.Home, ".inputrc"), "TERM=vt100", "LANG=C.UTF-8", "XDG_CONFIG_HOME=" + o.Config, "XDG_DATA_HOME=" + o.Data, "XDG_STATE_HOME=" + filepath.Join(o.Home, "state-home"), "XDG_CACHE_HOME=" + o.Cache, "NO_COLOR=1", "GOTOOLCHAIN=local"}
 			for _, name := range []string{"SystemRoot", "WINDIR", "COMSPEC", "PATHEXT", "TEMP", "TMP"} {
 				if v := os.Getenv(name); v != "" {
 					env = append(env, name+"="+v)
@@ -167,6 +176,10 @@ func fixtureShellPath(t *testing.T, o Options) string {
 	t.Helper()
 	bin := filepath.Join(o.Home, ".local", "bin")
 	if err := os.MkdirAll(bin, 0700); err != nil {
+		t.Fatal(err)
+	}
+	// Do not inherit system Readline preferences in pipe-based startup probes.
+	if err := os.WriteFile(filepath.Join(o.Home, ".inputrc"), []byte("# Isolated test Readline configuration.\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	for _, name := range []string{"eza", "rg", "fd", "fdfind", "fnm", "zoxide", "direnv", "atuin", "starship"} {

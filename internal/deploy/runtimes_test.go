@@ -50,7 +50,7 @@ func TestRuntimesAreOptInAndFailedInitializersAreNotEvaluated(t *testing.T) {
 				if e = install(o, idx, io.Discard); e != nil {
 					t.Fatal(e)
 				}
-				env := []string{"HOME=" + o.Home, "ZDOTDIR=" + o.ZshDir, "PATH=" + fixturePath, "TERM=xterm-256color", "NO_COLOR=1", "LANG=C.UTF-8", "XDG_CACHE_HOME=" + o.Cache, "XDG_DATA_HOME=" + o.Data, "XDG_CONFIG_HOME=" + o.Config}
+				env := []string{"HOME=" + o.Home, "ZDOTDIR=" + o.ZshDir, "PATH=" + fixturePath, "INPUTRC=" + filepath.Join(o.Home, ".inputrc"), "TERM=vt100", "NO_COLOR=1", "LANG=C.UTF-8", "XDG_CACHE_HOME=" + o.Cache, "XDG_DATA_HOME=" + o.Data, "XDG_CONFIG_HOME=" + o.Config}
 				args := []string{"-d", "-ic", "printf '%s\\n' \"${DOTFILES_RUNTIME_INIT:-0}\""}
 				if shell == "bash" {
 					args = []string{"--noprofile", "--norc", "-ic", ". \"$HOME/.bashrc\"; printf '%s\\n' \"${DOTFILES_RUNTIME_INIT:-0}\""}
