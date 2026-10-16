@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestRuntimesAreOptInAndFailedInitializersAreNotEvaluated(t *testing.T) {
@@ -53,7 +55,9 @@ func TestRuntimesAreOptInAndFailedInitializersAreNotEvaluated(t *testing.T) {
 				if shell == "bash" {
 					args = []string{"--noprofile", "--norc", "-ic", ". \"$HOME/.bashrc\"; printf '%s\\n' \"${DOTFILES_RUNTIME_INIT:-0}\""}
 				}
-				cmd := exec.Command(executable, args...)
+				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+				defer cancel()
+				cmd := fixtureShellCommand(ctx, shell, executable, args...)
 				cmd.Env = env
 				cmd.Dir = o.Home
 				var stderr bytes.Buffer

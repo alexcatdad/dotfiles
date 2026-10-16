@@ -95,7 +95,7 @@ func TestNativeShellStartup(t *testing.T) {
 				start := time.Now()
 				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 				defer cancel()
-				cmd := exec.CommandContext(ctx, executable, args...)
+				cmd := fixtureShellCommand(ctx, shell, executable, args...)
 				cmd.Env = env
 				cmd.Dir = o.Home
 				var stderr bytes.Buffer
@@ -119,4 +119,24 @@ func TestNativeShellStartup(t *testing.T) {
 			}
 		})
 	}
+}
+
+// FreeBSD Bash can stop on job-control signals when launched interactively
+// without a controlling terminal. Its base-system script tool supplies a real
+// PTY while preserving argv; ordinary non-interactive probes stay pipe-based.
+func fixtureShellCommand(ctx context.Context, shell, executable string, args ...string) *exec.Cmd {
+	interactive := false
+	for _, arg := range args {
+		if arg == "--interactive" || strings.HasPrefix(arg, "-") && !strings.HasPrefix(arg, "--") && strings.Contains(arg, "i") {
+			interactive = true
+		}
+	}
+	var cmd *exec.Cmd
+	if runtime.GOOS == "freebsd" && shell == "bash" && interactive {
+		cmd = exec.CommandContext(ctx, "script", append([]string{"-q", "/dev/null", executable}, args...)...)
+	} else {
+		cmd = exec.CommandContext(ctx, executable, args...)
+	}
+	cmd.WaitDelay = 2 * time.Second
+	return cmd
 }
