@@ -73,7 +73,11 @@ func doctor(o Options, out io.Writer) error {
 			continue
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		b, e := exec.CommandContext(ctx, p, r.args...).CombinedOutput()
+		cmd := exec.CommandContext(ctx, p, r.args...)
+		if r.name == "go" {
+			cmd.Env = append(os.Environ(), "GOTOOLCHAIN=local")
+		}
+		b, e := cmd.CombinedOutput()
 		cancel()
 		// Do not echo arbitrary executable output: it can contain paths or secrets.
 		v := firstVersion(string(b))

@@ -59,13 +59,15 @@ func safeParents(path string) error {
 			if !i.IsDir() || i.Mode()&os.ModeSymlink != 0 {
 				return fmt.Errorf("unsafe parent directory: %s", p)
 			}
-			// User namespaces may map the system root to an overflow UID. A
-			// non-writable filesystem root and sticky shared temp root are valid
-			// boundaries; user-controlled parents still require reviewed ownership.
-			if !owned(i) && filepath.Dir(p) != p && i.Mode()&os.ModeSticky == 0 {
+			// User namespaces may map system directories to an overflow UID.
+			// Only fixed system temp roots may excuse ownership or write bits;
+			// TMPDIR and arbitrary sticky directories are not trust boundaries.
+			sharedTemp := i.Mode()&os.ModeSticky != 0 && i.Mode().Perm() == 0777 &&
+				member(p, "/tmp", "/private/tmp", "/var/tmp", "/private/var/tmp")
+			if !owned(i) && filepath.Dir(p) != p && !sharedTemp {
 				return fmt.Errorf("unreviewed parent ownership: %s", p)
 			}
-			if runtime.GOOS != "windows" && i.Mode().Perm()&0022 != 0 && i.Mode()&os.ModeSticky == 0 {
+			if runtime.GOOS != "windows" && i.Mode().Perm()&0022 != 0 && !sharedTemp {
 				return fmt.Errorf("writable parent directory: %s", p)
 			}
 		} else if !os.IsNotExist(e) {

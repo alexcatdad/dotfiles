@@ -189,6 +189,16 @@ func selection(s string, choices ...string) error {
 	return nil
 }
 func within(root, path string) bool {
-	rel, err := filepath.Rel(root, path)
+	rel, err := filepath.Rel(pathKey(root), pathKey(path))
 	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
+
+func pathKey(path string) string {
+	path = filepath.Clean(path)
+	// Conservatively reject case aliases on platforms commonly using
+	// case-insensitive volumes, including paths not yet created.
+	if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+		path = strings.ToLower(path)
+	}
+	return path
 }

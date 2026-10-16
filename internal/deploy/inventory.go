@@ -1,7 +1,6 @@
 package deploy
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,9 +16,12 @@ type Candidate struct {
 	Content     []byte `json:"-"`
 }
 
-func quoteSH(s string) string  { return "'" + strings.ReplaceAll(s, "'", "'\"'\"'") + "'" }
-func quotePS(s string) string  { return "'" + strings.ReplaceAll(s, "'", "''") + "'" }
-func gitQuote(s string) string { b, _ := json.Marshal(filepath.ToSlash(s)); return string(b) }
+func quoteSH(s string) string { return "'" + strings.ReplaceAll(s, "'", "'\"'\"'") + "'" }
+func quotePS(s string) string { return "'" + strings.ReplaceAll(s, "'", "''") + "'" }
+func gitQuote(s string) string {
+	// Git accepts only its own quoted-string escapes, not JSON's HTML escapes.
+	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`, "\n", `\n`, "\t", `\t`, "\b", `\b`).Replace(filepath.ToSlash(s)) + `"`
+}
 
 func inventory(o Options) ([]Candidate, error) {
 	var items []Candidate
@@ -204,10 +206,7 @@ func inventory(o Options) ([]Candidate, error) {
 	unique := []Candidate{}
 	seen := map[string]Candidate{}
 	for _, c := range items {
-		key := filepath.Clean(c.Destination)
-		if runtime.GOOS == "windows" {
-			key = strings.ToLower(key)
-		}
+		key := pathKey(c.Destination)
 		if within(o.State, c.Destination) || within(c.Destination, o.State) || within(o.Repo, c.Destination) || within(c.Destination, o.Repo) {
 			return nil, fmt.Errorf("destination overlaps repository or state: %s", c.Destination)
 		}

@@ -107,3 +107,31 @@ func TestDoctorAcceptsRequiredVersionsAndWarnsForOptionalTools(t *testing.T) {
 		t.Fatal("accepted insufficient required jq version")
 	}
 }
+
+func TestDoctorForcesLocalGoToolchain(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("native Unix fixture executable")
+	}
+	o := fixture(t)
+	o.Components, o.Shells, o.Profile = "shell", "posix", "minimal"
+	bin := filepath.Join(o.Home, "bin")
+	if err := os.Mkdir(bin, 0700); err != nil {
+		t.Fatal(err)
+	}
+	for name, body := range map[string]string{
+		"jq": "#!/bin/sh\necho jq-1.7\n",
+		"go": "#!/bin/sh\n[ \"$GOTOOLCHAIN\" = local ] || exit 1\necho 'go version go1.23.4'\n",
+	} {
+		if err := os.WriteFile(filepath.Join(bin, name), []byte(body), 0755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Setenv("PATH", bin)
+	t.Setenv("GOTOOLCHAIN", "auto")
+	if err := doctor(o, io.Discard); err != nil {
+		t.Fatal("doctor did not probe the bundled local Go", err)
+	}
+	if os.Getenv("GOTOOLCHAIN") != "auto" {
+		t.Fatal("doctor changed the caller environment")
+	}
+}

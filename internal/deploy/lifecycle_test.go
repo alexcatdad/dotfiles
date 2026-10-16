@@ -2,8 +2,10 @@ package deploy
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -501,5 +503,106 @@ func TestQuickStartPackagesCoverSelectedShells(t *testing.T) {
 				t.Errorf("documented packages omit required installed shell %s", shell)
 			}
 		}
+	}
+}
+
+func TestGitCustomConfigPathsRemainParseable(t *testing.T) {
+	git, err := exec.LookPath("git")
+	if err != nil {
+		t.Skip("native Git unavailable")
+	}
+	for _, name := range []string{"config & 日本", "config <tag>", "config \"quoted\"", "config \tline\nnext"} {
+		t.Run(name, func(t *testing.T) {
+			if runtime.GOOS == "windows" && name != "config & 日本" {
+				t.Skip("invalid Windows filename")
+			}
+			o := fixture(t)
+			o.Repo, _ = filepath.Abs(filepath.Join("..", ".."))
+			o.Repo, _ = filepath.EvalSymlinks(o.Repo)
+			o.Config = filepath.Join(o.Home, name)
+			o.Components, o.LFS = "git", true
+			if err := prepareState(o); err != nil {
+				t.Fatal(err)
+			}
+			idx, _ := loadIndex(o)
+			if err := install(o, idx, io.Discard); err != nil {
+				t.Fatal(err)
+			}
+			for key, want := range map[string]string{"core.excludesFile": filepath.Join(o.Config, "git", "ignore"), "include.path": filepath.Join(o.Config, "git", "lfs.gitconfig")} {
+				cmd := exec.Command(git, "config", "--file", filepath.Join(o.Home, ".gitconfig"), "--includes", "--get", key)
+				cmd.Env = append(os.Environ(), "GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL="+filepath.Join(o.Home, ".gitconfig"))
+				b, err := cmd.CombinedOutput()
+				if err != nil || strings.TrimSpace(string(b)) != filepath.ToSlash(want) {
+					t.Fatalf("%s: %v %q", key, err, b)
+				}
+			}
+		})
+	}
+}
+
+func TestCaseVariantPathsCannotBypassBoundaries(t *testing.T) {
+	if runtime.GOOS != "darwin" && runtime.GOOS != "windows" {
+		t.Skip("platform supports case-sensitive paths by default")
+	}
+	for _, kind := range []string{"state", "cache", "destination"} {
+		t.Run(kind, func(t *testing.T) {
+			o := fixture(t)
+			alias := filepath.Join(filepath.Dir(o.Repo), "REPO")
+			switch kind {
+			case "state":
+				o.State = filepath.Join(alias, "state")
+			case "cache":
+				o.Cache = filepath.Join(alias, "cache")
+			case "destination":
+				o.Config = alias
+			}
+			if err := Run([]string{"install", "--repo", o.Repo, "--home", o.Home, "--config-dir", o.Config, "--state-dir", o.State, "--cache-dir", o.Cache, "--components", o.Components}, io.Discard); err == nil {
+				t.Fatal("accepted case-variant repository overlap")
+			}
+			if _, err := os.Stat(target(o)); !os.IsNotExist(err) {
+				t.Fatal("preview wrote destination", err)
+			}
+		})
+	}
+}
+
+func TestFishCaseVariantConfigRejectsConflictingBootstrap(t *testing.T) {
+	if runtime.GOOS != "darwin" && runtime.GOOS != "windows" {
+		t.Skip("case-insensitive platform guard")
+	}
+	o := fixture(t)
+	o.Repo, _ = filepath.Abs(filepath.Join("..", ".."))
+	o.Repo, _ = filepath.EvalSymlinks(o.Repo)
+	o.Components, o.Shells = "shell", "fish"
+	o.Config = filepath.Join(o.Home, ".Config")
+	o.Apply = true
+	if err := invoke(t, o, "install"); err == nil || !strings.Contains(err.Error(), "conflicting destination") {
+		t.Fatal("case alias was not rejected before installation", err)
+	}
+	if _, err := os.Stat(filepath.Join(o.Config, "fish", "conf.d", "dotfiles.fish")); !os.IsNotExist(err) {
+		t.Fatal("rejected inventory wrote a destination", err)
+	}
+}
+
+func TestStickyWritableParentIsNotAnArbitraryTrustBoundary(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX directory permissions")
+	}
+	o := fixture(t)
+	for _, perm := range []os.FileMode{01775, 01777} {
+		dir := filepath.Join(o.Home, fmt.Sprintf("untrusted-%o", perm))
+		if err := os.Mkdir(dir, 0700); err != nil {
+			t.Fatal(err)
+		}
+		// A sticky bit must not excuse group/world writes, even with reviewed ownership.
+		if err := os.Chmod(dir, os.ModeSticky|perm.Perm()); err != nil {
+			t.Fatal(err)
+		}
+		if err := safeParents(filepath.Join(dir, "state")); err == nil {
+			t.Fatal("accepted arbitrary writable sticky parent")
+		}
+	}
+	if err := safeParents(filepath.Join(o.Home, "safe-child")); err != nil {
+		t.Fatal("rejected normal temporary fixture", err)
 	}
 }
