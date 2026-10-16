@@ -98,3 +98,18 @@ func TestPluginExtractionRejectsTraversalAndLinks(t *testing.T) {
 		}
 	}
 }
+func TestPluginDownloadOnlyDoesNotSkipExistingInstallations(t *testing.T) {
+	o := fixture(t)
+	o.Apply = true
+	o.Offline = true
+	o.DownloadOnly = true
+	for _, p := range pluginSources {
+		if e := os.MkdirAll(filepath.Join(o.PluginDir, p.Name), 0700); e != nil {
+			t.Fatal(e)
+		}
+	}
+	e := plugins(o, io.Discard)
+	if e == nil || !strings.Contains(e.Error(), "offline plugin archive missing") {
+		t.Fatalf("existing installation skipped offline archive preparation: %v", e)
+	}
+}

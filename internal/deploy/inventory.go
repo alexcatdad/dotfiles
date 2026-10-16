@@ -143,12 +143,8 @@ func inventory(o Options) ([]Candidate, error) {
 	} {
 		if has(o.Components, v.component) {
 			src := v.src
-			if v.component == "prompt" && (o.Prompt != "full" || o.Profile == "minimal" || o.Profile == "container") {
-				variant := o.Prompt
-				if variant == "full" {
-					variant = "minimal"
-				}
-				src = "starship/" + variant + ".toml"
+			if v.component == "prompt" && o.Prompt != "full" {
+				src = "starship/" + o.Prompt + ".toml"
 			}
 			if err := addConfig(src, v.dst); err != nil {
 				return nil, err

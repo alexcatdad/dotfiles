@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -77,8 +78,12 @@ func doctor(o Options, out io.Writer) error {
 		// Do not echo arbitrary executable output: it can contain paths or secrets.
 		v := firstVersion(string(b))
 		if e != nil || !atLeast(v, r.minimum) {
-			fmt.Fprintf(out, "incompatible\t%s (need %s; detected %s)\n", r.name, r.minimum, v)
-			failures++
+			label := "optional incompatible"
+			if r.required {
+				label = "incompatible"
+				failures++
+			}
+			fmt.Fprintf(out, "%s\t%s (need %s; detected %s)\n", label, r.name, r.minimum, v)
 			continue
 		}
 		fmt.Fprintf(out, "ok\t%s %s\n", r.name, v)
@@ -116,21 +121,12 @@ func doctor(o Options, out io.Writer) error {
 	}
 	return nil
 }
+
+var versionPattern = regexp.MustCompile(`[0-9]+(?:\.[0-9]+)+`)
+
 func firstVersion(s string) string {
-	for _, word := range strings.Fields(s) {
-		word = strings.TrimLeft(word, "vgorb")
-		var b strings.Builder
-		for _, c := range word {
-			if c >= '0' && c <= '9' || c == '.' {
-				b.WriteRune(c)
-			} else {
-				break
-			}
-		}
-		v := strings.TrimRight(b.String(), ".")
-		if strings.Contains(v, ".") {
-			return v
-		}
+	if v := versionPattern.FindString(s); v != "" {
+		return v
 	}
 	return "unknown"
 }
@@ -183,7 +179,7 @@ func packages(o Options, out io.Writer) error {
 		"apk":     {"go": "go", "rg": "ripgrep", "fd": "fd", "pwsh": "", "bun": "", "fnm": ""},
 		"brew":    {"go": "go", "rg": "ripgrep", "fd": "fd", "pwsh": "", "bun": "oven-sh/bun/bun"},
 		"pkg":     {"go": "go", "rg": "ripgrep", "fd": "fd", "pwsh": "", "bun": "", "fnm": "", "atuin": ""},
-		"pkg_add": {"go": "go", "rg": "ripgrep", "fd": "fd", "fish": "fish%4", "pwsh": "", "bun": "", "fnm": "", "atuin": "", "zoxide": "", "starship": "", "eza": ""},
+		"pkg_add": {"go": "go", "rg": "ripgrep", "fd": "fd", "fish": "fish%main", "pwsh": "", "bun": "", "fnm": "", "atuin": "", "zoxide": "", "starship": "", "eza": ""},
 		"winget":  {"git": "Git.Git", "git-lfs": "GitHub.GitLFS", "go": "GoLang.Go", "jq": "jqlang.jq", "bun": "Oven-sh.Bun", "pwsh": "Microsoft.PowerShell", "eza": "eza-community.eza", "rg": "BurntSushi.ripgrep.MSVC", "fd": "sharkdp.fd", "zoxide": "ajeetdsouza.zoxide", "fnm": "Schniz.fnm", "starship": "Starship.Starship", "atuin": "", "direnv": "", "zsh": "", "bash": "", "fish": ""},
 		"scoop":   {"go": "go", "rg": "ripgrep", "pwsh": "pwsh", "atuin": "", "direnv": "", "zsh": "", "fish": ""},
 		"choco":   {"go": "golang", "rg": "ripgrep", "pwsh": "powershell-core", "atuin": "", "direnv": "", "zsh": "", "fish": "", "eza": "", "fnm": "", "bun": ""},

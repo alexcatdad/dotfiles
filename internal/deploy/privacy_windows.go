@@ -106,5 +106,14 @@ func fileACL(path string) (string, error) {
 		return "", fmt.Errorf("cannot serialize file ACL: %w", callErr)
 	}
 	defer syscall.NewLazyDLL("kernel32.dll").NewProc("LocalFree").Call(uintptr(unsafe.Pointer(text)))
-	return syscall.UTF16ToString(unsafe.Slice(text, length)), nil
+	sddl := syscall.UTF16ToString(unsafe.Slice(text, length))
+	// AI/AR describe automatic-inheritance bookkeeping, not access rules.
+	// Windows may set AI when restoring an otherwise identical DACL. Preserve
+	// protection and every ACE, while comparing the actual permission policy.
+	prefix, entries, found := strings.Cut(sddl, "(")
+	if found {
+		prefix = strings.ReplaceAll(strings.ReplaceAll(prefix, "AI", ""), "AR", "")
+		sddl = prefix + "(" + entries
+	}
+	return sddl, nil
 }

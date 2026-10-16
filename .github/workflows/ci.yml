@@ -60,6 +60,16 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           go build -trimpath -o "${{ runner.temp }}/dotfiles${{ runner.os == 'Windows' && '.exe' || '' }}" ./cmd/dotfiles
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify pinned plugin setup and offline reuse
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -eu
+          dotfiles_tool="$RUNNER_TEMP/dotfiles"
+          dotfiles_plugin_args=(--repo "$GITHUB_WORKSPACE" --home "$RUNNER_TEMP/plugin-fixture" --cache-dir "$RUNNER_TEMP/plugin-cache" --plugin-dir "$RUNNER_TEMP/plugin-fixture/plugins")
+          "$dotfiles_tool" plugins "${dotfiles_plugin_args[@]}" --download-only --apply
+          "$dotfiles_tool" plugins "${dotfiles_plugin_args[@]}" --offline --apply
+          "$dotfiles_tool" plugins "${dotfiles_plugin_args[@]}" --download-only --offline --apply
       - name: Parse PowerShell and terminal JSON
         shell: pwsh
         run: |
@@ -170,7 +180,7 @@ jobs:
       - uses: vmactions/openbsd-vm@5f7b2c933b8846a138361d6843c52af4bef5d945 # reviewed v1 ref
         with:
           copyback: false
-          prepare: pkg_add -I go zsh bash 'fish%4' git jq
+          prepare: pkg_add -I go zsh bash 'fish%main' git jq
           run: sh tests/portable/bsd.sh
 
   ghostty:

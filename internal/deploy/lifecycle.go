@@ -547,6 +547,13 @@ func rollback(o Options, out io.Writer) error {
 		if e = put(s.Destination, s.Before, b); e != nil {
 			return e
 		}
+		restored, e := fingerprint(s.Destination)
+		if e != nil {
+			return e
+		}
+		if !same(restored, s.Before) {
+			return errors.New("restored file failed verification; private journal retained")
+		}
 	}
 	if e = writeJSON(filepath.Join(o.State, "index.json"), j.BeforeIndex); e != nil {
 		return e

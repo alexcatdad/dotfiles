@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -324,7 +325,7 @@ func TestSelectionsAndVersionParsing(t *testing.T) {
 			t.Fatal("accepted invalid selection", s)
 		}
 	}
-	for _, v := range []struct{ s, want string }{{"go version go1.23.4 linux/amd64", "1.23.4"}, {"git version 2.43.0.windows.1", "2.43.0."}, {"eza - v0.20.0", "0.20.0"}, {"unversioned", "unknown"}} {
+	for _, v := range []struct{ s, want string }{{"go version go1.23.4 linux/amd64", "1.23.4"}, {"git version 2.43.0.windows.1", "2.43.0."}, {"eza - v0.20.0", "0.20.0"}, {"jq-1.7", "1.7"}, {"unversioned", "unknown"}} {
 		got := firstVersion(v.s)
 		if strings.TrimRight(got, ".") != strings.TrimRight(v.want, ".") {
 			t.Fatalf("version %q: %s", v.s, got)
@@ -366,5 +367,48 @@ func TestActualInventoryAllComponents(t *testing.T) {
 		if _, e := inventory(o); e != nil {
 			t.Fatal(e)
 		}
+	}
+}
+func TestExplicitPromptSelectionAndProfileDefaults(t *testing.T) {
+	base := fixture(t)
+	for _, tc := range []struct{ profile, explicit, want string }{{"minimal", "", "minimal"}, {"container", "", "minimal"}, {"server", "", "full"}, {"minimal", "full", "full"}, {"container", "full", "full"}, {"server", "ascii", "ascii"}} {
+		args := []string{"--repo", base.Repo, "--home", base.Home, "--state-dir", base.State, "--profile", tc.profile}
+		if tc.explicit != "" {
+			args = append(args, "--prompt", tc.explicit)
+		}
+		o, e := parse(args, io.Discard)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if o.Prompt != tc.want {
+			t.Fatalf("profile=%s explicit=%s: got %s", tc.profile, tc.explicit, o.Prompt)
+		}
+		o.Repo, _ = filepath.Abs(filepath.Join("..", ".."))
+		o.Repo, _ = filepath.EvalSymlinks(o.Repo)
+		o.Components = "prompt"
+		items, e := inventory(o)
+		if e != nil {
+			t.Fatal(e)
+		}
+		wantSource := "home/.config/starship.toml"
+		if tc.want != "full" {
+			wantSource = "home/.config/starship/" + tc.want + ".toml"
+		}
+		if len(items) != 1 || items[0].Source != wantSource {
+			t.Fatal("explicit prompt was not reflected in the deployment inventory")
+		}
+	}
+}
+func TestArchiveCacheCannotOverlapRepository(t *testing.T) {
+	o := fixture(t)
+	o.Cache = filepath.Join(o.Repo, "cache")
+	if e := o.normalize(); e == nil {
+		t.Fatal("accepted repository-contained archive cache")
+	}
+	o = fixture(t)
+	o.Repo = filepath.Join(filepath.Dir(o.Repo), "dotfiles")
+	o.Cache = filepath.Dir(o.Repo)
+	if e := o.normalize(); e == nil {
+		t.Fatal("accepted effective archive cache inside repository")
 	}
 }

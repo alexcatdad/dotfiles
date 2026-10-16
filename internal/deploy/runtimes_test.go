@@ -76,3 +76,30 @@ func TestRuntimesAreOptInAndFailedInitializersAreNotEvaluated(t *testing.T) {
 		}
 	}
 }
+func TestDoctorAcceptsRequiredVersionsAndWarnsForOptionalTools(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("native Unix fixture executables")
+	}
+	o := fixture(t)
+	o.Components = "shell"
+	o.Shells = "posix"
+	bin := filepath.Join(o.Home, "bin")
+	os.Mkdir(bin, 0700)
+	for name, version := range map[string]string{"jq": "jq-1.7", "go": "go version go1.23.4", "eza": "eza v0.1.0"} {
+		p := filepath.Join(bin, name)
+		os.WriteFile(p, []byte("#!/bin/sh\nprintf '%s\\n' '"+version+"'\n"), 0755)
+		os.Chmod(p, 0755)
+	}
+	t.Setenv("PATH", bin)
+	var out bytes.Buffer
+	if e := doctor(o, &out); e != nil {
+		t.Fatal(e)
+	}
+	if !strings.Contains(out.String(), "ok\tjq 1.7") || !strings.Contains(out.String(), "optional incompatible\teza") {
+		t.Fatal("required version or optional warning missing")
+	}
+	os.WriteFile(filepath.Join(bin, "jq"), []byte("#!/bin/sh\nprintf 'jq-1.3\\n'\n"), 0755)
+	if e := doctor(o, io.Discard); e == nil {
+		t.Fatal("accepted insufficient required jq version")
+	}
+}

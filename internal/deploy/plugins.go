@@ -35,8 +35,10 @@ func plugins(o Options, out io.Writer) error {
 			if !info.IsDir() {
 				return errors.New("existing plugin is not a directory")
 			}
-			fmt.Fprintf(out, "keep existing\t%s\n", dest)
-			continue
+			if !o.DownloadOnly {
+				fmt.Fprintf(out, "keep existing\t%s\n", dest)
+				continue
+			}
 		} else if !os.IsNotExist(e) {
 			return e
 		}

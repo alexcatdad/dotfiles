@@ -23,7 +23,7 @@ type Options struct {
 
 func defaults() Options {
 	h, _ := os.UserHomeDir()
-	return Options{Repo: ".", Home: h, Components: "shell,git,prompt,history,search", Shells: "zsh", Profile: "server", Mode: "copy", Prompt: "full", Runtimes: "none"}
+	return Options{Repo: ".", Home: h, Components: "shell,git,prompt,history,search", Shells: "zsh", Profile: "server", Mode: "copy", Prompt: "auto", Runtimes: "none"}
 }
 
 func parse(args []string, out io.Writer) (Options, error) {
@@ -42,7 +42,7 @@ func parse(args []string, out io.Writer) (Options, error) {
 	f.StringVar(&o.Shells, "shells", o.Shells, "comma-separated zsh,bash,fish,powershell,posix")
 	f.StringVar(&o.Profile, "profile", o.Profile, "minimal,server,desktop,container")
 	f.StringVar(&o.Mode, "mode", o.Mode, "copy or symlink (rendered entrypoints always use copies)")
-	f.StringVar(&o.Prompt, "prompt", o.Prompt, "full,minimal,ascii")
+	f.StringVar(&o.Prompt, "prompt", o.Prompt, "auto,full,minimal,ascii; auto follows profile")
 	f.StringVar(&o.Terminal, "terminal", "", "ghostty,kitty,alacritty,wezterm,windows-terminal")
 	f.StringVar(&o.Machine, "machine", "", "explicit reviewed source inside machines/")
 	f.BoolVar(&o.Replace, "replace", false, "back up and replace reviewed conflicting files on first adoption")
@@ -133,6 +133,12 @@ func (o *Options) normalize() error {
 	if !member(o.Profile, "minimal", "server", "desktop", "container") {
 		return errors.New("unknown profile")
 	}
+	if o.Prompt == "auto" {
+		o.Prompt = "full"
+		if member(o.Profile, "minimal", "container") {
+			o.Prompt = "minimal"
+		}
+	}
 	if !member(o.Prompt, "full", "minimal", "ascii") {
 		return errors.New("unknown prompt")
 	}
@@ -155,6 +161,9 @@ func (o *Options) normalize() error {
 	}
 	if within(o.Repo, o.State) {
 		return errors.New("deployment state must be outside the repository")
+	}
+	if within(o.Repo, o.Cache) || within(o.Repo, filepath.Join(o.Cache, "dotfiles")) {
+		return errors.New("download caches must be outside the repository")
 	}
 	return nil
 }
