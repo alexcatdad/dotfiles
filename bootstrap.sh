@@ -2,22 +2,25 @@
 # Set up a machine from this repository: link configs, install packages,
 # schedule the daily update reminder.
 #
-# Usage: ./bootstrap.sh [--machine NAME] [--no-packages]
+# Usage: ./bootstrap.sh [--machine NAME] [--no-packages] [--no-app-store]
 #   --machine NAME  also link machines/NAME.zsh (see machines/)
 #   --no-packages   link configs only; skip Homebrew
+#   --no-app-store  skip App Store apps (they hang unless you are signed in
+#                   to the App Store)
 #
 # Homebrew must already be installed (https://brew.sh). Nothing here downloads
 # an installer, asks for a password or signs in to anything.
 set -eu
 
 repo=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
-machine='' packages=1
+machine='' packages=1 app_store=1
 while [ $# -gt 0 ]; do
     case $1 in
         --machine) machine=${2:?--machine needs a name}; shift 2 ;;
         --machine=*) machine=${1#--machine=}; shift ;;
         --no-packages) packages=0; shift ;;
-        -h|--help) sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        --no-app-store) app_store=0; shift ;;
+        -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
     esac
 done
@@ -46,6 +49,12 @@ if [ "$packages" -eq 1 ]; then
         printf '%s\n' 'Homebrew is not installed. Install it from https://brew.sh, then run this again.' >&2
         failed="$failed packages"
     else
+        if [ "$app_store" -eq 0 ]; then
+            HOMEBREW_BUNDLE_MAS_SKIP=$(sed -n 's/^mas .*id: *\([0-9]*\).*/\1/p' "$repo/Brewfile" | tr '\n' ' ')
+            export HOMEBREW_BUNDLE_MAS_SKIP
+        elif grep -q '^mas ' "$repo/Brewfile"; then
+            printf '%s\n' 'App Store apps install last and wait forever if you are not signed in to the App Store.' 'If that happens: Ctrl-C, sign in, run this again (or use --no-app-store).'
+        fi
         "$brew" bundle --file "$repo/Brewfile" || failed="$failed packages"
         if [ -r "$repo/Brewfile.local" ]; then
             "$brew" bundle --file "$repo/Brewfile.local" || failed="$failed local-packages"
