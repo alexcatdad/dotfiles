@@ -75,7 +75,7 @@ fi
 step 'Next steps (run these yourself)'
 cat <<'EOF'
   gh auth login                 sign in to GitHub
-  mo touchid enable             Touch ID for sudo
+  mo touchid enable             Touch ID for sudo, on Macs that have it
   sh scripts/macos-defaults.sh  optional: software update preferences
   mo slim --dry-run             optional: preview removing Intel code from apps
   Put machine-only settings in ~/.zshrc.local and ~/.gitconfig.local

@@ -16,7 +16,7 @@ that puts both on a machine. Plain files and symlinks; no configuration manager.
    ```
 
 3. Open a new terminal, then run the follow-ups `bootstrap.sh` prints:
-   `gh auth login`, `mo touchid enable`, and optionally
+   `gh auth login`, `mo touchid enable` (on Macs with Touch ID), and optionally
    `sh scripts/macos-defaults.sh` and `mo slim`.
 
 Clone to the internal disk. Configs are symlinks into the checkout, so a
