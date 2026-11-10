@@ -1,0 +1,8 @@
+#!/bin/sh
+# Block a commit that contains something secret-shaped. This repo is public.
+set -eu
+if ! command -v gitleaks >/dev/null 2>&1; then
+    printf '%s\n' 'gitleaks is not installed (brew install gitleaks); commit refused.' >&2
+    exit 1
+fi
+exec gitleaks git --pre-commit --staged --redact --no-banner

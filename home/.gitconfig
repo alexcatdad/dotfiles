@@ -1,0 +1,33 @@
+[core]
+    pager = less -FRX
+    autocrlf = input
+    excludesFile = ~/.config/git/ignore
+[init]
+    defaultBranch = main
+[pull]
+    rebase = true
+[rebase]
+    autoSquash = true
+[rerere]
+    enabled = true
+    autoupdate = false
+[push]
+    default = current
+    autoSetupRemote = true
+[fetch]
+    prune = true
+[diff]
+    colorMoved = default
+    algorithm = histogram
+[merge]
+    conflictstyle = zdiff3
+[color]
+    ui = auto
+[include]
+    path = ~/.gitconfig.local
+[credential "https://github.com"]
+    helper =
+    helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+    helper =
+    helper = !gh auth git-credential

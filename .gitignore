@@ -1,0 +1,19 @@
+# This repository is public. Stage only files you have read.
+.DS_Store
+*.local
+Brewfile.local
+Brewfile.lock.json
+*.env
+.env
+.env.*
+!.env.example
+.ssh/
+.zsh_history
+.zsh_sessions/
+.bash_history
+.zcompdump*
+*.zwc
+.config/atuin/*.db*
+.config/atuin/key
+.config/atuin/session
+.claude/settings.local.json

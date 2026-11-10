@@ -1,0 +1,2 @@
+--smart-case
+# Git ignore files already handle most generated files; avoid broad extra exclusions.
