@@ -41,7 +41,7 @@ ln -s "$home/elsewhere" "$home/.config"
 
 sh scripts/link.sh --machine mac-studio "$home" >/dev/null
 [ "$(readlink "$home/.zshrc")" = "$repo/home/.zshrc" ] || fail '.zshrc is not linked to the repo'
-[ -d "$home/.config" ] && [ ! -L "$home/.config" ] || fail '.config was not made a real directory'
+if [ ! -d "$home/.config" ] || [ -L "$home/.config" ]; then fail '.config was not made a real directory'; fi
 [ "$(readlink "$home/.config/shell/machine.zsh")" = "$repo/machines/mac-studio.zsh" ] || fail 'machine file not linked'
 [ "$(cat "$home"/.dotfiles-backup/*/.zshrc)" = old ] || fail 'replaced file was not backed up'
 [ -z "$(ls "$home/elsewhere")" ] || fail 'wrote through a symlinked parent'
