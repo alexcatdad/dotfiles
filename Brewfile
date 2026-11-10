@@ -39,8 +39,6 @@ brew "fd"
 brew "fish"
 # Fast and simple Node.js version manager
 brew "fnm"
-# CLI tool for interacting with Forgejo
-brew "forgejo-cli"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
@@ -151,8 +149,6 @@ cask "proton-mail"
 cask "proton-pass"
 # Control your tools with a few keystrokes
 cask "raycast"
-# Menu bar app for private developer memory
-cask "alexcatdad/tap/scratchpad", trusted: true
 # Team communication and collaboration software
 cask "slack"
 # System monitor for the menu bar
