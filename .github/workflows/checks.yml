@@ -38,7 +38,7 @@ jobs:
       - name: Every Brewfile entry still resolves
         run: |
           set -eu
-          awk -F'"' '$1=="tap "{print $2}' Brewfile | while read -r tap; do brew tap "$tap"; done
+          awk -F'"' '$1=="tap "{print $2}' Brewfile | while read -r tap; do brew tap "$tap"; brew trust --tap "$tap"; done
           awk -F'"' '$1=="brew "{print $2}' Brewfile | xargs brew info --formula > /dev/null
           awk -F'"' '$1=="cask "{print $2}' Brewfile | xargs brew info --cask > /dev/null
       - name: Install formulae

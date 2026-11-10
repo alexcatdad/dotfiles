@@ -59,6 +59,8 @@ ok 'link: every file reachable'
 # Startup must print nothing to stderr, with or without the optional tools.
 if command -v zsh >/dev/null 2>&1; then
     err=$(HOME="$home" ZDOTDIR="$home" TERM=xterm-256color zsh -i -c 'exit 0' 2>&1 >/dev/null </dev/null || true)
+    # Without a terminal (CI) zsh itself reports that it cannot open one; not ours.
+    err=$(printf '%s\n' "$err" | grep -v "can't open terminal" || true)
     [ -z "$err" ] || fail "zsh startup printed: $err"
     ok 'zsh starts cleanly'
 fi

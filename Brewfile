@@ -1,6 +1,6 @@
 tap "alexcatdad/tap", trusted: true
 tap "ntd4996/tap", trusted: { casks: ["agentpet"] }
-tap "protonpass/tap"
+tap "protonpass/tap", trusted: { formulae: ["pass-cli"] }
 # Play, record, convert, and stream select audio and video codecs
 brew "ffmpeg"
 # AV1 re-encoding using ffmpeg, svt-av1 & vmaf
