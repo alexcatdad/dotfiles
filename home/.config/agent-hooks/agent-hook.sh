@@ -86,8 +86,8 @@ stop() {
  fi
  # Second pass after a block: let the turn end.
  [ "$(printf '%s' "$input" | jq -r '.stop_hook_active // false')" = true ] && exit 0
- # Only commands the agent started; the harness lists its own watchers here too.
- running=$(printf '%s' "$input" | jq -r '[.background_tasks // [] | .[] | select(.status=="running" and .type=="shell") |"\(.id): \(.description // .command // "")"] | join("; ")')
+ # Only work the agent started; monitors and MCP tasks listed here are not.
+ running=$(printf '%s' "$input" | jq -r '[.background_tasks // [] | .[] | select(.status=="running" and (.type as $t | ["shell","subagent","workflow","teammate"] | index($t))) | "\(.id): \(.description // .command // .agent_type // "")"] | join("; ")')
  [ -n "$running" ] || exit 0
  printf '%s' "$input" | jq -e '(.last_assistant_message // "") | test("still running"; "i")' >/dev/null && exit 0
  jq -cn --arg r "Background work still running ($running). Before ending: add a \"Still running\" block saying what, how you will know it finished, and when you will check; set one fallback check." '{decision:"block",reason:$r}'
