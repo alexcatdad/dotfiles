@@ -46,21 +46,6 @@
       "status": "gh-managed"
     },
     {
-      "name": "environment-preflight",
-      "repository": "alexcatdad/skills",
-      "path": "skills/environment-preflight",
-      "scope": "user",
-      "directory": "~/.agents/skills",
-      "agents": [
-        "codex",
-        "claude-code",
-        "gemini-cli"
-      ],
-      "pin": "9b9563dcc597be318e6c304a2b17d7a714cb55db",
-      "updatePolicy": "explicit reviewed immutable pin",
-      "status": "gh-managed"
-    },
-    {
       "name": "html-session-progress",
       "repository": "alexcatdad/skills",
       "path": "skills/html-session-progress",
