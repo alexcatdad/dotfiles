@@ -21,12 +21,13 @@ nothing in this repo edits an agent's settings.
 
 Register it for Claude Code by merging this into the `hooks` object of
 `~/.claude/settings.json`; use the same command with `--agent codex` in
-`~/.codex/hooks.json`, then trust it there with `/hooks`:
+`~/.codex/hooks.json` with `update_plan` as the `PostToolUse` matcher, then
+trust it there with `/hooks`:
 
 ```json
 {
   "PreToolUse": [{ "matcher": "Bash", "hooks": [{ "type": "command", "command": "sh ~/.config/agent-hooks/agent-hook.sh --agent claude-code" }] }],
-  "PostToolUse": [{ "matcher": "TaskCreate|TaskUpdate|TodoWrite|update_plan", "hooks": [{ "type": "command", "command": "sh ~/.config/agent-hooks/agent-hook.sh --agent claude-code" }] }],
+  "PostToolUse": [{ "matcher": "TaskCreate|TaskUpdate|TodoWrite|mcp__.*__(update_plan|wrap_up)", "hooks": [{ "type": "command", "command": "sh ~/.config/agent-hooks/agent-hook.sh --agent claude-code" }] }],
   "Stop": [{ "hooks": [{ "type": "command", "command": "sh ~/.config/agent-hooks/agent-hook.sh --agent claude-code" }] }]
 }
 ```

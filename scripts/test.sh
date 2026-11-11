@@ -52,6 +52,13 @@ if [ "${1-}" != shell ]; then
         [ -z "$out" ] || fail 'agent hook: reported background work blocked'
         out=$(stop 'Finished.' true)
         [ -z "$out" ] || fail 'agent hook: blocked twice'
+        # The desktop app closes its task list with wrap_up; the step in progress must end.
+        dash=$(mktemp -d)
+        printf '%s\n' '{"tasks":[{"id":"1","text":"a","status":"doing"},{"id":"2","text":"b","status":"todo"}]}' > "$dash/state.json"
+        printf '%s\n' '{"hook_event_name":"PostToolUse","tool_name":"mcp__x__wrap_up","tool_input":{"recap":"r"}}' \
+            | PROGRESS_DIR="$dash" PROGRESS_RENDER=/nonexistent sh "$hook" --agent claude-code
+        [ "$(jq -r '[.tasks[].status]|join(",")' "$dash/state.json")" = done,todo ] || fail 'agent hook: wrap_up left a step in progress'
+        rm -rf "$dash"
         ok 'agent hook'
     else
         printf 'skip: jq not installed\n'

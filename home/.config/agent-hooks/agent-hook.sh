@@ -59,6 +59,8 @@ progress() {
      ($old.tasks | map(select(($i.status // "")!="deleted" or .id!=($i.taskId|tostring))
         | if .id==($i.taskId|tostring) and $i.status then .status=($i.status|norm) else . end
         | if .id==($i.taskId|tostring) and $i.subject then .text=$i.subject else . end))
+   elif ($in.tool_name // "" | endswith("__wrap_up")) then
+     ($old.tasks | map(if .status=="doing" then .status="done" else . end))
    elif ($i.items|type)=="array" then $i.items | list(.content)
    elif ($i.plan |type)=="array" then $i.plan  | list(.step)
    elif ($i.todos|type)=="array" then $i.todos | list(.content)
