@@ -56,7 +56,7 @@
         "claude-code",
         "gemini-cli"
       ],
-      "pin": "93516c954442829c5b464181673a978b00df4b1c",
+      "pin": "8ae58273a98768296b8cfc96e310f0732209e265",
       "updatePolicy": "explicit reviewed immutable pin",
       "status": "gh-managed"
     },
