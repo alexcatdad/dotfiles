@@ -1,0 +1,21 @@
+deny	claude-code	git reset --hard HEAD~1
+deny	claude-code	cd repo && git checkout .
+deny	claude-code	git checkout -- .
+deny	claude-code	git clean -fd
+deny	claude-code	git push --force origin main
+deny	claude-code	git push -f
+deny	claude-code	git commit --no-verify -m x
+ask	claude-code	brew install ripgrep
+deny	codex	brew install ripgrep
+ask	claude-code	npm install -g typescript
+ask	claude-code	pip install requests
+ask	claude-code	sudo ls /var/root
+ask	claude-code	echo hi; cargo install fd-find
+allow	claude-code	git status && git checkout main
+allow	claude-code	git push origin feature
+allow	claude-code	git reset --soft HEAD~1
+allow	claude-code	npm install
+allow	claude-code	brew list
+allow	claude-code	git checkout ./src/file.ts
+allow	claude-code	echo "do not git reset --hard"
+allow	claude-code	grep -rn "pip install" docs/

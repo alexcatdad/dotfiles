@@ -12,7 +12,7 @@ ok() { printf 'ok: %s\n' "$*"; }
 
 if [ "${1-}" != shell ]; then
     if command -v shellcheck >/dev/null 2>&1; then
-        shellcheck bootstrap.sh scripts/*.sh .githooks/pre-commit
+        shellcheck bootstrap.sh scripts/*.sh .githooks/pre-commit home/.config/agent-hooks/agent-hook.sh
         # Sourced files have no shebang and source paths that exist only at runtime.
         shellcheck --shell=sh --exclude=SC1090,SC1091 \
             home/.profile home/.config/shell/env.sh home/.config/shell/capabilities.sh
@@ -28,6 +28,30 @@ if [ "${1-}" != shell ]; then
     if [ "$(uname -s)" = Darwin ]; then
         plutil -lint launchd/*.plist >/dev/null || fail 'launchd plist'
         ok 'launchd plist'
+    fi
+    # The agent hook must deny, ask or allow each command as listed.
+    if command -v jq >/dev/null 2>&1; then
+        hook=home/.config/agent-hooks/agent-hook.sh
+        while IFS="$(printf '\t')" read -r want agent cmd; do
+            rc=0
+            out=$(jq -cn --arg c "$cmd" '{hook_event_name:"PreToolUse",tool_name:"Bash",tool_input:{command:$c}}' \
+                | sh "$hook" --agent "$agent" 2>/dev/null) || rc=$?
+            case "$rc:$out" in 2:*) got=deny ;; 0:*'"ask"'*) got=ask ;; 0:) got=allow ;; *) got="exit $rc" ;; esac
+            [ "$got" = "$want" ] || fail "agent hook: wanted $want, got $got ($agent): $cmd"
+        done < scripts/agent-hook-cases.tsv
+        # stop MESSAGE ALREADY_BLOCKED: a turn ending with one background task running.
+        stop() {
+            jq -cn --arg m "$1" --argjson a "$2" '{hook_event_name:"Stop",cwd:"/nonexistent",last_assistant_message:$m,
+                stop_hook_active:$a,background_tasks:[{id:"t1",status:"running",description:"tests"}]}' | sh "$hook" --agent claude-code
+        }
+        stop 'Finished.' false | grep -q '"block"' || fail 'agent hook: unreported background work not blocked'
+        out=$(stop 'Still running: tests' false)
+        [ -z "$out" ] || fail 'agent hook: reported background work blocked'
+        out=$(stop 'Finished.' true)
+        [ -z "$out" ] || fail 'agent hook: blocked twice'
+        ok 'agent hook'
+    else
+        printf 'skip: jq not installed\n'
     fi
 fi
 
