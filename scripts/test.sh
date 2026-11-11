@@ -44,8 +44,9 @@ if [ "${1-}" != shell ]; then
             jq -cn --arg m "$1" --argjson a "$2" --arg t "${3-shell}" '{hook_event_name:"Stop",cwd:"/nonexistent",last_assistant_message:$m,
                 stop_hook_active:$a,background_tasks:[{id:"t1",type:$t,status:"running",description:"tests"}]}' | sh "$hook" --agent claude-code
         }
-        out=$(stop 'Finished.' false watcher)
-        [ -z "$out" ] || fail 'agent hook: blocked on a background task that is not a command'
+        stop 'Finished.' false subagent | grep -q '"block"' || fail 'agent hook: unreported background subagent not blocked'
+        out=$(stop 'Finished.' false monitor)
+        [ -z "$out" ] || fail 'agent hook: blocked on a monitor'
         stop 'Finished.' false | grep -q '"block"' || fail 'agent hook: unreported background work not blocked'
         out=$(stop 'Still running: tests' false)
         [ -z "$out" ] || fail 'agent hook: reported background work blocked'
