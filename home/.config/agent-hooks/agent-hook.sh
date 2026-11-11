@@ -8,7 +8,8 @@ input=$(cat)
 # Without jq the hook cannot read its input; never break the agent over that.
 command -v jq >/dev/null 2>&1 || exit 0
 event=$(printf '%s' "$input" | jq -r '.hook_event_name // ""')
-state_dir=${PROGRESS_DIR:-$(printf '%s' "$input" | jq -r '.cwd // "."')/session-progress}
+# One dashboard per workspace, kept out of the repository being worked on.
+state_dir=${PROGRESS_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/session-progress/$(basename "$(printf '%s' "$input" | jq -r '.cwd // "."')")}
 render=${PROGRESS_RENDER:-$HOME/.agents/skills/html-session-progress/scripts/render.sh}
 
 # Claude Code can hand the decision to the owner; Codex can only deny.

@@ -1,6 +1,36 @@
 {
   "skills": [
     {
+      "name": "agent-instructions",
+      "repository": "alexcatdad/skills",
+      "path": "skills/agent-instructions",
+      "scope": "user",
+      "directory": "~/.agents/skills",
+      "agents": [
+        "codex",
+        "claude-code",
+        "gemini-cli"
+      ],
+      "updatePolicy": "explicit reviewed immutable pin",
+      "status": "gh-managed",
+      "pin": "93516c954442829c5b464181673a978b00df4b1c"
+    },
+    {
+      "name": "clarify",
+      "repository": "alexcatdad/skills",
+      "path": "skills/clarify",
+      "scope": "user",
+      "directory": "~/.agents/skills",
+      "agents": [
+        "codex",
+        "claude-code",
+        "gemini-cli"
+      ],
+      "updatePolicy": "explicit reviewed immutable pin",
+      "status": "gh-managed",
+      "pin": "93516c954442829c5b464181673a978b00df4b1c"
+    },
+    {
       "name": "codespace-sandbox",
       "repository": "alexcatdad/skills",
       "path": "skills/codespace-sandbox",
@@ -41,7 +71,7 @@
         "claude-code",
         "gemini-cli"
       ],
-      "pin": "9b9563dcc597be318e6c304a2b17d7a714cb55db",
+      "pin": "93516c954442829c5b464181673a978b00df4b1c",
       "updatePolicy": "explicit reviewed immutable pin",
       "status": "gh-managed"
     },
@@ -59,6 +89,21 @@
       "pin": "de83d15bbbc839953b8521ab9814d0d72b873fcc",
       "updatePolicy": "explicit reviewed immutable pin",
       "status": "gh-managed"
+    },
+    {
+      "name": "tool-selection",
+      "repository": "alexcatdad/skills",
+      "path": "skills/tool-selection",
+      "scope": "user",
+      "directory": "~/.agents/skills",
+      "agents": [
+        "codex",
+        "claude-code",
+        "gemini-cli"
+      ],
+      "updatePolicy": "explicit reviewed immutable pin",
+      "status": "gh-managed",
+      "pin": "93516c954442829c5b464181673a978b00df4b1c"
     },
     {
       "name": "use-up",

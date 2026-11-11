@@ -16,7 +16,7 @@ nothing in this repo edits an agent's settings.
 | Event | Effect |
 |---|---|
 | `PreToolUse` on `Bash` | Denies `git reset --hard`, `git checkout .`, `git clean -f`, force pushes and `--no-verify`. For `sudo` and installs, Claude Code asks the owner and Codex denies. |
-| `PostToolUse` | Mirrors the agent's task list into `session-progress/state.json` and renders it when the `html-session-progress` skill is installed. |
+| `PostToolUse` | Mirrors the agent's task list into `~/.local/state/session-progress/<workspace>/state.json` and renders it when the `html-session-progress` skill is installed. |
 | `Stop` | Copies the final message to the dashboard. Blocks once when background work is running and the message has no "Still running" note. |
 
 Register it for Claude Code by merging this into the `hooks` object of
