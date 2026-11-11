@@ -39,11 +39,13 @@ if [ "${1-}" != shell ]; then
             case "$rc:$out" in 2:*) got=deny ;; 0:*'"ask"'*) got=ask ;; 0:) got=allow ;; *) got="exit $rc" ;; esac
             [ "$got" = "$want" ] || fail "agent hook: wanted $want, got $got ($agent): $cmd"
         done < scripts/agent-hook-cases.tsv
-        # stop MESSAGE ALREADY_BLOCKED: a turn ending with one background task running.
+        # stop MESSAGE ALREADY_BLOCKED [TYPE]: a turn ending with one background task running.
         stop() {
-            jq -cn --arg m "$1" --argjson a "$2" '{hook_event_name:"Stop",cwd:"/nonexistent",last_assistant_message:$m,
-                stop_hook_active:$a,background_tasks:[{id:"t1",status:"running",description:"tests"}]}' | sh "$hook" --agent claude-code
+            jq -cn --arg m "$1" --argjson a "$2" --arg t "${3-shell}" '{hook_event_name:"Stop",cwd:"/nonexistent",last_assistant_message:$m,
+                stop_hook_active:$a,background_tasks:[{id:"t1",type:$t,status:"running",description:"tests"}]}' | sh "$hook" --agent claude-code
         }
+        out=$(stop 'Finished.' false watcher)
+        [ -z "$out" ] || fail 'agent hook: blocked on a background task that is not a command'
         stop 'Finished.' false | grep -q '"block"' || fail 'agent hook: unreported background work not blocked'
         out=$(stop 'Still running: tests' false)
         [ -z "$out" ] || fail 'agent hook: reported background work blocked'
