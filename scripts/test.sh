@@ -4,6 +4,8 @@
 #   (no argument)  lint the scripts, then test linking and shell startup
 #   shell          only the linking and shell startup test
 set -eu
+# Test against the temp home only, not the caller's (CI sets XDG_CONFIG_HOME).
+unset XDG_CONFIG_HOME XDG_DATA_HOME DOTFILES_CONFIG_HOME DOTFILES_DATA_HOME
 
 repo=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd -P)
 cd "$repo"
