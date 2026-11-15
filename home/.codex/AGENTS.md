@@ -17,6 +17,8 @@ IF unsure (fact, API, version, best practice): research via session browser/sear
 IF building a workflow: check installed skills, then find-skills
 IF adding helper/abstraction/file: built-in or one-liner first (case change ≠ TypeScript helper)
 IF one-off chore (rename, HTTP, JSON): shell, existing CLIs
+IF gh: alone in its call; filter with --jq/--json, not pipes/loops
+IF deleting a branch: git branch -d, not -D
 IF subagent: long commands in foreground; background may never wake you
 IF blocked: finish independent work, stop, report tried + smallest fix
 IF you need my action: separate marked block: what, where, what it unblocks
