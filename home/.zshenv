@@ -11,4 +11,6 @@ export LESSHISTFILE=-
 (( $+commands[pass-cli] && ! $+commands[proton-pass] )) && alias proton-pass='pass-cli'
 (( $+commands[tofu] && ! $+commands[opentofu] )) && alias opentofu='tofu'
 [[ -r "$HOME/.zshenv.local" ]] && source "$HOME/.zshenv.local"
+# Debian/Ubuntu: skip the system compinit; .zshrc runs its own with -i.
+skip_global_compinit=1
 true
