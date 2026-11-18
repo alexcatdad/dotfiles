@@ -71,7 +71,22 @@
         "claude-code",
         "gemini-cli"
       ],
-      "pin": "de83d15bbbc839953b8521ab9814d0d72b873fcc",
+      "pin": "9db64a0e3305e6cd6a53459e2378acdb0ff8511e",
+      "updatePolicy": "explicit reviewed immutable pin",
+      "status": "gh-managed"
+    },
+    {
+      "name": "scratchpad-memory",
+      "repository": "alexcatdad/scratchpad",
+      "path": "skills/scratchpad-memory",
+      "scope": "user",
+      "directory": "~/.agents/skills",
+      "agents": [
+        "codex",
+        "claude-code",
+        "gemini-cli"
+      ],
+      "pin": "9db64a0e3305e6cd6a53459e2378acdb0ff8511e",
       "updatePolicy": "explicit reviewed immutable pin",
       "status": "gh-managed"
     },
