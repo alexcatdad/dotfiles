@@ -1,0 +1,47 @@
+#!/bin/sh
+# Create a non-exportable Secure Enclave SSH key and install its handle in ~/.ssh.
+# Usage: se-key [--no-touch-id] LABEL
+#   --no-touch-id  sign without a fingerprint (default: Touch ID on every use)
+set -eu
+
+usage() { sed -n '3,4p' "$0" | sed 's/^# \{0,1\}//'; }
+prot=bio
+case ${1-} in
+    --no-touch-id) prot=none; shift ;;
+    -h|--help) usage; exit 0 ;;
+esac
+label=${1-}
+case $label in ''|-*|*[!A-Za-z0-9._-]*) usage >&2; exit 2 ;; esac
+provider=/usr/lib/ssh-keychain.dylib
+[ -r "$provider" ] || { printf 'Needs macOS with %s\n' "$provider" >&2; exit 1; }
+
+key="$HOME/.ssh/id_ecdsa_sk_rk_$label"
+if sc_auth list-ctk-identities | awk -v l="$label" 'NR > 1 && $4 == l { f = 1 } END { exit !f }'; then
+    printf 'A Secure Enclave key labelled %s already exists\n' "$label" >&2; exit 1
+fi
+[ ! -e "$key" ] && [ ! -e "$key.pub" ] || { printf '%s already exists\n' "$key" >&2; exit 1; }
+
+sc_auth create-ctk-identity -l "$label" -k p-256-ne -t "$prot"
+
+# ssh-keygen -K writes a handle for every Secure Enclave identity; keep only ours.
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+( cd "$tmp" && ssh-keygen -w "$provider" -K -N '' </dev/null >/dev/null 2>&1 )
+[ -f "$tmp/id_ecdsa_sk_rk_$label" ] || { printf 'Could not export %s\n' "$label" >&2; exit 1; }
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+mv "$tmp/id_ecdsa_sk_rk_$label" "$key"
+mv "$tmp/id_ecdsa_sk_rk_$label.pub" "$key.pub"
+chmod 600 "$key"
+
+cat <<EOF
+Installed $key
+
+Public key, for the target's authorized keys:
+$(cat "$key.pub")
+
+For ~/.ssh/config:
+Host $label
+  HostName <address>
+  IdentityFile ~/.ssh/id_ecdsa_sk_rk_$label
+EOF

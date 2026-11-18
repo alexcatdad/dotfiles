@@ -1,0 +1,5 @@
+#!/bin/sh
+# ssh-keygen with Apple's Secure Enclave provider; git uses it as gpg.ssh.program.
+SSH_SK_PROVIDER=${SSH_SK_PROVIDER:-/usr/lib/ssh-keychain.dylib}
+export SSH_SK_PROVIDER
+exec /usr/bin/ssh-keygen "$@"
