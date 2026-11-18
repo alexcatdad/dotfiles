@@ -1,6 +1,7 @@
 tap "alexcatdad/tap", trusted: true
 tap "ntd4996/tap", trusted: { casks: ["agentpet"] }
 tap "protonpass/tap", trusted: { formulae: ["pass-cli"] }
+tap "openai/tools", trusted: { formulae: ["tart", "softnet"] }
 # Play, record, convert, and stream select audio and video codecs
 brew "ffmpeg"
 # AV1 re-encoding using ffmpeg, svt-av1 & vmaf
@@ -109,6 +110,8 @@ brew "zsh-completions"
 brew "zsh-fast-syntax-highlighting"
 # Proton Pass CLI - Command-line interface for Proton Pass
 brew "protonpass/tap/pass-cli", trusted: true
+# macOS and Linux VMs on Apple Silicon to use in CI and other automations
+brew "openai/tools/tart", trusted: true
 # Display management tool
 cask "betterdisplay"
 # 3D creation suite
