@@ -85,6 +85,8 @@ brew "rclone"
 brew "restic"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
+# Rust toolchain installer
+brew "rustup"
 # Command-line Interface for Scaleway
 brew "scw"
 # SMART hard drive monitoring
