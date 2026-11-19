@@ -29,4 +29,8 @@ export PATH LESS='-R' LESSHISTFILE=-
 [ ! -r "$DOTFILES_CONFIG_HOME/ripgrep/config" ] || export RIPGREP_CONFIG_PATH="$DOTFILES_CONFIG_HOME/ripgrep/config"
 [ ! -r "$DOTFILES_CONFIG_HOME/starship.toml" ] || export STARSHIP_CONFIG="${STARSHIP_CONFIG:-$DOTFILES_CONFIG_HOME/starship.toml}"
 [ ! -r "$DOTFILES_CONFIG_HOME/atuin/config.toml" ] || export ATUIN_CONFIG_DIR="${ATUIN_CONFIG_DIR:-$DOTFILES_CONFIG_HOME/atuin}"
+# Supply-chain defaults as variables, not ~/.npmrc, which holds registry tokens:
+# no npm install scripts or git dependencies, 7-day release cooldown, casks need checksums.
+export npm_config_ignore_scripts=true npm_config_allow_git=none npm_config_min_release_age=7
+export HOMEBREW_CASK_OPTS="${HOMEBREW_CASK_OPTS:---require-sha}"
 true

@@ -1,5 +1,4 @@
 tap "alexcatdad/tap", trusted: true
-tap "ntd4996/tap", trusted: { casks: ["agentpet"] }
 tap "protonpass/tap", trusted: { formulae: ["pass-cli"] }
 tap "openai/tools", trusted: { formulae: ["tart", "softnet"] }
 tap "anthropics/tap", trusted: { casks: ["ant"] }
@@ -123,6 +122,8 @@ cask "anthropics/tap/ant", trusted: true
 cask "betterdisplay"
 # 3D creation suite
 cask "blender"
+# Monitors common persistence locations
+cask "blockblock"
 # Open source IDE for exploring and testing APIs
 cask "bruno"
 # OpenAI's official ChatGPT desktop app
