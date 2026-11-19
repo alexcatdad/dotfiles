@@ -22,6 +22,55 @@ ask() {
 }
 deny() { printf 'Blocked: %s\n' "$1" >&2; exit 2; }
 
+# Exit 1 when $cmd holds more than one command: an unquoted && || ; | & newline,
+# a substitution, or a backtick. Heredoc bodies and comments are skipped.
+chained() {
+ CMD=$cmd awk -v sq="'" '
+ BEGIN {
+  s = ENVIRON["CMD"]; n = length(s); q = ""; tag = ""
+  for (i = 1; i <= n; i++) {
+   c = substr(s, i, 1); d = substr(s, i, 2)
+   if (q == sq) { if (c == sq) q = ""; continue }
+   if (q == "\"") {
+    if (c == "\\") i++
+    else if (c == "\"") q = ""
+    else if (d == "$(" || c == "`") exit 1
+    continue
+   }
+   if (c == "\\") { i++; continue }
+   if (c == sq || c == "\"") { q = c; continue }
+   if (c == "#" && (i == 1 || substr(s, i - 1, 1) ~ /[ \t\n]/)) { while (i < n && substr(s, i + 1, 1) != "\n") i++; continue }
+   if (d == "<<" && substr(s, i, 3) != "<<<") {
+    rest = substr(s, i + 2)
+    if (match(rest, "^-?[ \t]*[\"" sq "]?[A-Za-z_][A-Za-z0-9_]*")) {
+     word = substr(rest, 1, RLENGTH); dash = (substr(word, 1, 1) == "-")
+     gsub("[ \t\"" sq "]", "", word); sub(/^-/, "", word); tag = word
+    }
+    i++; continue
+   }
+   if (c == "\n") {
+    if (tag != "") {
+     pos = i
+     while (1) {
+      rest = substr(s, pos + 1); p = index(rest, "\n")
+      line = (p ? substr(rest, 1, p - 1) : rest)
+      if (dash) sub(/^\t+/, "", line)
+      if (line == tag) { i = (p ? pos + p : n); break }
+      if (!p) { i = n; break }
+      pos += p
+     }
+     tag = ""
+    }
+    if (i < n && substr(s, i + 1) ~ /[^ \t\r\n]/) exit 1
+    continue
+   }
+   if (d == "&&" || d == "||" || d == "$(" || d == "<(" || d == ">(" || c == ";" || c == "|" || c == "`") exit 1
+   if (c == "&" && substr(s, i - 1, 1) != ">" && substr(s, i - 1, 1) != "<" && substr(s, i + 1, 1) != ">") exit 1
+  }
+  exit 0
+ }'
+}
+
 guard() {
  [ "$(printf '%s' "$input" | jq -r '.tool_name // ""')" = Bash ] || exit 0
  cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // ""')
@@ -35,6 +84,7 @@ guard() {
  has "${s}git[[:space:]].*--no-verify" && deny '--no-verify bypasses required checks.'
  has "${s}sudo[[:space:]]" && ask 'sudo needs the owner.'
  has "${s}(brew[[:space:]]+(install|upgrade|uninstall|reinstall|tap)|mas[[:space:]]+(install|upgrade)|(npm|pnpm|bun)[[:space:]]+(i|install|add)[[:space:]].*(-g|--global)|yarn[[:space:]]+global[[:space:]]+add|pip3?[[:space:]]+install|pipx[[:space:]]+install|uv[[:space:]]+(tool|pip)[[:space:]]+install|cargo[[:space:]]+install|go[[:space:]]+install|gem[[:space:]]+install|apt(-get)?[[:space:]]+install)([[:space:]]|$)" && ask 'installing software needs the owner.'
+ chained || deny 'one command per Bash call: no chaining, pipes, background &, newlines or substitutions.'
  exit 0
 }
 
