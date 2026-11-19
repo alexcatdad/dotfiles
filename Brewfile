@@ -2,6 +2,7 @@ tap "alexcatdad/tap", trusted: true
 tap "ntd4996/tap", trusted: { casks: ["agentpet"] }
 tap "protonpass/tap", trusted: { formulae: ["pass-cli"] }
 tap "openai/tools", trusted: { formulae: ["tart", "softnet"] }
+tap "anthropics/tap", trusted: { casks: ["ant"] }
 # Play, record, convert, and stream select audio and video codecs
 brew "ffmpeg"
 # AV1 re-encoding using ffmpeg, svt-av1 & vmaf
@@ -20,6 +21,8 @@ brew "bash"
 brew "bash-completion@2"
 # Incredibly fast JavaScript runtime, bundler, test runner, and package manager
 brew "bun"
+# Create and run Linux containers using lightweight virtual machines
+brew "container"
 # GNU File, Shell, and Text utilities
 brew "coreutils"
 # Load/unload environment variables based on $PWD
@@ -112,6 +115,8 @@ brew "zsh-fast-syntax-highlighting"
 brew "protonpass/tap/pass-cli", trusted: true
 # macOS and Linux VMs on Apple Silicon to use in CI and other automations
 brew "openai/tools/tart", trusted: true
+# CLI for the Claude Platform
+cask "anthropics/tap/ant", trusted: true
 # Display management tool
 cask "betterdisplay"
 # 3D creation suite
@@ -152,6 +157,8 @@ cask "proton-mail"
 cask "proton-pass"
 # Control your tools with a few keystrokes
 cask "raycast"
+# Menu bar app for private developer memory
+cask "alexcatdad/tap/scratchpad", trusted: true
 # Team communication and collaboration software
 cask "slack"
 # System monitor for the menu bar
