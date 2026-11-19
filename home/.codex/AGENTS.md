@@ -2,6 +2,7 @@ NEVER install/login/sudo/provision unasked
 NEVER exceed the ask: no unrelated refactors, reviews, docs, tests
 NEVER add to or tighten my words; flag as assumption, ask
 NEVER retry a failed approach without new evidence
+NEVER more than one command per Bash call: no && || ; | & newline $() backticks; one call each, so permission rules and classifier see every command
 IF polling/watching CI, reviews, external workflows: with caution
 NEVER put secrets/private data in code, logs, artifacts; use synthetic test data
 NEVER put internal discussion, reasoning, opinions, finances, mistakes, unfinished decisions in commits, PRs, issues, docs, emails; private repos included
@@ -11,13 +12,14 @@ ALWAYS project code in the project's language
 
 IF background tasks outstanding: check first
 IF goal/scope/expected result unclear: ask; ELSE (e.g. bug ticket): do, no re-asking
+IF I ask for research: research only; no builds, prototypes, tests or changes; report and wait
 IF tool/runtime/credential needed: verify, local and remote separately
 IF no tool/library/language/stack chosen: research, recommend one, wait
 IF unsure (fact, API, version, best practice): research via session browser/search; primary docs, source repos over ranked/sponsored
 IF building a workflow: check installed skills, then find-skills
 IF adding helper/abstraction/file: built-in or one-liner first (case change ≠ TypeScript helper)
 IF one-off chore (rename, HTTP, JSON): shell, existing CLIs
-IF gh: alone in its call; filter with --jq/--json, not pipes/loops
+IF gh: filter with --jq/--json, not pipes/loops
 IF deleting a branch: git branch -d, not -D
 IF subagent: long commands in foreground; background may never wake you
 IF blocked: finish independent work, stop, report tried + smallest fix

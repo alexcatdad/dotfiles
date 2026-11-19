@@ -11,7 +11,18 @@ ask	claude-code	npm install -g typescript
 ask	claude-code	pip install requests
 ask	claude-code	sudo ls /var/root
 ask	claude-code	echo hi; cargo install fd-find
-allow	claude-code	git status && git checkout main
+deny	claude-code	git status && git checkout main
+deny	claude-code	timeout 5 grep x f | head
+deny	claude-code	ls; ls
+deny	claude-code	ls &
+deny	claude-code	echo $(date)
+deny	claude-code	echo "$(date)"
+deny	claude-code	echo `date`
+deny	codex	ls || ls
+allow	claude-code	ls 2>&1
+allow	claude-code	ls > out.txt 2>/dev/null
+allow	claude-code	echo 'a;b|c && d'
+allow	claude-code	grep -rn "a && b; c | d" docs/
 allow	claude-code	git push origin feature
 allow	claude-code	git reset --soft HEAD~1
 allow	claude-code	npm install
