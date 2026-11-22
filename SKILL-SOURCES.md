@@ -9,15 +9,15 @@ when editing, and check its size with `uvx ttok -m gpt-4o < home/.codex/AGENTS.m
 
 ## Hooks
 
-`home/.config/agent-hooks/agent-hook.sh` enforces the rules a script can check.
-It needs `jq`, and is linked to `~/.config/agent-hooks/` but not registered:
-nothing in this repo edits an agent's settings.
+`home/.config/agent-hooks/agent-hook.sh` checks common command spellings.
+Use the agent's permissions and sandbox to enforce approval for sensitive operations.
+The hook needs `jq`, uses Git to identify dashboard workspaces, and must be registered separately.
 
 | Event | Effect |
 |---|---|
 | `PreToolUse` on `Bash` | Denies `git reset --hard`, `git checkout .`, `git clean -f`, force pushes and `--no-verify`. For `sudo` and installs, Claude Code asks the owner and Codex denies. |
-| `PostToolUse` | Mirrors the agent's task list into `~/.local/state/session-progress/<workspace>/state.json` and renders it when the `html-session-progress` skill is installed. |
-| `Stop` | Copies the final message to the dashboard. Blocks once when background work is running and the message has no "Still running" note. |
+| `PostToolUse` | Mirrors the agent's task list under `~/.local/state/session-progress/`, keyed by the full workspace path, and renders it when the `html-session-progress` skill is installed. |
+| `Stop` | Blocks once when background work is running and the message has no "Still running" note. |
 
 Register it for Claude Code by merging this into the `hooks` object of
 `~/.claude/settings.json`; use the same command with `--agent codex` in

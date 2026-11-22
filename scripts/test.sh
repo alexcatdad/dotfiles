@@ -60,6 +60,16 @@ if [ "${1-}" != shell ]; then
         printf '%s\n' '{"hook_event_name":"PostToolUse","tool_name":"mcp__x__wrap_up","tool_input":{"recap":"r"}}' \
             | PROGRESS_DIR="$dash" PROGRESS_RENDER=/nonexistent sh "$hook" --agent claude-code
         [ "$(jq -r '[.tasks[].status]|join(",")' "$dash/state.json")" = done,todo ] || fail 'agent hook: wrap_up left a step in progress'
+        for root in first second; do
+            jq -cn --arg cwd "/$root/project" --arg subject "$root" '{hook_event_name:"PostToolUse",tool_name:"TaskCreate",cwd:$cwd,tool_input:{subject:$subject},tool_response:{task:{id:1}}}' \
+                | PROGRESS_DIR='' XDG_STATE_HOME="$dash" PROGRESS_RENDER=/nonexistent sh "$hook" --agent claude-code
+        done
+        printf '%s\n' '{"hook_event_name":"Stop","cwd":"/first/project","last_assistant_message":"private final reply"}' \
+            | PROGRESS_DIR='' XDG_STATE_HOME="$dash" PROGRESS_RENDER=/nonexistent sh "$hook" --agent claude-code
+        jq -es 'map(.tasks[0].text) | sort == ["first","second"]' "$dash"/session-progress/*/state.json >/dev/null \
+            || fail 'agent hook: workspaces share dashboard state'
+        jq -es 'all(.[]; (.report // "") == "")' "$dash"/session-progress/*/state.json >/dev/null \
+            || fail 'agent hook: final reply copied to dashboard'
         rm -rf "$dash"
         ok 'agent hook'
     else

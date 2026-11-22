@@ -8,8 +8,6 @@ input=$(cat)
 # Without jq the hook cannot read its input; never break the agent over that.
 command -v jq >/dev/null 2>&1 || exit 0
 event=$(printf '%s' "$input" | jq -r '.hook_event_name // ""')
-# One dashboard per workspace, kept out of the repository being worked on.
-state_dir=${PROGRESS_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/session-progress/$(basename "$(printf '%s' "$input" | jq -r '.cwd // "."')")}
 render=${PROGRESS_RENDER:-$HOME/.agents/skills/html-session-progress/scripts/render.sh}
 
 # Claude Code can hand the decision to the owner; Codex can only deny.
@@ -95,6 +93,13 @@ draw() {
 
 # Turn any supported task tool call into state.json, then render the dashboard.
 progress() {
+ state_dir=${PROGRESS_DIR:-}
+ if [ -z "$state_dir" ]; then
+  cwd=$(printf '%s' "$input" | jq -er '.cwd | strings | select(startswith("/"))') || exit 0
+  workspace_id=$(printf '%s' "$cwd" | git -C / hash-object --stdin) || exit 0
+  state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/session-progress/$workspace_id"
+ fi
+ umask 077
  mkdir -p "$state_dir"
  st="$state_dir/state.json"
  [ -f "$st" ] || jq -n '{title:"Session progress",updated:"",tasks:[],blockers:[],report:""}' > "$st"
@@ -129,13 +134,6 @@ progress() {
 }
 
 stop() {
- # Publish the final message to the dashboard when one exists.
- st="$state_dir/state.json"
- if [ -f "$st" ]; then
-  now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-  printf '%s' "$input" | jq --slurpfile s "$st" --arg now "$now" '(.last_assistant_message // "") as $m | $s[0] | .report=$m | .updated=$now' > "$st.tmp" && mv -f "$st.tmp" "$st"
-  draw
- fi
  # Second pass after a block: let the turn end.
  [ "$(printf '%s' "$input" | jq -r '.stop_hook_active // false')" = true ] && exit 0
  # Only work the agent started; monitors and MCP tasks listed here are not.
