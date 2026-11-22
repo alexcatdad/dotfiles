@@ -1,66 +1,6 @@
 {
   "skills": [
     {
-      "name": "agent-instructions",
-      "repository": "alexcatdad/skills",
-      "path": "skills/agent-instructions",
-      "scope": "user",
-      "directory": "~/.agents/skills",
-      "agents": [
-        "codex",
-        "claude-code",
-        "gemini-cli"
-      ],
-      "updatePolicy": "explicit reviewed immutable pin",
-      "status": "gh-managed",
-      "pin": "93516c954442829c5b464181673a978b00df4b1c"
-    },
-    {
-      "name": "clarify",
-      "repository": "alexcatdad/skills",
-      "path": "skills/clarify",
-      "scope": "user",
-      "directory": "~/.agents/skills",
-      "agents": [
-        "codex",
-        "claude-code",
-        "gemini-cli"
-      ],
-      "updatePolicy": "explicit reviewed immutable pin",
-      "status": "gh-managed",
-      "pin": "93516c954442829c5b464181673a978b00df4b1c"
-    },
-    {
-      "name": "codespace-sandbox",
-      "repository": "alexcatdad/skills",
-      "path": "skills/codespace-sandbox",
-      "scope": "user",
-      "directory": "~/.agents/skills",
-      "agents": [
-        "codex",
-        "claude-code",
-        "gemini-cli"
-      ],
-      "pin": "5e09105d6acd703e81c34c295bbcc7a09c214ee8",
-      "updatePolicy": "explicit reviewed immutable pin",
-      "status": "gh-managed"
-    },
-    {
-      "name": "html-session-progress",
-      "repository": "alexcatdad/skills",
-      "path": "skills/html-session-progress",
-      "scope": "user",
-      "directory": "~/.agents/skills",
-      "agents": [
-        "codex",
-        "claude-code",
-        "gemini-cli"
-      ],
-      "pin": "31052503dd12b39bdfd801818e788cb1bbec830b",
-      "updatePolicy": "explicit reviewed immutable pin",
-      "status": "gh-managed"
-    },
-    {
       "name": "scratchpad-connect",
       "repository": "alexcatdad/scratchpad",
       "path": "skills/scratchpad-connect",
@@ -91,21 +31,6 @@
       "status": "gh-managed"
     },
     {
-      "name": "tool-selection",
-      "repository": "alexcatdad/skills",
-      "path": "skills/tool-selection",
-      "scope": "user",
-      "directory": "~/.agents/skills",
-      "agents": [
-        "codex",
-        "claude-code",
-        "gemini-cli"
-      ],
-      "updatePolicy": "explicit reviewed immutable pin",
-      "status": "gh-managed",
-      "pin": "93516c954442829c5b464181673a978b00df4b1c"
-    },
-    {
       "name": "use-up",
       "repository": "alexcatdad/paw-proxy",
       "path": "skills/use-up",
@@ -117,21 +42,6 @@
         "gemini-cli"
       ],
       "pin": "1397dcc09bdf0b149edf5619c8e0d23144e84b17",
-      "updatePolicy": "explicit reviewed immutable pin",
-      "status": "gh-managed"
-    },
-    {
-      "name": "workspace-connectivity",
-      "repository": "alexcatdad/homelab-proj",
-      "path": "skills/workspace-connectivity",
-      "scope": "user",
-      "directory": "~/.agents/skills",
-      "agents": [
-        "codex",
-        "claude-code",
-        "gemini-cli"
-      ],
-      "pin": "4d8cbb7d1fe59eec9ea209d99ca14ad6f0111682",
       "updatePolicy": "explicit reviewed immutable pin",
       "status": "gh-managed"
     }

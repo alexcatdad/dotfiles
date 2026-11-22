@@ -36,14 +36,14 @@ trust it there with `/hooks`:
 
 `skills.json` records the agent skills installed on my machines, each pinned to
 a full commit SHA. GitHub CLI installs them into `~/.agents/skills`; nothing in
-this repo installs or updates a skill automatically. Some sources are private
-repositories and need `gh` read access.
+this repo installs or updates a skill automatically. Skills from private
+repositories are listed in the same format in the untracked `skills.json.local`.
 
 ## Install one
 
 ```sh
 name=use-up
-entry=$(jq -c --arg n "$name" '.skills[] | select(.name==$n)' skills.json)
+entry=$(cat skills.json skills.json.local 2>/dev/null | jq -c --arg n "$name" '.skills[] | select(.name==$n)')
 repo=$(printf '%s' "$entry" | jq -r .repository)
 path=$(printf '%s' "$entry" | jq -r .path)
 pin=$(printf '%s' "$entry" | jq -r .pin)
@@ -58,4 +58,4 @@ gh skill install "$repo" "$path" --dir "$HOME/.agents/skills" --pin "$pin"
 
 Pinned packages are skipped by `gh skill update`. Review the new commit and its
 full contents, then install it with the new pin and record the pin in
-`skills.json`. Never link a skill from a working checkout.
+`skills.json` or `skills.json.local`. Never link a skill from a working checkout.
