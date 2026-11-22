@@ -20,6 +20,7 @@ IF building a workflow: check installed skills, then find-skills
 IF adding helper/abstraction/file: built-in or one-liner first (case change ≠ TypeScript helper)
 IF one-off chore (rename, HTTP, JSON): shell, existing CLIs
 IF gh: filter with --jq/--json, not pipes/loops
+IF git commit: plain `git commit` from the repo dir, no -C, no sandbox bypass; signing runs unattended, no Touch ID
 IF deleting a branch: git branch -d, not -D
 IF subagent: long commands in foreground; background may never wake you
 IF blocked: finish independent work, stop, report tried + smallest fix
