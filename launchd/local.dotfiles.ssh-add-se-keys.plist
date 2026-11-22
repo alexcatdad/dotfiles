@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>local.dotfiles.ssh-add-se-keys</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>exec /usr/bin/find "$HOME/.ssh" -maxdepth 1 -name 'id_ecdsa_sk_rk_*' ! -name '*.pub' -exec /usr/bin/ssh-add -S /usr/lib/ssh-keychain.dylib {} +</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>

@@ -33,11 +33,11 @@ moved to `~/.dotfiles-backup/<timestamp>/`.
 | `home/` | Configs, linked to the same path under `~` |
 | `machines/` | Optional per-machine Zsh file, chosen with `--machine` |
 | `Brewfile` | Formulae, casks and App Store apps |
-| `bootstrap.sh` | Links configs, runs `brew bundle`, schedules the reminder |
+| `bootstrap.sh` | Links configs, runs `brew bundle`, installs the login agents |
 | `scripts/link.sh` | The linking step alone; `--dry-run` shows drift |
 | `scripts/macos-defaults.sh` | Optional software update preferences |
 | `scripts/test.sh` | Lint and a link-and-startup test in a temp directory |
-| `launchd/` | Daily "check for updates" notification |
+| `launchd/` | Daily "check for updates" notification; loads Secure Enclave SSH keys into the agent at login |
 | `skills.json` | Pinned agent skills, see `SKILL-SOURCES.md` |
 | `.claude/skills/reconcile/` | Agent skill that folds manual changes back into the repo |
 

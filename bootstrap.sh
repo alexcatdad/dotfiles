@@ -63,13 +63,15 @@ if [ "$packages" -eq 1 ]; then
 fi
 
 if [ "$(uname -s)" = Darwin ]; then
-    step 'Scheduling the daily update reminder'
-    label=local.dotfiles.update-reminder
+    step 'Installing login agents'
     agents="$HOME/Library/LaunchAgents"
     mkdir -p "$agents"
-    cp "$repo/launchd/$label.plist" "$agents/$label.plist"
-    launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
-    launchctl bootstrap "gui/$(id -u)" "$agents/$label.plist" || failed="$failed reminder"
+    for plist in "$repo"/launchd/*.plist; do
+        label=$(basename "$plist" .plist)
+        cp "$plist" "$agents/$label.plist"
+        launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
+        launchctl bootstrap "gui/$(id -u)" "$agents/$label.plist" || failed="$failed $label"
+    done
 fi
 
 step 'Next steps (run these yourself)'
