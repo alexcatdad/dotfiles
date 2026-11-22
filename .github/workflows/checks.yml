@@ -14,7 +14,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
@@ -30,12 +31,31 @@ jobs:
   bootstrap:
     # container and tart require macOS 26 or later.
     runs-on: macos-26
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
+          fetch-depth: 0
           persist-credentials: false
-      - name: Lint and link test
-        run: sh scripts/test.sh
+      - name: Launchd plists
+        run: plutil -lint launchd/*.plist
+      - name: Link and shell test
+        run: sh scripts/test.sh shell
+      - name: Need formulae? Only when packages or shell startup changed
+        # Scheduled and manual runs, and pushes with no usable base, always install.
+        id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -eu
+          install=true
+          if [ "$EVENT" = push ] || [ "$EVENT" = pull_request ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            git diff --name-only "$BASE" HEAD \
+              | grep -Eq '^(Brewfile|bootstrap\.sh|machines/|scripts/(link|test)\.sh|\.github/workflows/|home/(\.zsh|\.bash|\.profile|\.config/shell/))' \
+              || install=false
+          fi
+          echo "install=$install" >> "$GITHUB_OUTPUT"
       - name: Every Brewfile entry still resolves
         run: |
           set -eu
@@ -43,9 +63,11 @@ jobs:
           awk -F'"' '$1=="brew "{print $2}' Brewfile | xargs brew info --formula > /dev/null
           awk -F'"' '$1=="cask "{print $2}' Brewfile | xargs brew info --cask > /dev/null
       - name: Install formulae
+        if: steps.scope.outputs.install == 'true'
         # Casks and App Store apps are skipped: large, slow, and mas needs an Apple ID.
         run: |
           grep -E '^(tap|brew) ' Brewfile > "$RUNNER_TEMP/Brewfile"
           brew bundle --file "$RUNNER_TEMP/Brewfile"
       - name: Shell starts cleanly with everything installed
+        if: steps.scope.outputs.install == 'true'
         run: sh scripts/test.sh shell
