@@ -12,7 +12,7 @@ that puts both on a machine. Plain files and symlinks; no configuration manager.
    ```sh
    git clone https://github.com/alexcatdad/dotfiles.git ~/.dotfiles
    cd ~/.dotfiles
-   ./bootstrap.sh --machine mac-studio
+   ./bootstrap.sh
    ```
 
 3. Open a new terminal, then run the follow-ups `bootstrap.sh` prints:
@@ -45,7 +45,7 @@ moved to `~/.dotfiles-backup/<timestamp>/`.
 
 - **Edit a config:** edit it where it lives; it is a link into this repo.
   Commit when you like.
-- **Machine-only settings:** `~/.zshrc.local`, `~/.zshenv.local`,
+- **Machine-only settings:** `~/.zshrc.local`, `~/.zshenv.local`, `~/.zprofile.local`,
   `~/.gitconfig.local` (name, email, signing) and `Brewfile.local` are read if
   present and never committed.
 - **Updates:** a notification reminds you once a day. Run `brew upgrade` and
