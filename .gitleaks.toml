@@ -1,0 +1,22 @@
+# Default gitleaks rules plus what this public repo must never hold:
+# private network addresses, internal hostnames and email addresses.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "private-ipv4"
+description = "Private, CGNAT or tailnet IPv4 address"
+regex = '''\b(?:10\.\d{1,3}|192\.168|172\.(?:1[6-9]|2\d|3[01])|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7]))\.\d{1,3}\.\d{1,3}\b'''
+
+[[rules]]
+id = "internal-hostname"
+description = "Tailnet or LAN hostname"
+regex = '''(?i)\b[a-z0-9-]+\.(?:ts\.net|lan|home\.arpa)\b'''
+
+[[rules]]
+id = "email-address"
+description = "Email address"
+regex = '''\b[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b'''
+[[rules.allowlists]]
+# SSH key types such as sk-ecdsa-sha2-nistp256@openssh.com look like addresses.
+regexes = ['''noreply''', '''@example\.(?:com|org|net)$''', '''^git@github\.com$''', '''@openssh\.com$''']
