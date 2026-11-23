@@ -2,4 +2,6 @@
 # ssh-keygen with Apple's Secure Enclave provider; git uses it as gpg.ssh.program.
 SSH_SK_PROVIDER=${SSH_SK_PROVIDER:-/usr/lib/ssh-keychain.dylib}
 export SSH_SK_PROVIDER
+# Sign via the provider, not ssh-agent: a pending Touch ID request in the agent blocks every key.
+unset SSH_AUTH_SOCK
 exec /usr/bin/ssh-keygen "$@"
