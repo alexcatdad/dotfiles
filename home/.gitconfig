@@ -16,6 +16,8 @@
     autoSetupRemote = true
 [fetch]
     prune = true
+[url "git@github.com:"]
+    insteadOf = https://github.com/
 [diff]
     colorMoved = default
     algorithm = histogram
