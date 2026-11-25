@@ -51,7 +51,7 @@ gh skill preview "$repo" "$path@$pin"
 gh skill install "$repo" "$path" --dir "$HOME/.agents/skills" --pin "$pin"
 ```
 
-The `artifact` entry pins the public `v1.0.0` release. Codex discovers the
+The `artifact` entry pins a commit from the public releases. Codex discovers the
 shared install in `~/.agents/skills`. For a separate Claude Code installation,
 use the same pin with its user-scope directory:
 

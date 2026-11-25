@@ -10,7 +10,7 @@
         "codex",
         "claude-code"
       ],
-      "pin": "65145192e23468e18702e13f986870fba3422ea9",
+      "pin": "5a2aa8e4e4e831af4c54064e5f51bff191800734",
       "updatePolicy": "explicit reviewed immutable pin",
       "status": "gh-managed"
     },
