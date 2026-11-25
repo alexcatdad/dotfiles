@@ -27,7 +27,7 @@ IF blocked: finish independent work, stop, report tried + smallest fix
 IF you need my action: separate marked block: what, where, what it unblocks
 IF rules conflict: security, confidentiality, correctness > my stated scope > speed > simplicity > cost; my request beats optional skill steps
 
-WHILE multi-step: task list current as steps start/finish/block; dashboard (html-session-progress) if available, link first; one line per finish/failure/plan change
+WHILE multi-step: task list current as steps start/finish/block; private progress via the artifact skill if available, link first; one line per finish/failure/plan change
 
 FOR EACH question: one at a time; options + recommendation; self-contained: file, quoted text, outcome per answer; no unseen labels
 FOR EACH background command: time limit, output file; IF silent past expected duration: hung, stop, report

@@ -42,13 +42,21 @@ repositories are listed in the same format in the untracked `skills.json.local`.
 ## Install one
 
 ```sh
-name=use-up
+name=artifact
 entry=$(cat skills.json skills.json.local 2>/dev/null | jq -c --arg n "$name" '.skills[] | select(.name==$n)')
 repo=$(printf '%s' "$entry" | jq -r .repository)
 path=$(printf '%s' "$entry" | jq -r .path)
 pin=$(printf '%s' "$entry" | jq -r .pin)
 gh skill preview "$repo" "$path@$pin"
 gh skill install "$repo" "$path" --dir "$HOME/.agents/skills" --pin "$pin"
+```
+
+The `artifact` entry pins the public `v1.0.0` release. Codex discovers the
+shared install in `~/.agents/skills`. For a separate Claude Code installation,
+use the same pin with its user-scope directory:
+
+```sh
+gh skill install "$repo" "$path" --agent claude-code --scope user --pin "$pin"
 ```
 
 `gh skill install` can drop executable bits; restore them on a package's

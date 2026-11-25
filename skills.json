@@ -1,6 +1,20 @@
 {
   "skills": [
     {
+      "name": "artifact",
+      "repository": "alexcatdad/skills",
+      "path": "skills/artifact",
+      "scope": "user",
+      "directory": "~/.agents/skills",
+      "agents": [
+        "codex",
+        "claude-code"
+      ],
+      "pin": "65145192e23468e18702e13f986870fba3422ea9",
+      "updatePolicy": "explicit reviewed immutable pin",
+      "status": "gh-managed"
+    },
+    {
       "name": "scratchpad-connect",
       "repository": "alexcatdad/scratchpad",
       "path": "skills/scratchpad-connect",
